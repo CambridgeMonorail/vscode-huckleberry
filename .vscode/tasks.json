@@ -1,0 +1,48 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-extension",
+      "type": "shell",
+      "command": "pnpm exec nx build huckleberry-extension",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "serve-react-app",
+      "type": "shell",
+      "command": "pnpm exec nx serve demo-site",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE v\\d+\\.\\d+\\.\\d+\\s+ready",
+          "endsPattern": "\\sLocal:\\s+http://localhost:\\d+"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "watch-extension",
+      "type": "shell",
+      "command": "cd apps/huckleberry-extension && pnpm run watch",
+      "isBackground": true,
+      "group": "build",
+      "problemMatcher": "$tsc-watch"
+    }
+  ]
+}

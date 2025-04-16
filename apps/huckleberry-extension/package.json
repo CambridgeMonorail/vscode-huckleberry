@@ -33,10 +33,7 @@
     "test": "node ./dist/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "1.99.1",
+    "@types/vscode": "^1.93.0",
     "vscode": "1.1.37"
-  },
-  "dependencies": {
-    "@vscode/chat-extension-utils": "0.0.0-alpha.5"
   }
 }

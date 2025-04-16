@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/huckleberry-extension"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/apps/huckleberry-extension/dist/**/*.js"
+      ],
+      "preLaunchTask": "build-extension"
+    },
+    {
+      "name": "Debug React App",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/demo-site/src",
+      "preLaunchTask": "serve-react-app"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Extension & React App",
+      "configurations": ["Debug Extension", "Debug React App"]
+    }
+  ]
+}

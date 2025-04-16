@@ -66,10 +66,20 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 
 ## Step 4: Build and Package the Extension
 
-- [ ] Build the VS Code extension (`pnpm exec nx build huckleberry-extension`)
-- [ ] Package the extension as VSIX (`pnpm exec nx package huckleberry-extension`)
-- [ ] Verify huckleberry.vsix file was created in the apps/huckleberry-extension directory
+- [x] Build the VS Code extension (`pnpm exec nx build huckleberry-extension`)
+- [x] Package the extension as VSIX (`pnpm exec nx package huckleberry-extension`)
+- [x] Verify huckleberry.vsix file was created in the apps/huckleberry-extension directory
 - [ ] Test installing the VSIX manually in VS Code to verify packaging
+
+## Step 4a: Set Up Local Debugging for Extension Development
+
+- [x] Create a .vscode folder in the extension directory (if not exists)
+- [x] Create a launch.json file for debugging configuration
+- [x] Add extension development configuration to launch.json
+- [x] Add compound launch configuration for extension and web app
+- [x] Test launching the extension in debug mode
+- [x] Add tasks.json for automating build tasks during debug
+- [x] Document the debug workflow for other developers (see `docs/debug-setup.md`)
 
 ## Step 5: Configure Workspace Settings
 

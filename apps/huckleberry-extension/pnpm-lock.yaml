@@ -7,13 +7,9 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@vscode/chat-extension-utils':
-        specifier: 0.0.0-alpha.5
-        version: 0.0.0-alpha.5
     devDependencies:
       '@types/vscode':
-        specifier: 1.99.1
+        specifier: ^1.93.0
         version: 1.99.1
       vscode:
         specifier: 1.1.37
@@ -27,12 +23,6 @@ packages:
 
   '@types/vscode@1.99.1':
     resolution: {integrity: sha512-cQlqxHZ040ta6ovZXnXRxs3fJiTmlurkIWOfZVcLSZPcm9J4ikFpXuB7gihofGn5ng+kDVma5EmJIclfk0trPQ==}
-
-  '@vscode/chat-extension-utils@0.0.0-alpha.5':
-    resolution: {integrity: sha512-EkfetTIGMDyClZkIx8oMOhprlXufnj0b/G1W4QGg4jhkWVUBE7kLRZsqEnpNjmtxHTugzc61gPQwT3zgH3HXgA==}
-
-  '@vscode/prompt-tsx@0.3.0-alpha.23':
-    resolution: {integrity: sha512-HD5Y2HpXmt8Eu+hc3noYIqKXbfQdS5IXjL/YQg6uhxjNTc0Bx3Xy9l3BbvEzoerPqbW9g+bEkPCaKH2yRuC/1A==}
 
   agent-base@4.3.0:
     resolution: {integrity: sha512-salcGninV0nPrwpGNn4VTXBb1SOuXQBiqbrNXoeizJsHrsL6ERFM2Ne3JUSBWRE6aeNJI2ROP/WEEIDUiDe3cg==}
@@ -211,12 +201,6 @@ snapshots:
   '@tootallnate/once@1.1.2': {}
 
   '@types/vscode@1.99.1': {}
-
-  '@vscode/chat-extension-utils@0.0.0-alpha.5':
-    dependencies:
-      '@vscode/prompt-tsx': 0.3.0-alpha.23
-
-  '@vscode/prompt-tsx@0.3.0-alpha.23': {}
 
   agent-base@4.3.0:
     dependencies:
