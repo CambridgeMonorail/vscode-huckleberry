@@ -108,11 +108,13 @@ vscode-huckleberry/
 ## Roadmap
 
 ### Phase 1 (Current)
+
 - Core task management functionality
 - File-based task persistence
 - PRD parsing capabilities
 
 ### Phase 2 (Planned)
+
 - Research-backed task expansion using web APIs
 - Complexity analysis and estimation
 - Integration with VS Code Tasks

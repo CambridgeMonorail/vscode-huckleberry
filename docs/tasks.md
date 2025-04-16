@@ -13,14 +13,14 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 - [x] Install Nx globally (`pnpm add -g create-nx-workspace`)
 - [x] Create the Nx workspace with pnpm support (`pnpm dlx create-nx-workspace vscode-huckleberry --preset=empty --package-manager=pnpm`)
 - [x] Navigate to workspace directory (`cd vscode-huckleberry`)
-- [ ] Create a .nvmrc file to lock Node.js version (optional but recommended)
+- [x] Create a .nvmrc file to lock Node.js version (optional but recommended)
 
 ## Step 2: Set up the React SPA (demo-site)
 
-- [ ] Generate React application (`pnpm exec nx generate @nx/react:application demo-site`)
-- [ ] Test run the React application (`pnpm exec nx serve demo-site`)
-- [ ] Verify React app loads correctly in browser (localhost:4200)
-- [ ] Update demo-site's package.json with proper app name and version
+- [x] Generate React application (`pnpm exec nx generate @nx/react:application demo-site`)
+- [x] Test run the React application (`pnpm exec nx serve demo-site`)
+- [x] Verify React app loads correctly in browser (localhost:4200)
+- [x] Update demo-site's package.json with proper app name and version
 
 ## Step 3: Set up the VS Code Extension (huckleberry-extension)
 
@@ -34,6 +34,7 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
   - [ ] Create extension entry file (`touch src/extension.ts`)
   - [ ] Create tools directory (`mkdir src/tools`)
 - [ ] Add basic extension code to extension.ts:
+
   ```typescript
   import * as vscode from 'vscode';
   
@@ -49,6 +50,7 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
   
   export function deactivate() {}
   ```
+
 - [ ] Create and configure tsconfig.json
 - [ ] Configure extension package.json with proper:
   - [ ] Name, displayName, and description
@@ -65,7 +67,7 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 ## Step 4: Build and Package the Extension
 
 - [ ] Build the VS Code extension (`pnpm exec nx build huckleberry-extension`)
-- [ ] Package the extension as VSIX (`pnpm exec nx package huckleberry-extension`) 
+- [ ] Package the extension as VSIX (`pnpm exec nx package huckleberry-extension`)
 - [ ] Verify huckleberry.vsix file was created in the apps/huckleberry-extension directory
 - [ ] Test installing the VSIX manually in VS Code to verify packaging
 

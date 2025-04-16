@@ -1,0 +1,11 @@
+{
+  "name": "huckleberry-demo-site",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "demo-site/src",
+  "projectType": "application",
+  "tags": ["demo", "react", "spa"],
+  "version": "0.1.0",
+  "description": "Demo site for the Huckleberry VS Code extension",
+  "// targets": "to see all targets run: nx show project demo-site --web",
+  "targets": {}
+}
