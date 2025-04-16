@@ -24,16 +24,16 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 
 ## Step 3: Set up the VS Code Extension (huckleberry-extension)
 
-- [ ] Create extension directory structure:
-  - [ ] Create directory (`mkdir -p apps/huckleberry-extension`)
-  - [ ] Navigate to directory (`cd apps/huckleberry-extension`)
-- [ ] Initialize package.json (`pnpm init`)
-- [ ] Install VS Code extension dependencies (`pnpm add -D vscode @types/vscode`)
-- [ ] Create source directory structure:
-  - [ ] Create src directory (`mkdir src`)
-  - [ ] Create extension entry file (`touch src/extension.ts`)
-  - [ ] Create tools directory (`mkdir src/tools`)
-- [ ] Add basic extension code to extension.ts:
+- [x] Create extension directory structure:
+  - [x] Create directory (`mkdir -p apps/huckleberry-extension`)
+  - [x] Navigate to directory (`cd apps/huckleberry-extension`)
+- [x] Initialize package.json (`pnpm init`)
+- [x] Install VS Code extension dependencies (`pnpm add -D vscode @types/vscode`)
+- [x] Create source directory structure:
+  - [x] Create src directory (`mkdir src`)
+  - [x] Create extension entry file (`touch src/extension.ts`)
+  - [x] Create tools directory (`mkdir src/tools`)
+- [x] Add basic extension code to extension.ts:
 
   ```typescript
   import * as vscode from 'vscode';
@@ -51,18 +51,18 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
   export function deactivate() {}
   ```
 
-- [ ] Create and configure tsconfig.json
-- [ ] Configure extension package.json with proper:
-  - [ ] Name, displayName, and description
-  - [ ] Version and VS Code engine compatibility (specify "engines": {"vscode": "^1.93.0", "node": "^22.0.0"})
-  - [ ] Activation events (e.g., "onStartupFinished" or "onChatParticipant:yourpublisher.taskmaster")
-  - [ ] Commands contribution
-  - [ ] Build/test/package scripts
-  - [ ] Required devDependencies
-  - [ ] Add @vscode/chat-extension-utils dependency
-- [ ] Install vsce globally (`pnpm add -g @vscode/vsce`)
-- [ ] Create and configure project.json for Nx integration
-- [ ] Create .vscodeignore file to exclude unnecessary files from the extension package
+- [x] Create and configure tsconfig.json
+- [x] Configure extension package.json with proper:
+  - [x] Name, displayName, and description
+  - [x] Version and VS Code engine compatibility (specify "engines": {"vscode": "^1.93.0", "node": "^22.0.0"})
+  - [x] Activation events (e.g., "onStartupFinished" or "onChatParticipant:yourpublisher.taskmaster")
+  - [x] Commands contribution
+  - [x] Build/test/package scripts
+  - [x] Required devDependencies
+  - [x] Add @vscode/chat-extension-utils dependency
+- [x] Install vsce globally (`pnpm add -g @vscode/vsce`)
+- [x] Create and configure project.json for Nx integration
+- [x] Create .vscodeignore file to exclude unnecessary files from the extension package
 
 ## Step 4: Build and Package the Extension
 

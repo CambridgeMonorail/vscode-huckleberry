@@ -1,0 +1,42 @@
+{
+  "name": "huckleberry-extension",
+  "displayName": "Huckleberry Task Master",
+  "version": "0.1.0",
+  "description": "A VS Code extension that helps manage and track tasks using LLM capabilities",
+  "publisher": "vscode-huckleberry",
+  "main": "./dist/extension.js",
+  "engines": {
+    "vscode": "^1.93.0",
+    "node": "^22.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "huckleberry-extension.helloWorld",
+        "title": "Hello World from Huckleberry"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "build": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "test": "node ./dist/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "1.99.1",
+    "vscode": "1.1.37"
+  },
+  "dependencies": {
+    "@vscode/chat-extension-utils": "0.0.0-alpha.5"
+  }
+}

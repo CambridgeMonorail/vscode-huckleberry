@@ -1,0 +1,45 @@
+{
+  "name": "huckleberry-extension",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/huckleberry-extension/src",
+  "projectType": "application",
+  "tags": ["extension", "vscode"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/huckleberry-extension",
+        "commands": [
+          "tsc -p tsconfig.json"
+        ],
+        "outputs": [
+          "{projectRoot}/dist"
+        ]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/huckleberry-extension",
+        "command": "npm test"
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/huckleberry-extension",
+        "command": "vsce package"
+      },
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/huckleberry-extension",
+        "command": "npm run lint"
+      }
+    }
+  }
+}
