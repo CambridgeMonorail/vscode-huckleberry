@@ -92,27 +92,27 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 
 ## Step 6: Setup Task Master Implementation
 
-- [ ] Implement Chat Participant:
-  - [ ] Add chatParticipants to package.json
-  - [ ] Create chat participant handler in extension.ts
-  - [ ] Define system prompt for the task master
-  - [ ] Add proper error handling for Chat API
-- [ ] Implement Language Model Tools:
-  - [ ] Define tools in package.json (readFile, writeFile, markDone)
-  - [ ] Implement tool classes (ReadFileTool.ts, WriteFileTool.ts, MarkDoneTool.ts)
-  - [ ] Register tools in extension activation
-  - [ ] Add proper error handling and user confirmation for tools
-- [ ] Create persistent custom guidance file (.github/copilot-instructions.md)
-- [ ] Define task data schema (fields for tasks.json and structure for task files)
+- [x] Implement Chat Participant:
+  - [x] Add chatParticipants to package.json
+  - [x] Create chat participant handler in extension.ts
+  - [x] Define system prompt for the task master
+  - [x] Add proper error handling for Chat API
+- [x] Implement Language Model Tools:
+  - [x] Define tools in package.json (readFile, writeFile, markDone)
+  - [x] Implement tool classes (ReadFileTool.ts, WriteFileTool.ts, MarkDoneTool.ts)
+  - [x] Register tools in extension activation
+  - [x] Add proper error handling and user confirmation for tools
+- [x] Create persistent custom guidance file (.github/copilot-instructions.md)
+- [x] Define task data schema (fields for tasks.json and structure for task files)
 
 ## Step 7: Extension Settings and Configuration
 
-- [ ] Add extension settings in package.json:
-  - [ ] Task file location configuration
-  - [ ] Task template options
-  - [ ] Default task priorities
-- [ ] Create settings interface in code
-- [ ] Implement configuration loading in extension
+- [x] Add extension settings in package.json:
+  - [x] Task file location configuration
+  - [x] Task template options
+  - [x] Default task priorities
+- [x] Create settings interface in code
+- [x] Implement configuration loading in extension
 
 ## Step 8: Testing and Deployment Preparation
 

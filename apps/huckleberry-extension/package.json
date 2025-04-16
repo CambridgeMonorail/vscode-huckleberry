@@ -13,15 +13,78 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onChatParticipant:huckleberry-extension.taskmaster"
   ],
   "contributes": {
     "commands": [
       {
         "command": "huckleberry-extension.helloWorld",
         "title": "Hello World from Huckleberry"
+      },
+      {
+        "command": "huckleberry-extension.manageTasks",
+        "title": "Huckleberry: Manage Tasks"
       }
-    ]
+    ],
+    "chatParticipants": [
+      {
+        "id": "huckleberry-extension.taskmaster",
+        "name": "Task Master",
+        "description": "An assistant that helps manage tasks and project requirements",
+        "isSticky": false,
+        "commands": [
+          {
+            "name": "manageTasks",
+            "description": "Show the task management interface"
+          }
+        ],
+        "requiredWorkspaceCapabilities": {
+          "requiresWorkspace": true
+        },
+        "supportedFileExtension": [
+          "md",
+          "json",
+          "txt"
+        ],
+        "followupSupportLevel": "always",
+        "helpTextTitle": "Huckleberry Task Master",
+        "helpText": "I can help you manage your tasks and project requirements. Try asking me to:\n- List all tasks\n- Create a new task\n- Update task status\n- Find tasks by priority"
+      }
+    ],
+    "configuration": {
+      "title": "Huckleberry Task Master",
+      "properties": {
+        "huckleberry.taskMaster.defaultTasksLocation": {
+          "type": "string",
+          "default": "tasks",
+          "description": "Default location for task files (relative to workspace root)"
+        },
+        "huckleberry.taskMaster.taskFileTemplate": {
+          "type": "string",
+          "enum": ["markdown", "json"],
+          "default": "markdown",
+          "description": "Template format to use when creating new task files"
+        },
+        "huckleberry.taskMaster.defaultTaskPriority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "default": "medium",
+          "description": "Default priority for new tasks when unspecified"
+        },
+        "huckleberry.taskMaster.defaultDueDate": {
+          "type": "string",
+          "enum": ["none", "tomorrow", "nextWeek", "twoWeeks", "custom"],
+          "default": "none",
+          "description": "Default due date setting for new tasks"
+        },
+        "huckleberry.taskMaster.customDueDateDays": {
+          "type": "number",
+          "default": 7,
+          "description": "Number of days for custom due date setting (when defaultDueDate is set to 'custom')"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
@@ -35,5 +98,8 @@
   "devDependencies": {
     "@types/vscode": "^1.93.0",
     "vscode": "1.1.37"
+  },
+  "dependencies": {
+    "@vscode/chat-extension-utils": "0.0.0-alpha.5"
   }
 }

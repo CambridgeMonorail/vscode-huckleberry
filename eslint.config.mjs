@@ -1,4 +1,5 @@
 import nx from '@nx/eslint-plugin';
+import typescriptESLint from '@typescript-eslint/eslint-plugin';
 
 export default [
   ...nx.configs['flat/base'],
@@ -41,6 +42,9 @@ export default [
       '**/*.mjs',
     ],
     // Enhanced rules for the Huckleberry project
+    plugins: {
+      '@typescript-eslint': typescriptESLint
+    },
     rules: {
       // Error prevention
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
@@ -65,10 +69,14 @@ export default [
         'allowTypedFunctionExpressions': true
       }],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/member-delimiter-style': ['error', {
-        'multiline': { 'delimiter': 'semi', 'requireLast': true },
-        'singleline': { 'delimiter': 'semi', 'requireLast': false }
-      }],
+      
+      // The problematic rule - checking if it's available
+      ...(typescriptESLint.rules['member-delimiter-style'] ? {
+        '@typescript-eslint/member-delimiter-style': ['error', {
+          'multiline': { 'delimiter': 'semi', 'requireLast': true },
+          'singleline': { 'delimiter': 'semi', 'requireLast': false }
+        }]
+      } : {})
     },
   },
   {
