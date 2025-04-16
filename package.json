@@ -1,0 +1,14 @@
+{
+  "name": "@vscode-huckleberry/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {
+    "empty": "0.10.1"
+  },
+  "devDependencies": {
+    "@nx/workspace": "20.8.0",
+    "nx": "20.8.0"
+  }
+}
