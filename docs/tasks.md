@@ -95,7 +95,7 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 - [x] Implement Chat Participant:
   - [x] Add chatParticipants to package.json
   - [x] Create chat participant handler in extension.ts
-  - [x] Define system prompt for the task master
+  - [x] Define system prompt for the Task Master
   - [x] Add proper error handling for Chat API
 - [x] Implement Language Model Tools:
   - [x] Define tools in package.json (readFile, writeFile, markDone)
@@ -126,13 +126,53 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
   - [ ] React SPA (hosting platform)
 - [ ] Create a release checklist
 
+## Step 9: Extension Publishing Preparation
+
+- [ ] Prepare documentation for marketplace listing:
+  - [ ] Ensure README.md has comprehensive usage instructions
+  - [ ] Create a CHANGELOG.md file to track version changes 
+  - [ ] Verify LICENSE file is present and appropriate
+
+- [ ] Create visual assets for marketplace listing:
+  - [x] Add extension icon (128x128px or larger)
+  - [ ] Create gallery banner image (optional)
+  - [ ] Add screenshots showing extension functionality (optional)
+
+- [ ] Update package.json:
+  - [x] Verify all required fields (name, displayName, description)
+  - [x] Check version number follows semantic versioning
+  - [ ] Add keywords/tags for marketplace discoverability (max 10)
+  - [ ] Add repository, bugs, and homepage URLs
+  - [ ] Add publisher identifier
+
+- [ ] Test packaged extension:
+  - [x] Package extension as VSIX (`pnpm exec nx package huckleberry-extension`)
+  - [ ] Install VSIX locally and verify all functionality
+  - [ ] Test in both VS Code Stable and Insiders if using proposed API
+
+## Step 10: Extension Publishing (Human Required)
+
+- [ ] Create publisher on VS Code Marketplace:
+  - [ ] Create Personal Access Token (PAT) in Azure DevOps
+  - [ ] Create publisher identity on marketplace
+  - [ ] Consider publisher verification (optional)
+
+- [ ] Publish extension:
+  - [ ] Use `vsce publish` command with PAT
+  - [ ] Or set up Azure DevOps CI/CD pipeline for publishing
+
+- [ ] Post-publication tasks:
+  - [ ] Verify extension appears correctly on marketplace
+  - [ ] Monitor ratings and download statistics
+  - [ ] Plan for regular updates and maintenance
+
 ## Additional Tasks
 
-- [ ] Add logo/icon files for the extension see assets\images\favicons
-  - [ ] Create a proper icon.png (at least 128x128px)
-  - [ ] Add icon path to package.json
+- [x] Add logo/icon files for the extension
+  - [x] Create a proper icon.png (at least 128x128px)
+  - [x] Add icon path to package.json
 - [ ] Update README.md with proper usage instructions
-- [ ] Document the task master commands and capabilities
+- [ ] Document the Task Master commands and capabilities
 - [ ] Create a CHANGELOG.md file
 - [ ] Add license information
 - [ ] Create extension gallery assets (banner, screenshots)

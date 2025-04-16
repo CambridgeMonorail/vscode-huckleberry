@@ -1,6 +1,6 @@
 {
   "name": "huckleberry-extension",
-  "displayName": "Huckleberry Task Master",
+  "displayName": "Huckleberry Task Manager",
   "version": "0.1.0",
   "description": "A VS Code extension that helps manage and track tasks using LLM capabilities",
   "publisher": "vscode-huckleberry",
@@ -31,7 +31,7 @@
     "chatParticipants": [
       {
         "id": "huckleberry-extension.taskmaster",
-        "name": "Task Master",
+        "name": "Task Manager",
         "description": "An assistant that helps manage tasks and project requirements",
         "isSticky": false,
         "commands": [
@@ -49,12 +49,12 @@
           "txt"
         ],
         "followupSupportLevel": "always",
-        "helpTextTitle": "Huckleberry Task Master",
+        "helpTextTitle": "Huckleberry Task Manager",
         "helpText": "I can help you manage your tasks and project requirements. Try asking me to:\n- List all tasks\n- Create a new task\n- Update task status\n- Find tasks by priority"
       }
     ],
     "configuration": {
-      "title": "Huckleberry Task Master",
+      "title": "Huckleberry Task Manager",
       "properties": {
         "huckleberry.taskMaster.defaultTasksLocation": {
           "type": "string",

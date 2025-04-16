@@ -8,7 +8,7 @@ export interface BaseToolParams {
 }
 
 /**
- * Base class for language model tools that can be used by the Task Master
+ * Base class for language model tools that can be used by the Task Manager
  */
 export abstract class BaseTool<T extends BaseToolParams> {
   /**
@@ -53,7 +53,7 @@ export abstract class BaseTool<T extends BaseToolParams> {
    * @param message The error message
    */
   protected showError(message: string): void {
-    vscode.window.showErrorMessage(`Task Master: ${message}`);
+    vscode.window.showErrorMessage(`Task Manager: ${message}`);
   }
 
   /**
@@ -61,7 +61,7 @@ export abstract class BaseTool<T extends BaseToolParams> {
    * @param message The information message
    */
   protected showInfo(message: string): void {
-    vscode.window.showInformationMessage(`Task Master: ${message}`);
+    vscode.window.showInformationMessage(`Task Manager: ${message}`);
   }
 
   /**

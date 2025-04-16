@@ -1,5 +1,5 @@
 /**
- * Type definitions for the Huckleberry Task Master extension
+ * Type definitions for the Huckleberry Task Manager extension
  */
 
 /**
@@ -118,7 +118,7 @@ export interface MarkdownTaskItem {
 }
 
 /**
- * Configuration options for the Task Master
+ * Configuration options for the Task Manager
  */
 export interface TaskMasterConfig {
   /**

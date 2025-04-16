@@ -1,4 +1,4 @@
-# Huckleberry - VS Code Task Master Extension
+# Huckleberry - VS Code Task Manager Extension
 
 <div align="center">
   <img src="./assets/images/huckleberry-logo-with-name.svg" alt="Huckleberry Logo" width="300">
@@ -19,7 +19,7 @@
 
 ## Overview
 
-Huckleberry is a VS Code extension that brings AI-powered task management directly into your coding workflow. Using the VS Code Chat interface, you can have natural conversations with a dedicated Task Master agent that helps you track, manage, and organize project tasks.
+Huckleberry is a VS Code extension that brings AI-powered task management directly into your coding workflow. Using the VS Code Chat interface, you can have natural conversations with a dedicated Task Manager agent that helps you track, manage, and organize project tasks.
 
 Powered by the VS Code Language Model API and Copilot Chat integration, Huckleberry creates a conversational interface for automated task management without leaving your development environment.
 
@@ -52,7 +52,7 @@ ext install huckleberry.taskmaster
 After installation:
 
 1. Open the Copilot Chat panel in VS Code
-2. Start a conversation with the Task Master by typing `@taskmaster`
+2. Start a conversation with the Task Manager by typing `@taskmaster`
 3. Try commands like:
    - `@taskmaster Initialize task management for this project`
    - `@taskmaster Parse PRD.md and generate tasks`

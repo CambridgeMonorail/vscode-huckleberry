@@ -9,15 +9,15 @@ import { MarkDoneTool } from './tools/MarkDoneTool';
 // Import task data types
 import { Task, TaskPriority, TaskCollection, TaskMasterConfig } from './types';
 
-// Default configuration for the Task Master
+// Default configuration for the Task Manager
 const DEFAULT_CONFIG: TaskMasterConfig = {
   defaultTasksLocation: 'tasks',
   taskFileTemplate: 'markdown',
   defaultTaskPriority: 'medium'
 };
 
-// System prompt for the Task Master assistant
-const SYSTEM_PROMPT = `You are the Huckleberry Task Master, a specialized assistant that helps users manage tasks and project requirements.
+// System prompt for the Task Manager assistant
+const SYSTEM_PROMPT = `You are the Huckleberry Task Manager, a specialized assistant that helps users manage tasks and project requirements.
 Your responsibilities include:
 - Helping users track their tasks and project status
 - Creating, updating, and organizing tasks
@@ -90,7 +90,7 @@ interface ResponseFinishType {
 }
 
 /**
- * Handle chat requests for the Task Master
+ * Handle chat requests for the Task Manager
  * @param request The chat request
  * @param context The chat context
  * @param stream The response stream
@@ -105,7 +105,7 @@ async function handleChatRequest(
   toolManager: ToolManager
 ): Promise<void> {
   try {
-    console.log(`Task Master received request: ${request.prompt}`);
+    console.log(`Task Manager received request: ${request.prompt}`);
 
     // Process command if present
     const commandMatch = request.prompt.match(/\/(\w+)(?:\s+(.*))?$/);
@@ -141,7 +141,7 @@ async function handleChatRequest(
       await stream.markdown('- Generate reports on your project progress');
     }
   } catch (error) {
-    console.error('Task Master error:', error);
+    console.error('Task Manager error:', error);
     await stream.markdown(`**Error**: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -209,7 +209,7 @@ function manageTasks(): void {
 
 /**
  * Get the extension configuration
- * @returns The Task Master configuration
+ * @returns The Task Manager configuration
  */
 function getConfiguration(): TaskMasterConfig {
   const config = vscode.workspace.getConfiguration('huckleberry.taskMaster');
@@ -232,7 +232,7 @@ function getConfiguration(): TaskMasterConfig {
  * @param context The extension context
  */
 export function activate(context: vscode.ExtensionContext): void {
-  console.log('Huckleberry Task Master extension is now active!');
+  console.log('Huckleberry Task Manager extension is now active!');
 
   // Create and register tools
   const toolManager = new ToolManager();
@@ -246,7 +246,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Register the hello world command
   const helloWorldDisposable = vscode.commands.registerCommand('huckleberry-extension.helloWorld', () => {
-    vscode.window.showInformationMessage('Hello from Huckleberry Task Master!');
+    vscode.window.showInformationMessage('Hello from Huckleberry Task Manager!');
   });
 
   // Register the manage tasks command

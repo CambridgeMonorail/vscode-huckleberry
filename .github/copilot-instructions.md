@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a nrwl nx monorepo for the Huckleberry Task Master VS Code extension and its supporting applications.
+This is a nrwl nx monorepo for the Huckleberry Task Manager VS Code extension and its supporting applications.
 
 The repository is structured as follows:
 

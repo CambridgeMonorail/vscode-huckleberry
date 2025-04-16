@@ -1,12 +1,12 @@
-# Huckleberry Task Master
+# Huckleberry Task Manager
 
 ## Overview
 
-The Huckleberry Task Master is a VS Code extension that helps developers manage tasks and project requirements efficiently within their VS Code environment. It focuses on providing assistance with task tracking, organization, and status updates.
+The Huckleberry Task Manager is a VS Code extension that helps developers manage tasks and project requirements efficiently within their VS Code environment. It focuses on providing assistance with task tracking, organization, and status updates.
 
 ## Capabilities
 
-The Task Master can help with:
+The Task Manager can help with:
 
 - Reading, creating, and updating task files (markdown and JSON format)
 - Marking tasks as complete or incomplete
@@ -17,7 +17,7 @@ The Task Master can help with:
 
 ## Task File Formats
 
-The Task Master supports two primary task file formats:
+The Task Manager supports two primary task file formats:
 
 ### Markdown Tasks
 
@@ -59,7 +59,7 @@ The Task Master supports two primary task file formats:
 }
 ```
 
-## Using Task Master
+## Using Task Manager
 
 ### Installation
 
@@ -72,7 +72,7 @@ The Task Master supports two primary task file formats:
 
 ### Initial Setup
 
-After installation, you can configure Task Master in your VS Code settings:
+After installation, you can configure Task Manager in your VS Code settings:
 
 1. Open Settings (Ctrl+,)
 2. Search for "Huckleberry"
@@ -83,25 +83,25 @@ After installation, you can configure Task Master in your VS Code settings:
 
 ### Chat Commands
 
-The Task Master is available as a chat participant in VS Code. You can interact with it by:
+The Task Manager is available as a chat participant in VS Code. You can interact with it by:
 
 1. Opening the Chat view in VS Code
-2. Starting a new conversation with "Task Master"
+2. Starting a new conversation with "Task Manager"
 3. Using one of the following commands:
-   - `@Task Master list tasks`: List all tasks in the default location
-   - `@Task Master create task`: Start the task creation process
-   - `@Task Master mark task done`: Mark a task as completed
-   - `@Task Master generate report`: Generate a report of task status
+   - `@Task Manager list tasks`: List all tasks in the default location
+   - `@Task Manager create task`: Start the task creation process
+   - `@Task Manager mark task done`: Mark a task as completed
+   - `@Task Manager generate report`: Generate a report of task status
 
 ### Command Palette
 
-You can also access Task Master functionality through the Command Palette (Ctrl+Shift+P):
+You can also access Task Manager functionality through the Command Palette (Ctrl+Shift+P):
 
 - `Huckleberry: Manage Tasks`: Opens the task management interface
 
 ## Task Properties
 
-When working with tasks, the Task Master recognizes and handles the following properties:
+When working with tasks, the Task Manager recognizes and handles the following properties:
 
 - **Title**: A concise description of the task
 - **Description**: A detailed explanation of what the task involves
@@ -115,24 +115,24 @@ When working with tasks, the Task Master recognizes and handles the following pr
 
 ### Creating a New Task
 
-1. Start a chat with Task Master: `@Task Master create task`
+1. Start a chat with Task Manager: `@Task Manager create task`
 2. Follow the prompts to provide task details:
    - Title (required)
    - Description (optional)
    - Priority (optional)
    - Due date (optional)
-3. Task Master will create the task in your default tasks location
+3. Task Manager will create the task in your default tasks location
 
 ### Updating Task Status
 
-1. Start a chat with Task Master: `@Task Master mark task done`
+1. Start a chat with Task Manager: `@Task Manager mark task done`
 2. Provide the task identifier or description
-3. Task Master will locate and update the task status
+3. Task Manager will locate and update the task status
 
 ### Generating Reports
 
-1. Start a chat with Task Master: `@Task Master generate report`
-2. Task Master will read your task files and generate a summary
+1. Start a chat with Task Manager: `@Task Manager generate report`
+2. Task Manager will read your task files and generate a summary
 3. The report will include completion statistics and upcoming deadlines
 
 ## Extension Settings
