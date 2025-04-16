@@ -128,7 +128,7 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 
 ## Additional Tasks
 
-- [ ] Add logo/icon files for the extension
+- [ ] Add logo/icon files for the extension see assets\images\favicons
   - [ ] Create a proper icon.png (at least 128x128px)
   - [ ] Add icon path to package.json
 - [ ] Update README.md with proper usage instructions

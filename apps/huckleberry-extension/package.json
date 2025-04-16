@@ -5,6 +5,7 @@
   "description": "A VS Code extension that helps manage and track tasks using LLM capabilities",
   "publisher": "vscode-huckleberry",
   "main": "./dist/extension.js",
+  "icon": "icon/icon.png",
   "engines": {
     "vscode": "^1.93.0",
     "node": "^22.0.0"
