@@ -2,7 +2,9 @@
   "name": "@vscode-huckleberry/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "preinstall": "npx only-allow pnpm"
+  },
   "private": true,
   "dependencies": {
     "empty": "0.10.1"

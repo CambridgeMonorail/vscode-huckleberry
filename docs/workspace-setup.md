@@ -1,32 +1,29 @@
 # Step-by-Step Guide: Setting up VSCode-Huckleberry Nx Workspace
 
-This guide will walk you through setting up an Nx monorepo for your VS Code extension ("huckleberry-extension") and a React single-page application ("demo-site").
+This guide will walk you through setting up an Nx monorepo for your VS Code extension ("huckleberry-extension") and a React single-page application ("demo-site") using pnpm.
 
 ## Prerequisites
 
 - **Node.js**: Ensure you have Node.js (version 14.0.0 or later) installed.
-- **npm or Yarn**: You'll need either npm or Yarn as your package manager.
+- **pnpm**: You'll need pnpm as your package manager. Install it via `npm install -g pnpm` if you don't have it already.
 
 ## Step 1: Create the Nx Workspace
 
 Install Nx globally (if not already installed):
 
 ```bash
-npm install -g create-nx-workspace
-# or
-yarn global add create-nx-workspace
+pnpm add -g create-nx-workspace
 ```
 
 Create the Nx workspace:
 
 ```bash
-npx create-nx-workspace vscode-huckleberry --preset=empty
-# or
-yarn create nx-workspace vscode-huckleberry --preset=empty
+pnpm dlx create-nx-workspace vscode-huckleberry --preset=empty --package-manager=pnpm
 ```
 
 - **vscode-huckleberry**: This is the name of your workspace. You can change it if you like.
 - **--preset=empty**: We start with an empty workspace to have full control over the setup.
+- **--package-manager=pnpm**: Specifies pnpm as the package manager for the workspace.
 
 Navigate to the workspace directory:
 
@@ -39,9 +36,7 @@ cd vscode-huckleberry
 Generate the React application:
 
 ```bash
-nx generate @nx/react:application demo-site
-# or
-yarn nx generate @nx/react:application demo-site
+pnpm exec nx generate @nx/react:application demo-site
 ```
 
 - **demo-site**: The name of your React application.
@@ -49,9 +44,7 @@ yarn nx generate @nx/react:application demo-site
 Run the React application:
 
 ```bash
-nx serve demo-site
-# or
-yarn nx serve demo-site
+pnpm exec nx serve demo-site
 ```
 
 This will start the development server. Open your browser to view the default React app (usually at <http://localhost:4200>).
@@ -68,17 +61,13 @@ cd apps/huckleberry-extension
 Initialize a package.json file:
 
 ```bash
-npm init -y
-# or
-yarn init -y
+pnpm init
 ```
 
 Install VS Code extension dependencies:
 
 ```bash
-npm install --save-dev vscode @types/vscode
-# or
-yarn add -D vscode @types/vscode
+pnpm add -D vscode @types/vscode
 ```
 
 Create a src directory and your main extension file (e.g., extension.ts):
@@ -159,10 +148,10 @@ Configure package.json for VS Code:
         ]
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
+        "vscode:prepublish": "pnpm run compile",
         "compile": "tsc -p tsconfig.json",
         "watch": "tsc -watch -p tsconfig.json",
-        "pretest": "npm run compile && npm run lint",
+        "pretest": "pnpm run compile && pnpm run lint",
         "test": "node ./out/test/runTest.js",
         "lint": "eslint src --ext ts",
         "package": "vsce package --out huckleberry.vsix" // Add this line
@@ -189,12 +178,12 @@ Configure package.json for VS Code:
 - **engines.vscode**: The minimum VS Code version your extension requires.
 - **activationEvents**: Events that trigger the activation of your extension.
 - **contributes.commands**: Registers commands that your extension provides.
-- **scripts**: Define build, test, and package scripts. Crucially, I've added `"package": "vsce package --out huckleberry.vsix"`
+- **scripts**: Define build, test, and package scripts. Note that npm/yarn commands are replaced with pnpm.
 
 Install vsce globally:
 
 ```bash
-npm install -g vsce
+pnpm add -g @vscode/vsce
 ```
 
 Set up the Nx project.json:
@@ -215,7 +204,7 @@ Add the following:
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/out"],
       "options": {
-        "commands": ["npm run compile"],
+        "commands": ["pnpm run compile"],
         "cwd": "{projectRoot}"
       }
     },
@@ -228,7 +217,7 @@ Add the following:
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["npm run test"],
+        "commands": ["pnpm run test"],
         "cwd": "{projectRoot}"
       }
     },
@@ -236,7 +225,7 @@ Add the following:
         "executor": "nx:run-commands",
         "outputs": ["{projectRoot}/huckleberry.vsix"],
         "options": {
-          "commands": ["npm run package"],  // Use the npm script defined in package.json
+          "commands": ["pnpm run package"],  // Use the pnpm script defined in package.json
           "cwd": "{projectRoot}"
         },
         "dependsOn": ["build"] // Ensure the extension is built before packaging
@@ -257,17 +246,13 @@ Add the following:
 Build the VS Code extension:
 
 ```bash
-nx build huckleberry-extension
-# or
-yarn nx build huckleberry-extension
+pnpm exec nx build huckleberry-extension
 ```
 
 Package the VS Code extension:
 
 ```bash
-nx package huckleberry-extension
-# or
-yarn nx package huckleberry-extension
+pnpm exec nx package huckleberry-extension
 ```
 
 This will create a huckleberry.vsix file in the apps/huckleberry-extension directory.
@@ -321,5 +306,12 @@ In the root nx.json add the following:
 - **Deployment**:
   - **VS Code Extension**: You'll package your extension using vsce and publish it to the VS Code Marketplace.
   - **React SPA**: You can deploy your demo-site to any hosting service that supports React (e.g., Netlify, Vercel, GitHub Pages).
+
+## Benefits of Using pnpm
+
+- **Disk space efficiency**: pnpm uses a content-addressable store to avoid duplicate packages.
+- **Strict dependency resolution**: Prevents accessing packages that aren't explicitly declared as dependencies.
+- **Faster installation**: pnpm is typically faster than npm and yarn for large monorepos.
+- **Built-in support for monorepos**: Works well with the Nx workspace structure.
 
 This setup provides a solid foundation for building your VS Code extension and its accompanying website within a single, organized repository.
