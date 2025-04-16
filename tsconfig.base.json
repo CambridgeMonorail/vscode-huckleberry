@@ -8,13 +8,23 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2022",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": ["es2022", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@huckleberry/shared/*": ["shared/*"],
+      "@huckleberry/demo-site/*": ["demo-site/src/*"],
+      "@huckleberry/extension/*": ["apps/huckleberry-extension/src/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
