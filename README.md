@@ -107,7 +107,7 @@ vscode-huckleberry/
 
 ## Roadmap
 
-### Phase 1 (Current)
+### Phase 1 (Current) - IN PROGRESS
 
 - Core task management functionality
 - File-based task persistence
