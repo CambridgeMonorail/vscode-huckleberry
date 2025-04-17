@@ -3,7 +3,14 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "build:extension": "nx build huckleberry-extension",
+    "watch:extension": "nx build huckleberry-extension --watch",
+    "package:extension": "cd apps/huckleberry-extension && npx vsce package --no-dependencies",
+    "build:package:extension": "pnpm run build:extension && pnpm run package:extension",
+    "test:extension": "nx test huckleberry-extension",
+    "serve:demo": "nx serve demo-site",
+    "clean:extension": "nx reset && rm -rf apps/huckleberry-extension/dist"
   },
   "private": true,
   "dependencies": {

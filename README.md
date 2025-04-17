@@ -39,7 +39,7 @@ Powered by the VS Code Language Model API and Copilot Chat integration, Hucklebe
 Once released, installation will be as simple as:
 
 ```
-ext install huckleberry.taskmaster
+ext install huckleberry.taskmanager
 ```
 
 ### Prerequisites
@@ -52,12 +52,12 @@ ext install huckleberry.taskmaster
 After installation:
 
 1. Open the Copilot Chat panel in VS Code
-2. Start a conversation with the Task Manager by typing `@taskmaster`
+2. Start a conversation with the Task Manager by typing `@taskmanager`
 3. Try commands like:
-   - `@taskmaster Initialize task management for this project`
-   - `@taskmaster Parse PRD.md and generate tasks`
-   - `@taskmaster What's my next task?`
-   - `@taskmaster Mark TASK-001 as complete`
+   - `@taskmanager Initialize task management for this project`
+   - `@taskmanager Parse PRD.md and generate tasks`
+   - `@taskmanager What's my next task?`
+   - `@taskmanager Mark TASK-001 as complete`
 
 ## How It Works
 

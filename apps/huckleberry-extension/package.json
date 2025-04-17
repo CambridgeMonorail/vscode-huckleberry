@@ -2,10 +2,14 @@
   "name": "huckleberry-extension",
   "displayName": "Huckleberry Task Manager",
   "version": "0.1.0",
-  "description": "A VS Code extension that helps manage and track tasks using LLM capabilities",
+  "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
   "publisher": "vscode-huckleberry",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CambridgeMonorail/vscode-huckleberry.git"
+  },
   "main": "./dist/extension.js",
-  "icon": "icon/icon.png",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.93.0",
     "node": "^22.0.0"
@@ -13,25 +17,26 @@
   "categories": [
     "Other"
   ],
+  "tags": [
+    "chat-participant"
+  ],
   "activationEvents": [
     "onStartupFinished",
-    "onChatParticipant:huckleberry-extension.taskmaster"
+    "onChatParticipant:huckleberry-extension.taskmanager"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "huckleberry-extension.helloWorld",
-        "title": "Hello World from Huckleberry"
-      },
-      {
         "command": "huckleberry-extension.manageTasks",
-        "title": "Huckleberry: Manage Tasks"
+        "title": "Huckleberry: Manage Tasks",
+        "category": "Huckleberry",
+        "description": "Open the Huckleberry task management interface"
       }
     ],
     "chatParticipants": [
       {
-        "id": "huckleberry-extension.taskmaster",
-        "name": "Task Manager",
+        "id": "huckleberry-extension.taskmanager",
+        "name": "Huckleberry",
         "description": "An assistant that helps manage tasks and project requirements",
         "isSticky": false,
         "commands": [
@@ -39,47 +44,36 @@
             "name": "manageTasks",
             "description": "Show the task management interface"
           }
-        ],
-        "requiredWorkspaceCapabilities": {
-          "requiresWorkspace": true
-        },
-        "supportedFileExtension": [
-          "md",
-          "json",
-          "txt"
-        ],
-        "followupSupportLevel": "always",
-        "helpTextTitle": "Huckleberry Task Manager",
-        "helpText": "I can help you manage your tasks and project requirements. Try asking me to:\n- List all tasks\n- Create a new task\n- Update task status\n- Find tasks by priority"
+        ]
       }
     ],
     "configuration": {
       "title": "Huckleberry Task Manager",
       "properties": {
-        "huckleberry.taskMaster.defaultTasksLocation": {
+        "huckleberry.taskmanager.defaultTasksLocation": {
           "type": "string",
           "default": "tasks",
           "description": "Default location for task files (relative to workspace root)"
         },
-        "huckleberry.taskMaster.taskFileTemplate": {
+        "huckleberry.taskmanager.taskFileTemplate": {
           "type": "string",
           "enum": ["markdown", "json"],
           "default": "markdown",
           "description": "Template format to use when creating new task files"
         },
-        "huckleberry.taskMaster.defaultTaskPriority": {
+        "huckleberry.taskmanager.defaultTaskPriority": {
           "type": "string",
           "enum": ["low", "medium", "high", "critical"],
           "default": "medium",
           "description": "Default priority for new tasks when unspecified"
         },
-        "huckleberry.taskMaster.defaultDueDate": {
+        "huckleberry.taskmanager.defaultDueDate": {
           "type": "string",
           "enum": ["none", "tomorrow", "nextWeek", "twoWeeks", "custom"],
           "default": "none",
           "description": "Default due date setting for new tasks"
         },
-        "huckleberry.taskMaster.customDueDateDays": {
+        "huckleberry.taskmanager.customDueDateDays": {
           "type": "number",
           "default": 7,
           "description": "Number of days for custom due date setting (when defaultDueDate is set to 'custom')"

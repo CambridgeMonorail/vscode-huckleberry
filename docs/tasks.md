@@ -55,7 +55,7 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
 - [x] Configure extension package.json with proper:
   - [x] Name, displayName, and description
   - [x] Version and VS Code engine compatibility (specify "engines": {"vscode": "^1.93.0", "node": "^22.0.0"})
-  - [x] Activation events (e.g., "onStartupFinished" or "onChatParticipant:yourpublisher.taskmaster")
+  - [x] Activation events (e.g., "onStartupFinished" or "onChatParticipant:yourpublisher.taskmanager")
   - [x] Commands contribution
   - [x] Build/test/package scripts
   - [x] Required devDependencies

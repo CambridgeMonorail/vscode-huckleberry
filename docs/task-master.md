@@ -139,11 +139,11 @@ When working with tasks, the Task Manager recognizes and handles the following p
 
 This extension contributes the following settings:
 
-- `huckleberry.taskMaster.defaultTasksLocation`: Default location for task files (relative to workspace root)
-- `huckleberry.taskMaster.taskFileTemplate`: Template format to use when creating new task files (markdown or json)
-- `huckleberry.taskMaster.defaultTaskPriority`: Default priority for new tasks when unspecified
-- `huckleberry.taskMaster.defaultDueDate`: Default due date setting for new tasks
-- `huckleberry.taskMaster.customDueDateDays`: Number of days for custom due date setting
+- `huckleberry.taskmanager.defaultTasksLocation`: Default location for task files (relative to workspace root)
+- `huckleberry.taskmanager.taskFileTemplate`: Template format to use when creating new task files (markdown or json)
+- `huckleberry.taskmanager.defaultTaskPriority`: Default priority for new tasks when unspecified
+- `huckleberry.taskmanager.defaultDueDate`: Default due date setting for new tasks
+- `huckleberry.taskmanager.customDueDateDays`: Number of days for custom due date setting
 
 ## Future Enhancements
 

@@ -120,7 +120,7 @@ export interface MarkdownTaskItem {
 /**
  * Configuration options for the Task Manager
  */
-export interface TaskMasterConfig {
+export interface taskmanagerConfig {
   /**
    * Default location for task files
    */
