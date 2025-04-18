@@ -27,10 +27,18 @@
   "contributes": {
     "commands": [
       {
+        "command": "huckleberry-extension.helloWorld",
+        "title": "Huckleberry: Hello World"
+      },
+      {
         "command": "huckleberry-extension.manageTasks",
         "title": "Huckleberry: Manage Tasks",
         "category": "Huckleberry",
         "description": "Open the Huckleberry task management interface"
+      },
+      {
+        "command": "huckleberry-extension.checkCopilotAgentMode",
+        "title": "Huckleberry: Check Copilot Agent Mode"
       }
     ],
     "chatParticipants": [

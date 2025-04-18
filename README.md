@@ -74,12 +74,32 @@ ext install huckleberry.taskmanager
 After installation:
 
 1. Open the Copilot Chat panel in VS Code
-2. Start a conversation with the Task Manager by typing `@taskmanager`
+2. Start a conversation with the Task Manager by typing `@Huckleberry`
 3. Try commands like:
-   - `@taskmanager Initialize task management for this project`
-   - `@taskmanager Parse PRD.md and generate tasks`
-   - `@taskmanager What's my next task?`
-   - `@taskmanager Mark TASK-001 as complete`
+
+```
+# Project setup
+@Huckleberry Initialize task management for this project
+
+# Creating tasks
+@Huckleberry Create a task to implement user authentication
+@Huckleberry Create a high priority task to fix security vulnerability
+
+# Finding TODOs in code
+@Huckleberry Scan for TODOs in the codebase
+@Huckleberry Scan for TODOs in **/*.ts
+
+# Task management
+@Huckleberry What tasks are high priority?
+@Huckleberry List all tasks
+@Huckleberry Mark task TASK-001 as complete
+@Huckleberry Mark task TASK-002 as high priority
+
+# Requirements processing
+@Huckleberry Parse requirements.md and create tasks
+```
+
+You can also access Huckleberry from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) by typing "Huckleberry: Manage Tasks".
 
 ## How It Works
 
@@ -118,14 +138,24 @@ For detailed setup instructions, see [workspace setup documentation](./docs/work
 ```
 vscode-huckleberry/
 ├─ apps/
-│  ├─ huckleberry-extension/  # VS Code extension
-│  └─ demo-site/              # React demo site
-├─ docs/
-│  ├─ implementation-guide.md # Technical implementation guide
-│  └─ workspace-setup.md      # Workspace setup instructions
-└─ assets/
-   └─ images/                 # Project logos and images
+│  ├─ huckleberry-extension/  # VS Code extension (TypeScript)
+│  └─ huckleberry-docs/       # Documentation site (Docusaurus)
+├─ assets/
+│  └─ images/                 # Project logos and assets
+└─ docs/
+   ├─ implementation-guide.md # Technical implementation details
+   ├─ task-master.md          # Task Manager documentation
+   ├─ tasks.md                # Project task tracking
+   ├─ workspace-setup.md      # Setup instructions
+   └─ debug-setup.md          # Debugging configuration
 ```
+
+The project is organized as an Nx monorepo with the following components:
+
+* **huckleberry-extension**: The core VS Code extension implementing the Task Manager chat participant and AI integration
+* **huckleberry-docs**: Documentation site built with Docusaurus
+* **assets**: Shared images and design resources used across the project
+* **docs**: Project-level documentation and guides
 
 ## Roadmap
 

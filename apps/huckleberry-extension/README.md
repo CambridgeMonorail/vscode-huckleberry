@@ -41,8 +41,13 @@ Try these commands in the VS Code chat panel:
 ```
 @Huckleberry Initialize task tracking for this project
 @Huckleberry Create a task to implement user authentication
+@Huckleberry Create a high priority task to fix security vulnerability
+@Huckleberry Scan for TODOs in the codebase
+@Huckleberry Scan for TODOs in **/*.ts
 @Huckleberry What tasks are high priority?
+@Huckleberry List all tasks
 @Huckleberry Mark task TASK-123 as complete
+@Huckleberry Mark task TASK-123 as high priority
 @Huckleberry Parse requirements.md and create tasks
 ```
 
@@ -84,8 +89,13 @@ Interact with Huckleberry through the VS Code chat interface by addressing `@Huc
 |---------|-------------|
 | `@Huckleberry Initialize task tracking for this project` | Set up task tracking in the current workspace |
 | `@Huckleberry Create a task to implement user authentication` | Create a new task with the specified description |
+| `@Huckleberry Create a high priority task to fix security vulnerability` | Create a new high priority task |
+| `@Huckleberry Scan for TODOs in the codebase` | Scan the codebase for TODO comments |
+| `@Huckleberry Scan for TODOs in **/*.ts` | Scan TypeScript files for TODO comments |
 | `@Huckleberry What tasks are high priority?` | List all tasks with high priority |
+| `@Huckleberry List all tasks` | List all tasks in the workspace |
 | `@Huckleberry Mark task TASK-123 as complete` | Mark the specified task as completed |
+| `@Huckleberry Mark task TASK-123 as high priority` | Mark the specified task as high priority |
 | `@Huckleberry Parse requirements.md and create tasks` | Extract tasks from a requirements document |
 
 You can also start a conversation with Huckleberry by selecting it from the chat participants in the VS Code chat panel.

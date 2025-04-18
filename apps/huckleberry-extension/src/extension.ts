@@ -5,6 +5,7 @@ import { MarkDoneTool } from './tools/MarkDoneTool';
 import { ToolManager } from './services/toolManager';
 import { SYSTEM_PROMPT } from './config';
 import { showInfo } from './utils/uiHelpers';
+import { recommendAgentMode, detectCopilotMode } from './utils/copilotHelper';
 import {
   handleInitializeTaskTracking,
   handleCreateTaskRequest,
@@ -12,7 +13,8 @@ import {
   handleMarkTaskDoneRequest,
   handleParseRequirementsRequest,
   handleReadTasksRequest,
-  handleChangeTaskPriorityRequest
+  handleChangeTaskPriorityRequest,
+  handleScanTodosRequest
 } from './handlers/taskHandlers';
 
 /**
@@ -47,6 +49,7 @@ async function handleChatRequest(
     const mediumPriorityTaskPattern = /(create|add) (a )?(medium) (priority )?task to (.+)/i;
     const lowPriorityTaskPattern = /(create|add) (a )?(low) (priority )?task to (.+)/i;
     const genericTaskPattern = /(create|add) (a )?task to (.+)/i;
+    const scanTodosPattern = /(scan|find|extract|create tasks from)(?:\s+for)?\s+todos(?:\s+in\s+(.+))?/i;
     
     let taskPriority: string | null = null;
     let descriptionMatch: RegExpMatchArray | null = null;
@@ -87,6 +90,12 @@ async function handleChatRequest(
         await handleCreateTaskRequest(request.prompt, stream, toolManager, null);
         return;
       }
+    } else if (scanTodosPattern.test(request.prompt)) {
+      const matches = request.prompt.match(scanTodosPattern);
+      console.log('[DEBUG] Detected TODO scanning request');
+      // We've already imported the handleScanTodosRequest handler
+      await handleScanTodosRequest(request.prompt, stream, toolManager);
+      return;
     }
     
     // Handle other request patterns directly without using the language model
@@ -176,6 +185,7 @@ Why don't you try one of these commands:
 - Initialize task tracking for this project
 - Create a task to [description]
 - Create a high priority task to [description]
+- Scan for TODOs in the codebase
 - What tasks are high priority?
 - Mark task TASK-123 as complete
 - Mark task TASK-123 as high priority
@@ -215,6 +225,7 @@ Try askin' me for:
 - Initialize task tracking for this project
 - Create a task to [description]
 - Create a high priority task to [description]
+- Scan for TODOs in the codebase
 - What tasks are high priority?
 - Mark task TASK-123 as complete
 - Mark task TASK-123 as high priority
@@ -232,10 +243,80 @@ function manageTasks(): void {
 }
 
 /**
+ * Command handler for checking Copilot agent mode
+ */
+async function checkCopilotAgentMode(): Promise<void> {
+  try {
+    const modeInfo = await detectCopilotMode();
+    
+    if (!modeInfo.isAvailable) {
+      vscode.window.showWarningMessage(
+        'GitHub Copilot does not appear to be installed. Huckleberry works best with GitHub Copilot.',
+        'Install Copilot'
+      ).then(selection => {
+        if (selection === 'Install Copilot') {
+          vscode.commands.executeCommand(
+            'workbench.extensions.search',
+            'GitHub.copilot'
+          );
+        }
+      });
+      return;
+    }
+    
+    if (!modeInfo.isChatAvailable) {
+      vscode.window.showWarningMessage(
+        'GitHub Copilot Chat does not appear to be installed. Huckleberry works best with Copilot Chat.',
+        'Install Copilot Chat'
+      ).then(selection => {
+        if (selection === 'Install Copilot Chat') {
+          vscode.commands.executeCommand(
+            'workbench.extensions.search',
+            'GitHub.copilot-chat'
+          );
+        }
+      });
+      return;
+    }
+    
+    if (modeInfo.isAgentModeEnabled) {
+      vscode.window.showInformationMessage(
+        'GitHub Copilot agent mode is enabled. Huckleberry is optimized for this configuration!',
+        'Learn More'
+      ).then(selection => {
+        if (selection === 'Learn More') {
+          vscode.env.openExternal(
+            vscode.Uri.parse('https://code.visualstudio.com/docs/editor/github-copilot#_agent-mode')
+          );
+        }
+      });
+    } else {
+      // Show recommendation notification
+      recommendAgentMode(true);
+    }
+  } catch (error) {
+    console.error('Error checking Copilot agent mode:', error);
+    vscode.window.showErrorMessage(`Failed to check Copilot configuration: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Activates the extension
  */
 export function activate(context: vscode.ExtensionContext): void {
   console.log('Huckleberry extension is now active!');
+
+  // Check Copilot mode and recommend agent mode if needed
+  // This runs asynchronously so we don't block extension activation
+  detectCopilotMode().then(modeInfo => {
+    console.log('Copilot mode detected:', modeInfo);
+    
+    if (modeInfo.isAvailable && !modeInfo.isAgentModeEnabled) {
+      recommendAgentMode();
+    }
+  }).catch(error => {
+    console.error('Error checking Copilot mode:', error);
+  });
 
   // Create and register tools
   const toolManager = new ToolManager();
@@ -253,6 +334,8 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 
   const manageTasksDisposable = vscode.commands.registerCommand('huckleberry-extension.manageTasks', manageTasks);
+
+  const checkCopilotAgentModeDisposable = vscode.commands.registerCommand('huckleberry-extension.checkCopilotAgentMode', checkCopilotAgentMode);
 
   // Register chat participant
   console.log('Registering Huckleberry chat participant...');
@@ -278,6 +361,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Add all disposables to the context subscriptions
   context.subscriptions.push(helloWorldDisposable);
   context.subscriptions.push(manageTasksDisposable);
+  context.subscriptions.push(checkCopilotAgentModeDisposable);
   context.subscriptions.push(taskmanagerDisposable);
 }
 

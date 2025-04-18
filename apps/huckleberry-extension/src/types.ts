@@ -67,9 +67,24 @@ export interface Task {
   createdAt?: string;
   
   /**
-   * Last modification date of the task (ISO string format)
+   * Completion date of the task (ISO string format)
    */
-  updatedAt?: string;
+  completedAt?: string;
+  
+  /**
+   * Source information for tasks created from code (like TODOs)
+   */
+  source?: {
+    /**
+     * Relative file path where the task originated
+     */
+    file: string;
+    
+    /**
+     * Line number in the file
+     */
+    line: number;
+  };
 }
 
 /**
