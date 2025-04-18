@@ -9,6 +9,7 @@ export { handleCreateTaskRequest } from './createTaskHandler';
 export { handleScanTodosRequest } from './todoScanHandler';
 export { handleMarkTaskDoneRequest, handleChangeTaskPriorityRequest } from './statusHandler';
 export { handlePriorityTaskQuery, handleReadTasksRequest } from './queryHandler';
+export { handleParseRequirementsRequest } from './requirementsHandler';
 
 // Re-export utility functions that might be useful for other modules
 export { 

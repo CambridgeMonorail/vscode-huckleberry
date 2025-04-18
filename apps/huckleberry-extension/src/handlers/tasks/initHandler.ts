@@ -27,6 +27,33 @@ export async function handleInitializeTaskTracking(
   await streamMarkdown(stream, '📋 **Initializing task tracking for this project**');
   
   try {
+    // Check for workspace availability before proceeding
+    if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+      await streamMarkdown(stream, `
+⚠️ **No workspace is currently open**
+
+Huckleberry Task Manager requires an open workspace or folder to initialize task tracking. 
+
+Please:
+1. Open a folder or workspace using File > Open Folder
+2. Then try initializing task tracking again
+
+You can use the button below to open a folder.
+      `);
+      
+      // Show notification with action button
+      vscode.window.showInformationMessage(
+        'Huckleberry Task Manager requires an open workspace to initialize task tracking.',
+        'Open Folder'
+      ).then(selection => {
+        if (selection === 'Open Folder') {
+          vscode.commands.executeCommand('workbench.action.files.openFolder');
+        }
+      });
+      
+      return;
+    }
+
     const { workspaceFolder, tasksDir, tasksJsonPath } = await getWorkspacePaths();
     console.log('📁 Tasks directory:', tasksDir);
     

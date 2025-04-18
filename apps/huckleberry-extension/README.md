@@ -136,7 +136,9 @@ For more information about development, please see the [project repository](http
 
 Huckleberry Task Manager stores all task data locally in your workspace and does not send task information to external servers.
 
-## Known Issues
+## Known Limitations
+
+- **VS Code Limitation:** If you open a folder after starting VS Code (i.e., you start with no folder/workspace and then open one), you must reload the window (`Developer: Reload Window` or use the reload prompt) for Huckleberry chat features to work. This is due to a limitation in the VS Code extension host: chat participants are only registered at activation time. Reloading the window ensures the extension is properly activated in the new workspace context.
 
 - This extension is currently in early development (alpha status)
 - Some features remain under active development

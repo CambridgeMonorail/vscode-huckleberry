@@ -22,6 +22,7 @@
   ],
   "activationEvents": [
     "onStartupFinished",
+    "onChatParticipant:huckleberry",
     "onChatParticipant:huckleberry-extension.taskmanager"
   ],
   "contributes": {
@@ -39,13 +40,37 @@
       {
         "command": "huckleberry-extension.checkCopilotAgentMode",
         "title": "Huckleberry: Check Copilot Agent Mode"
+      },
+      {
+        "command": "huckleberry-extension.testChat",
+        "title": "Huckleberry: Test Chat Integration",
+        "category": "Huckleberry",
+        "description": "Test the chat integration and diagnose potential issues"
+      },
+      {
+        "command": "huckleberry-extension.forceRefreshChatParticipants",
+        "title": "Huckleberry: Refresh Chat Participants",
+        "category": "Huckleberry",
+        "description": "Force refresh of chat participants if they stop responding"
       }
     ],
     "chatParticipants": [
       {
-        "id": "huckleberry-extension.taskmanager",
+        "id": "huckleberry",
         "name": "Huckleberry",
         "description": "An assistant that helps manage tasks and project requirements",
+        "isSticky": false,
+        "commands": [
+          {
+            "name": "manageTasks",
+            "description": "Show the task management interface"
+          }
+        ]
+      },
+      {
+        "id": "huckleberry-extension.taskmanager",
+        "name": "Huckleberry (Legacy)",
+        "description": "An assistant that helps manage tasks and project requirements (Legacy ID)",
         "isSticky": false,
         "commands": [
           {
@@ -65,19 +90,33 @@
         },
         "huckleberry.taskmanager.taskFileTemplate": {
           "type": "string",
-          "enum": ["markdown", "json"],
+          "enum": [
+            "markdown",
+            "json"
+          ],
           "default": "markdown",
           "description": "Template format to use when creating new task files"
         },
         "huckleberry.taskmanager.defaultTaskPriority": {
           "type": "string",
-          "enum": ["low", "medium", "high", "critical"],
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
           "default": "medium",
           "description": "Default priority for new tasks when unspecified"
         },
         "huckleberry.taskmanager.defaultDueDate": {
           "type": "string",
-          "enum": ["none", "tomorrow", "nextWeek", "twoWeeks", "custom"],
+          "enum": [
+            "none",
+            "tomorrow",
+            "nextWeek",
+            "twoWeeks",
+            "custom"
+          ],
           "default": "none",
           "description": "Default due date setting for new tasks"
         },
@@ -95,12 +134,14 @@
     "watch": "tsc -watch -p ./",
     "build": "tsc -p ./",
     "lint": "eslint src --ext ts",
-    "package": "vsce package",
+    "package": "npx @vscode/vsce package --no-dependencies",
     "test": "node ./dist/test/runTest.js"
   },
   "devDependencies": {
+    "@types/node": "^22.9.0",
     "@types/vscode": "^1.93.0",
-    "vscode": "1.1.37"
+    "@vscode/vsce": "^3.3.2",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@vscode/chat-extension-utils": "0.0.0-alpha.5"

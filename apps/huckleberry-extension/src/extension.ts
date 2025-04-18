@@ -1,239 +1,29 @@
+/**
+ * Main entry point for the Huckleberry extension
+ */
 import * as vscode from 'vscode';
 import { ReadFileTool } from './tools/ReadFileTool';
 import { WriteFileTool } from './tools/WriteFileTool';
 import { MarkDoneTool } from './tools/MarkDoneTool';
 import { ToolManager } from './services/toolManager';
-import { SYSTEM_PROMPT } from './config';
+import { ChatService } from './services/chatService';
 import { showInfo } from './utils/uiHelpers';
+import { isWorkspaceAvailable, notifyNoWorkspace } from './handlers/chatHandler';
 import { recommendAgentMode, detectCopilotMode } from './utils/copilotHelper';
-import {
-  handleInitializeTaskTracking,
-  handleCreateTaskRequest,
-  handlePriorityTaskQuery,
-  handleMarkTaskDoneRequest,
-  handleParseRequirementsRequest,
-  handleReadTasksRequest,
-  handleChangeTaskPriorityRequest,
-  handleScanTodosRequest
-} from './handlers/taskHandlers';
+import { initDebugChannel, logWithChannel, LogLevel, dumpState } from './utils/debugUtils';
 
 /**
- * Interface for our extended chat request with command support
+ * State of the extension including key services
  */
-interface Command {
-  name: string;
-  args?: Record<string, any>;
+interface ExtensionState {
+  chatService: ChatService;
+  toolManager: ToolManager;
 }
 
 /**
- * Handle chat requests for Huckleberry
+ * Global extension state
  */
-async function handleChatRequest(
-  request: vscode.ChatRequest, 
-  context: vscode.ChatContext, 
-  stream: vscode.ChatResponseStream,
-  token: vscode.CancellationToken,
-  toolManager: ToolManager
-): Promise<void> {
-  try {
-    console.log(`Huckleberry received request: ${request.prompt}`);
-
-    // Debug: Log context.history before mapping
-    console.log('[DEBUG] context.history length:', context?.history?.length);
-    
-    // Early pattern detection to avoid unnecessary model calls
-    const lowerPrompt = request.prompt.toLowerCase();
-    
-    // More comprehensive pattern detection for task creation with priority modifiers
-    const highPriorityTaskPattern = /(create|add) (a )?(high|critical) (priority )?task to (.+)/i;
-    const mediumPriorityTaskPattern = /(create|add) (a )?(medium) (priority )?task to (.+)/i;
-    const lowPriorityTaskPattern = /(create|add) (a )?(low) (priority )?task to (.+)/i;
-    const genericTaskPattern = /(create|add) (a )?task to (.+)/i;
-    const scanTodosPattern = /(scan|find|extract|create tasks from)(?:\s+for)?\s+todos(?:\s+in\s+(.+))?/i;
-    
-    let taskPriority: string | null = null;
-    let descriptionMatch: RegExpMatchArray | null = null;
-    
-    // Try to match all patterns in order of specificity
-    if (highPriorityTaskPattern.test(request.prompt)) {
-      const matches = request.prompt.match(highPriorityTaskPattern);
-      if (matches && matches.length >= 6) {
-        taskPriority = matches[3] === 'critical' ? 'critical' : 'high';
-        descriptionMatch = matches;
-        console.log(`[DEBUG] Detected ${taskPriority} priority task creation request`);
-        await handleCreateTaskRequest(request.prompt, stream, toolManager, taskPriority);
-        return;
-      }
-    } else if (mediumPriorityTaskPattern.test(request.prompt)) {
-      const matches = request.prompt.match(mediumPriorityTaskPattern);
-      if (matches && matches.length >= 6) {
-        taskPriority = 'medium';
-        descriptionMatch = matches;
-        console.log(`[DEBUG] Detected ${taskPriority} priority task creation request`);
-        await handleCreateTaskRequest(request.prompt, stream, toolManager, taskPriority);
-        return;
-      }
-    } else if (lowPriorityTaskPattern.test(request.prompt)) {
-      const matches = request.prompt.match(lowPriorityTaskPattern);
-      if (matches && matches.length >= 6) {
-        taskPriority = 'low';
-        descriptionMatch = matches;
-        console.log(`[DEBUG] Detected ${taskPriority} priority task creation request`);
-        await handleCreateTaskRequest(request.prompt, stream, toolManager, taskPriority);
-        return;
-      }
-    } else if (genericTaskPattern.test(request.prompt)) {
-      const matches = request.prompt.match(genericTaskPattern);
-      if (matches && matches.length >= 4) {
-        // Use default priority
-        console.log('[DEBUG] Detected generic task creation request');
-        await handleCreateTaskRequest(request.prompt, stream, toolManager, null);
-        return;
-      }
-    } else if (scanTodosPattern.test(request.prompt)) {
-      const matches = request.prompt.match(scanTodosPattern);
-      console.log('[DEBUG] Detected TODO scanning request');
-      // We've already imported the handleScanTodosRequest handler
-      await handleScanTodosRequest(request.prompt, stream, toolManager);
-      return;
-    }
-    
-    // Handle other request patterns directly without using the language model
-    if (lowerPrompt.includes('initialize task tracking')) {
-      await handleInitializeTaskTracking(stream, toolManager);
-      return;
-    } else if (lowerPrompt.match(/what tasks are (\w+) priority/)) {
-      await handlePriorityTaskQuery(request.prompt, stream, toolManager);
-      return;
-    } else if (lowerPrompt.match(/mark task .+ as complete/)) {
-      await handleMarkTaskDoneRequest(request.prompt, stream, toolManager);
-      return;
-    } else if (lowerPrompt.match(/mark task .+ as (high|medium|low|critical) priority/) || 
-        lowerPrompt.match(/change .+ priority .+ to (high|medium|low|critical)/)) {
-      await handleChangeTaskPriorityRequest(request.prompt, stream, toolManager);
-      return;
-    } else if (lowerPrompt.match(/parse .+ and create tasks/)) {
-      await handleParseRequirementsRequest(request.prompt, stream, toolManager);
-      return;
-    } else if (lowerPrompt.includes('read') || lowerPrompt.includes('show') || 
-        lowerPrompt.includes('list') || lowerPrompt.includes('get')) {
-      await handleReadTasksRequest(request.prompt, stream, toolManager);
-      return;
-    }
-    
-    // Only prepare history and call the language model for unknown request patterns
-    try {
-      // Safely initialize history array with proper type checking
-      const historyTurns = Array.isArray(context?.history) ? context.history : [];
-      console.log(`[DEBUG] Processing ${historyTurns.length} history turns`);
-      
-      // Process history turns with proper type checking for each property
-      const history = historyTurns
-        .filter((turn): turn is vscode.ChatResponseTurn => {
-          // Only include turns that have a valid response array
-          const hasResponse = turn && 
-            typeof turn === 'object' && 
-            'response' in turn && 
-            Array.isArray(turn.response);
-            
-          if (!hasResponse && turn && 'participant' in turn) {
-            // Log turns that were filtered out but are recognized as chat turns
-            console.log(`[DEBUG] Skipping turn with participant '${turn.participant}' - missing valid response array`);
-          }
-          
-          return hasResponse;
-        })
-        .map(turn => {
-          // Safe extraction of response text with proper error handling
-          const text = turn.response
-            .map(part => typeof part.toString === 'function' ? part.toString() : String(part))
-            .join("");
-            
-          return new vscode.LanguageModelChatMessage(
-            turn.participant === 'user' ? vscode.LanguageModelChatMessageRole.User : vscode.LanguageModelChatMessageRole.Assistant,
-            text
-          );
-        });
-      
-      console.log(`[DEBUG] Processed ${history.length} valid history turns`);
-
-      // Create message sequence - inject system prompt as first assistant message
-      const userMessage = new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.User, request.prompt);
-      const systemContextMessage = new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.Assistant, SYSTEM_PROMPT);
-      
-      // Only include a reasonable number of history messages to avoid model context limitations
-      const limitedHistory = history.slice(-5); // Only use the most recent 5 exchanges
-      const messages = [systemContextMessage, ...limitedHistory, userMessage];
-
-      try {
-        // Get response from language model with simple options object
-        const response = await request.model.sendRequest(messages, {}, token);
-
-        // Stream the model's response for general queries
-        for await (const chunk of response.text) {
-          await stream.markdown(chunk);
-        }
-      } catch (modelError) {
-        console.error('Error using language model:', modelError);
-        
-        // Provide helpful response even when model fails, with Doc Holliday flair
-        await stream.markdown(`
-I'm your huckleberry. Seems my memory's a bit foggy. Let's get back to business.
-
-Why don't you try one of these commands:
-
-- Initialize task tracking for this project
-- Create a task to [description]
-- Create a high priority task to [description]
-- Scan for TODOs in the codebase
-- What tasks are high priority?
-- Mark task TASK-123 as complete
-- Mark task TASK-123 as high priority
-- Parse requirements.md and create tasks
-
-In vino veritas. In tasks, productivity.
-        `);
-      }
-    } catch (historyError) {
-      console.error('Error processing chat history:', historyError);
-      
-      // Fall back to direct handling without history context
-      await handleFallbackResponse(stream);
-    }
-  } catch (error) {
-    console.error('Huckleberry error:', error);
-    await stream.markdown(`
-**Well now, I seem to be having a bad day.**
-
-${error instanceof Error ? error.message : String(error)}
-
-I'm not quite as steady as I used to be. Try again, darlin'.
-    `);
-  }
-}
-
-/**
- * Provides a fallback response when other mechanisms fail
- * @param stream The chat response stream
- */
-async function handleFallbackResponse(stream: vscode.ChatResponseStream): Promise<void> {
-  await stream.markdown(`
-I'm your huckleberry. Let me help you manage those tasks of yours.
-
-Try askin' me for:
-
-- Initialize task tracking for this project
-- Create a task to [description]
-- Create a high priority task to [description]
-- Scan for TODOs in the codebase
-- What tasks are high priority?
-- Mark task TASK-123 as complete
-- Mark task TASK-123 as high priority
-- Parse requirements.md and create tasks
-
-I've got two guns, one for each of your task categories.
-  `);
-}
+let extensionState: ExtensionState | null = null;
 
 /**
  * Command handler for the manageTasks command
@@ -295,79 +85,281 @@ async function checkCopilotAgentMode(): Promise<void> {
       recommendAgentMode(true);
     }
   } catch (error) {
-    console.error('Error checking Copilot agent mode:', error);
+    logWithChannel(LogLevel.ERROR, 'Error checking Copilot agent mode:', error);
     vscode.window.showErrorMessage(`Failed to check Copilot configuration: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
+
+/**
+ * Command handler for directly testing Huckleberry chat integration
+ */
+async function testHuckleberryChat(): Promise<void> {
+  try {
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+
+    logWithChannel(LogLevel.INFO, '🔍 Testing Huckleberry chat integration');
+    
+    // Check the VS Code chat API
+    const chatExtensions = vscode.extensions.all.filter(ext => 
+      ext.packageJSON?.contributes?.chatParticipants || 
+      ext.packageJSON?.activationEvents?.some((event: string) => event.startsWith('onChatParticipant:'))
+    );
+    
+    logWithChannel(LogLevel.DEBUG, `Found ${chatExtensions.length} extensions with chat participants:`);
+    chatExtensions.forEach(ext => {
+      const participants = ext.packageJSON?.contributes?.chatParticipants || [];
+      logWithChannel(LogLevel.DEBUG, `- ${ext.id}: ${participants.map((p: any) => p.id).join(', ')}`);
+    });
+    
+    // Dump current extension state
+    dumpState(extensionState.chatService.context, {
+      chatServiceActive: extensionState.chatService.isActive,
+      lastActive: extensionState.chatService.lastActive ? 
+                  new Date(extensionState.chatService.lastActive).toISOString() : 'never',
+      workspaceAvailable: isWorkspaceAvailable()
+    });
+    
+    // Force a refresh of chat participants
+    await extensionState.chatService.forceRefresh();
+    
+    // Log that the test is complete with instructions for the user
+    logWithChannel(LogLevel.INFO, '✅ Chat integration test complete');
+    
+    // Display success message
+    vscode.window.showInformationMessage(
+      'Huckleberry chat test executed. Check Debug panel for detailed information.',
+      'Open Debug Panel',
+      'Open Chat'
+    ).then(selection => {
+      if (selection === 'Open Debug Panel') {
+        vscode.commands.executeCommand('workbench.action.output.show', 'Huckleberry Debug');
+      } else if (selection === 'Open Chat') {
+        vscode.commands.executeCommand('workbench.action.chat.open', '@huckleberry');
+      }
+    });
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error during chat integration test:', error);
+    vscode.window.showErrorMessage(`Chat integration test failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for forcing a refresh of chat participants
+ */
+async function forceRefreshChatParticipants(): Promise<void> {
+  if (!extensionState) {
+    vscode.window.showErrorMessage('Extension not properly initialized');
+    return;
+  }
+
+  try {
+    await extensionState.chatService.forceRefresh();
+    
+    // Show the debug channel with details of the refresh
+    vscode.commands.executeCommand('workbench.action.output.show', 'Huckleberry Debug');
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error forcing chat participant refresh:', error);
+    vscode.window.showErrorMessage(`Failed to refresh chat participants: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Prompts the user to reload the window when a workspace is opened.
+ */
+function promptReloadOnWorkspaceOpen(): void {
+  vscode.workspace.onDidChangeWorkspaceFolders(e => {
+    if (e.added.length > 0) {
+      vscode.window.showInformationMessage(
+        'Huckleberry needs to reload the window to work after opening a folder. Reload now?',
+        'Reload Window'
+      ).then(selection => {
+        if (selection === 'Reload Window') {
+          vscode.commands.executeCommand('workbench.action.reloadWindow');
+        }
+      });
+    }
+  });
 }
 
 /**
  * Activates the extension
  */
 export function activate(context: vscode.ExtensionContext): void {
-  console.log('Huckleberry extension is now active!');
-
-  // Check Copilot mode and recommend agent mode if needed
-  // This runs asynchronously so we don't block extension activation
-  detectCopilotMode().then(modeInfo => {
-    console.log('Copilot mode detected:', modeInfo);
-    
-    if (modeInfo.isAvailable && !modeInfo.isAgentModeEnabled) {
-      recommendAgentMode();
-    }
-  }).catch(error => {
-    console.error('Error checking Copilot mode:', error);
-  });
-
-  // Create and register tools
-  const toolManager = new ToolManager();
-  const readFileTool = new ReadFileTool();
-  const writeFileTool = new WriteFileTool();
-  const markDoneTool = new MarkDoneTool();
+  // Initialize the debug channel
+  const debugChannel = initDebugChannel();
   
-  toolManager.registerTool(readFileTool);
-  toolManager.registerTool(writeFileTool);
-  toolManager.registerTool(markDoneTool);
+  logWithChannel(LogLevel.INFO, '🚀 Huckleberry extension activating');
 
-  // Register commands
-  const helloWorldDisposable = vscode.commands.registerCommand('huckleberry-extension.helloWorld', () => {
-    showInfo('Hello from Huckleberry!');
-  });
-
-  const manageTasksDisposable = vscode.commands.registerCommand('huckleberry-extension.manageTasks', manageTasks);
-
-  const checkCopilotAgentModeDisposable = vscode.commands.registerCommand('huckleberry-extension.checkCopilotAgentMode', checkCopilotAgentMode);
-
-  // Register chat participant
-  console.log('Registering Huckleberry chat participant...');
-  const taskmanagerDisposable = vscode.chat.createChatParticipant(
-    'huckleberry-extension.taskmanager',
-    async (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
-      console.log('🔵 Chat request received:', {
-        prompt: request.prompt,
-        contextLength: context.history.length
-      });
-
-      try {
-        await handleChatRequest(request, context, response, token, toolManager);
-        console.log('✅ Chat request handled successfully');
-      } catch (error) {
-        console.error('❌ Error handling chat request:', error);
-        throw error;
+  try {
+    // Check Copilot mode and recommend agent mode if needed
+    detectCopilotMode().then(modeInfo => {
+      logWithChannel(LogLevel.INFO, 'Copilot mode detected:', modeInfo);
+      
+      if (modeInfo.isAvailable && !modeInfo.isAgentModeEnabled) {
+        recommendAgentMode();
       }
-    }
-  );
-  console.log('Chat participant registered successfully');
+    }).catch(error => {
+      logWithChannel(LogLevel.ERROR, 'Error checking Copilot mode:', error);
+    });
 
-  // Add all disposables to the context subscriptions
-  context.subscriptions.push(helloWorldDisposable);
-  context.subscriptions.push(manageTasksDisposable);
-  context.subscriptions.push(checkCopilotAgentModeDisposable);
-  context.subscriptions.push(taskmanagerDisposable);
+    // Create and register tools
+    const toolManager = new ToolManager();
+    const readFileTool = new ReadFileTool();
+    const writeFileTool = new WriteFileTool();
+    const markDoneTool = new MarkDoneTool();
+    
+    toolManager.registerTool(readFileTool);
+    toolManager.registerTool(writeFileTool);
+    toolManager.registerTool(markDoneTool);
+
+    // Initialize chat service
+    const chatService = new ChatService(context, toolManager);
+
+    // Store extension state
+    extensionState = {
+      chatService,
+      toolManager
+    };
+    
+    // Register commands
+    const helloWorldDisposable = vscode.commands.registerCommand('huckleberry-extension.helloWorld', () => {
+      showInfo('Hello from Huckleberry!');
+      logWithChannel(LogLevel.DEBUG, 'Hello World command executed');
+    });
+
+    const manageTasksDisposable = vscode.commands.registerCommand('huckleberry-extension.manageTasks', () => {
+      // Check workspace availability before proceeding
+      if (!isWorkspaceAvailable()) {
+        notifyNoWorkspace();
+        return;
+      }
+      
+      manageTasks();
+    });
+
+    const checkCopilotAgentModeDisposable = vscode.commands.registerCommand(
+      'huckleberry-extension.checkCopilotAgentMode', 
+      checkCopilotAgentMode
+    );
+    
+    // Add the test chat command
+    const testChatDisposable = vscode.commands.registerCommand(
+      'huckleberry-extension.testChat', 
+      testHuckleberryChat
+    );
+    
+    // Add the force refresh command
+    const forceRefreshDisposable = vscode.commands.registerCommand(
+      'huckleberry-extension.forceRefreshChatParticipants', 
+      forceRefreshChatParticipants
+    );
+
+    // Register workspace change listener to detect when workspace folders are added/removed
+    const workspaceFoldersChangeDisposable = vscode.workspace.onDidChangeWorkspaceFolders(async e => {
+      const foldersAdded = e.added.length > 0;
+      const foldersRemoved = e.removed.length > 0;
+      
+      logWithChannel(LogLevel.INFO, 'Workspace folders changed', {
+        added: e.added.map(folder => folder.name),
+        removed: e.removed.map(folder => folder.name),
+        current: vscode.workspace.workspaceFolders?.map(folder => folder.name) || []
+      });
+      
+      if (foldersAdded || foldersRemoved) {
+        // Refresh chat participants to ensure they work with the new workspace state
+        logWithChannel(LogLevel.INFO, '🔄 Refreshing chat participants due to workspace change');
+        
+        try {
+          // Delay slightly to ensure VS Code's workspace state is fully updated
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await chatService.forceRefresh();
+          
+          // Show notification about task initialization if folders were added
+          if (foldersAdded && isWorkspaceAvailable()) {
+            vscode.window.showInformationMessage(
+              'Huckleberry Task Manager is now ready to use with your workspace.',
+              'Initialize Task Tracking'
+            ).then(selection => {
+              if (selection === 'Initialize Task Tracking') {
+                // Open chat with Huckleberry and pre-fill the initialize command
+                vscode.commands.executeCommand(
+                  'workbench.action.chat.open', 
+                  '@huckleberry Initialize task tracking for this project'
+                );
+              }
+            });
+          }
+        } catch (error) {
+          logWithChannel(LogLevel.ERROR, 'Failed to refresh chat participants after workspace change:', error);
+        }
+      }
+    });
+
+    // Register all commands and listeners
+    context.subscriptions.push(
+      helloWorldDisposable,
+      manageTasksDisposable,
+      checkCopilotAgentModeDisposable,
+      testChatDisposable,
+      forceRefreshDisposable,
+      workspaceFoldersChangeDisposable
+    );
+
+    // Register chat participants
+    const participantDisposables = chatService.registerAll();
+    participantDisposables.forEach(disposable => {
+      context.subscriptions.push(disposable);
+    });
+
+    // Display debug info about the current workspace
+    const workspaceInfo = {
+      folders: vscode.workspace.workspaceFolders?.map(folder => ({
+        name: folder.name,
+        path: folder.uri.fsPath
+      })) || [],
+      name: vscode.workspace.name,
+      available: isWorkspaceAvailable()
+    };
+    
+    logWithChannel(LogLevel.INFO, 'Workspace info at startup:', workspaceInfo);
+    
+    // Log activation success
+    logWithChannel(LogLevel.INFO, '✅ Huckleberry extension successfully activated');
+    console.log('Huckleberry extension is now active!');
+    
+    // Set a small delay to check if chat works after startup
+    setTimeout(() => {
+      // If chat service hasn't been active yet, schedule a refresh
+      if (!chatService.lastActive && isWorkspaceAvailable()) {
+        logWithChannel(LogLevel.INFO, 'Scheduling post-activation chat participant refresh');
+        chatService.forceRefresh().catch(err => {
+          logWithChannel(LogLevel.ERROR, 'Failed to refresh chat participants during delayed check:', err);
+        });
+      }
+    }, 10000); // Check 10 seconds after activation
+
+    // Prompt reload on workspace open
+    promptReloadOnWorkspaceOpen();
+  } catch (error) {
+    logWithChannel(LogLevel.CRITICAL, '❌ Failed to activate extension:', error);
+    vscode.window.showErrorMessage(
+      `Huckleberry extension failed to activate: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 }
 
 /**
  * Deactivates the extension
  */
 export function deactivate(): void {
-  // Clean up resources when the extension is deactivated
+  logWithChannel(LogLevel.INFO, '👋 Deactivating Huckleberry extension');
+  
+  if (extensionState) {
+    // Clean up any resources
+    extensionState.chatService.disposeAll();
+    extensionState = null;
+  }
 }
