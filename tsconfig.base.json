@@ -21,9 +21,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@huckleberry/shared/*": ["shared/*"],
-      "@huckleberry/demo-site/*": ["demo-site/src/*"],
-      "@huckleberry/extension/*": ["apps/huckleberry-extension/src/*"]
+      "@huckleberry/extension/*": ["apps/huckleberry-extension/src/*"],
+      "@huckleberry/shared/*": ["shared/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

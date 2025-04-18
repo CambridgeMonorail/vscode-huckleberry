@@ -90,6 +90,36 @@ Interact with Huckleberry through the VS Code chat interface by addressing `@Huc
 
 You can also start a conversation with Huckleberry by selecting it from the chat participants in the VS Code chat panel.
 
+## Why a VS Code Extension (Not Just an MCP Tool)?
+
+While GitHub Copilot can use Model Context Protocol (MCP) tools, Huckleberry is implemented as a full VS Code extension for several key reasons:
+
+1. **Deep VS Code Integration**: As a VS Code extension, Huckleberry can directly access the VS Code Chat API and Language Model API, allowing it to:
+   - Register as a first-class chat participant with `@Huckleberry` mention support
+   - Maintain conversation context across chat sessions
+   - Access the same language models used by GitHub Copilot
+
+2. **Enhanced Capabilities**: Rather than being just a tool that Copilot can call, Huckleberry:
+   - Can direct and guide the Copilot agent proactively
+   - Has full access to VS Code's extension APIs for UI integration
+   - Can maintain persistent state and configuration
+   - Can provide custom commands and UI elements
+
+3. **Security & Performance**: Running as a VS Code extension means:
+   - All task data stays local to your workspace
+   - No need for external MCP server setup or maintenance
+   - Direct access to workspace files without network overhead
+
+This architecture allows Huckleberry to provide a richer, more integrated task management experience while leveraging the power of GitHub Copilot's AI capabilities.
+
+## Privacy and Security
+
+All task management operations are performed locally within VS Code. When you interact with Huckleberry through chat:
+
+1. Your messages are processed by the GitHub Copilot service (similar to regular Copilot usage)
+2. File operations and task management are performed locally by the extension
+3. No task data is sent to external servers
+
 ## Keyboard Shortcuts
 
 No default keyboard shortcuts are assigned, but you can add your own through VS Code's keyboard shortcuts settings.
