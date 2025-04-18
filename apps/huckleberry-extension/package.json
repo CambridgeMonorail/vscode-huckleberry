@@ -3,7 +3,7 @@
   "displayName": "Huckleberry Task Manager",
   "version": "0.1.0",
   "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
-  "publisher": "vscode-huckleberry",
+  "publisher": "CambridgeMonorail",
   "repository": {
     "type": "git",
     "url": "https://github.com/CambridgeMonorail/vscode-huckleberry.git"
@@ -23,7 +23,7 @@
   "activationEvents": [
     "onStartupFinished",
     "onChatParticipant:huckleberry",
-    "onChatParticipant:huckleberry-extension.taskmanager"
+    "onCommand:huckleberry-extension.helloWorld"
   ],
   "contributes": {
     "commands": [
@@ -59,18 +59,6 @@
         "id": "huckleberry",
         "name": "Huckleberry",
         "description": "An assistant that helps manage tasks and project requirements",
-        "isSticky": false,
-        "commands": [
-          {
-            "name": "manageTasks",
-            "description": "Show the task management interface"
-          }
-        ]
-      },
-      {
-        "id": "huckleberry-extension.taskmanager",
-        "name": "Huckleberry (Legacy)",
-        "description": "An assistant that helps manage tasks and project requirements (Legacy ID)",
         "isSticky": false,
         "commands": [
           {
@@ -144,6 +132,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@vscode/chat-extension-utils": "0.0.0-alpha.5"
+    "@vscode/chat-extension-utils": "0.0.0-alpha.5",
+    "tslib": "^2.6.2"
   }
 }

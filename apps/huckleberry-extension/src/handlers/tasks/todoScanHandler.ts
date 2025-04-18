@@ -175,19 +175,23 @@ export async function handleScanTodosRequest(
         // Check each line for TODO comments
         lines.forEach((line, index) => {
           // Match different TODO comment formats including JSX/TSX comments
-          const todoMatch = line.match(/(?:\/\/|\/\*|#|<!--|{\s*\/\*)\s*TODO(?:\((\w+)\))?:?\s*(.+?)(?:\*\/\s*}|\*\/|-->)?/i);
+          // Fix: improve the regex to better capture the full comment text
+          const todoMatch = line.match(/(?:\/\/|\/\*|#|<!--|{\s*\/\*)\s*TODO(?:\((\w+)\))?:?\s*(.*?)(?:\*\/\s*}|\*\/|-->|\s*$)/i);
           if (todoMatch) {
             const priority = todoMatch[1] ? todoMatch[1].toLowerCase() : undefined;
             const comment = todoMatch[2].trim();
             const relativePath = vscode.workspace.asRelativePath(file);
             
-            todos.push({
-              file: file.fsPath,
-              relativePath,
-              lineNumber: index + 1,
-              comment,
-              priority
-            });
+            // Only add comments that actually have content
+            if (comment && comment.length > 0) {
+              todos.push({
+                file: file.fsPath,
+                relativePath,
+                lineNumber: index + 1,
+                comment,
+                priority
+              });
+            }
           }
         });
       } catch (error) {

@@ -13,10 +13,6 @@ import { handleChatRequest } from '../handlers/chatHandler.js';
 export interface ChatParticipantOptions {
   /** Primary ID for the chat participant */
   primaryId: string;
-  /** Alternative ID for the chat participant (optional) */
-  alternativeId?: string;
-  /** Whether to register both IDs */
-  registerBoth?: boolean;
   /** Debug name for identifying this participant in logs */
   debugName?: string;
 }
@@ -76,28 +72,17 @@ export class ChatService {
    * @returns Array of disposables for the registered participants
    */
   public registerAll(): vscode.Disposable[] {
-    logWithChannel(LogLevel.INFO, '🚀 Registering all Huckleberry chat participants');
-
-    // Clear any existing participants first
+    logWithChannel(LogLevel.INFO, '🚀 Registering Huckleberry chat participant');
     this.disposeAll();
-
     const options: ChatParticipantOptions = {
       primaryId: 'huckleberry',
-      alternativeId: 'huckleberry-extension.taskmanager',
-      registerBoth: true,
       debugName: 'Huckleberry Task Manager'
     };
-
     const disposables = this.register(options);
-    
-    // Dump state after registration
     this.dumpParticipantState();
-
-    // Start monitoring if not already doing so
     if (!this.isMonitoring) {
       this.startMonitoring();
     }
-
     return disposables;
   }
 
@@ -108,71 +93,34 @@ export class ChatService {
    */
   public register(options: ChatParticipantOptions): vscode.Disposable[] {
     const disposables: vscode.Disposable[] = [];
-    const { primaryId, alternativeId, registerBoth, debugName } = options;
-
+    const { primaryId, debugName } = options;
     logWithChannel(LogLevel.DEBUG, `Registering chat participant: ${debugName || primaryId}`);
-
     try {
-      // Register primary participant
       const primaryParticipant = vscode.chat.createChatParticipant(
         primaryId,
         async (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
           this.logRequestReceived(primaryId, request);
           this.updateLastActive();
-          
           try {
             await handleChatRequest(request, context, response, token, this.toolManager);
             logWithChannel(LogLevel.INFO, `✅ Chat request handled successfully by ${primaryId}`);
           } catch (error) {
             logWithChannel(LogLevel.ERROR, `❌ Error handling chat request in ${primaryId}:`, error);
-            
-            // Provide user-friendly error response
             await response.markdown(`**Well now, I seem to be having a bad day.** Try again, darlin'.`);
           }
         }
       );
-
       logWithChannel(LogLevel.INFO, `Chat participant successfully registered with ID: ${primaryId}`);
       this.participants.set(primaryId, primaryParticipant);
       disposables.push(primaryParticipant);
-
-      // Register alternative participant if requested
-      if (registerBoth && alternativeId) {
-        const alternativeParticipant = vscode.chat.createChatParticipant(
-          alternativeId,
-          async (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
-            this.logRequestReceived(alternativeId, request);
-            this.updateLastActive();
-            
-            try {
-              await handleChatRequest(request, context, response, token, this.toolManager);
-              logWithChannel(LogLevel.INFO, `✅ Alt chat request handled successfully by ${alternativeId}`);
-            } catch (error) {
-              logWithChannel(LogLevel.ERROR, `❌ Error handling alt chat request in ${alternativeId}:`, error);
-              
-              await response.markdown(`**Apologies for the trouble.** My trigger finger isn't what it used to be.`);
-            }
-          }
-        );
-
-        logWithChannel(LogLevel.INFO, `Alternative chat participant registered with ID: ${alternativeId}`);
-        this.participants.set(alternativeId, alternativeParticipant);
-        disposables.push(alternativeParticipant);
-      }
-
-      // Update the last active timestamp
       this.updateLastActive();
-
       return disposables;
     } catch (error) {
       logWithChannel(LogLevel.CRITICAL, `❌ Failed to register chat participant: ${debugName || primaryId}`, error);
-      
-      // Show a notification about the registration failure
       vscode.window.showErrorMessage(
         'Huckleberry extension failed to register the chat participant. ' +
         'The @Huckleberry commands will not work. Please reload the window or restart VS Code.'
       );
-      
       return [];
     }
   }

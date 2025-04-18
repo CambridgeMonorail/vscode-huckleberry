@@ -40,7 +40,6 @@
     }
   },
   "cacheableOperations": ["build", "lint", "test", "package"],
-  "nxCloudId": "67ff4f8c7962132f8b952f10",
   "plugins": [
     {
       "plugin": "@nx/react/router-plugin",
