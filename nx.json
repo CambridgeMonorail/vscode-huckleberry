@@ -40,6 +40,17 @@
     }
   },
   "cacheableOperations": ["build", "lint", "test", "package"],
+  "release": {
+    "projects": ["apps/*", "libs/*"],
+    "version": {
+      "conventionalCommits": true
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "createRelease": "github"
+      }
+    }
+  },
   "plugins": [
     {
       "plugin": "@nx/react/router-plugin",

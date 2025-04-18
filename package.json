@@ -12,7 +12,8 @@
     "build:package:extension": "pnpm run build:extension && pnpm run package:extension",
     "test:extension": "nx test huckleberry-extension",
     "serve:demo": "nx serve demo-site",
-    "clean:extension": "nx reset && rm -rf apps/huckleberry-extension/dist"
+    "clean:extension": "nx reset && rm -rf apps/huckleberry-extension/dist",
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +23,8 @@
     "react-router-dom": "6.29.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "@docusaurus/core": "^3.7.0",
     "@docusaurus/module-type-aliases": "^3.7.0",
     "@docusaurus/preset-classic": "^3.7.0",
@@ -56,6 +59,7 @@
     "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "nx": "20.8.0",

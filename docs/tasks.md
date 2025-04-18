@@ -166,6 +166,21 @@ This checklist tracks all tasks required to fully set up the VSCode-Huckleberry 
   - [ ] Monitor ratings and download statistics
   - [ ] Plan for regular updates and maintenance
 
+## Step 11: Automated Release Process
+
+- [x] Configure Nx Release:
+  - [x] Update nx.json with release configuration for conventional commits
+  - [x] Set up changelog generation and GitHub release creation
+- [x] Set up Conventional Commits:
+  - [x] Install commitlint and Husky
+  - [x] Configure commitlint.config.js
+  - [x] Set up Husky commit-msg hook
+- [x] Configure GitHub Actions for CI/CD:
+  - [x] Create GitHub Actions workflow for automated releases
+  - [x] Configure NodeJS setup and pnpm caching
+  - [x] Set up VSIX packaging as part of the release process
+  - [x] Add GitHub release asset upload for the VSIX file
+
 ## Additional Tasks
 
 - [x] Add logo/icon files for the extension

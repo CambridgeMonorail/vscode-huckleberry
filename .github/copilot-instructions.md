@@ -69,6 +69,60 @@ This project uses Nx for monorepo management:
 - Squash commits before merging pull requests
 - Keep pull requests focused on a single feature or fix
 
+## Commit Message Guidelines
+
+All commit messages MUST follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Commit Types
+
+- `feat`: A new feature (minor version bump)
+- `fix`: A bug fix (patch version bump)
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes that affect the build system or external dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files
+
+### Breaking Changes
+
+Breaking changes MUST be indicated in the commit message with a `!` after the type/scope, or by including `BREAKING CHANGE:` in the footer.
+
+Example:
+```
+feat(api)!: change authentication API
+
+BREAKING CHANGE: The authentication API has been completely redesigned.
+```
+
+### Commit Description
+
+- Use the imperative, present tense: "change" not "changed" nor "changes"
+- Don't capitalize the first letter
+- No dot (.) at the end
+- Limit the first line to 72 characters or less
+- Describe what was done, not why it was done
+
+### Examples
+
+```
+feat(extension): add task filtering capability
+fix(ui): correct task status display
+docs(readme): update installation instructions
+test(api): add unit tests for task service
+refactor(tools): simplify read file tool implementation
+```
+
 ## Libraries and Frameworks
 
 ### Core Technologies

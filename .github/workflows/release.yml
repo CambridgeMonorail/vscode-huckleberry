@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Release type (patch, minor, major)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dryRun:
+        description: 'Dry run (no actual release)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures full git history is available
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Run Nx Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm nx release ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.releaseType != '' && format('--version-increment {0}', github.event.inputs.releaseType) || '' }}
+
+      - name: Package VS Code Extension
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: pnpm exec nx package huckleberry-extension
+
+      - name: Upload VSIX to Release
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: apps/huckleberry-extension/huckleberry-extension-*.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
