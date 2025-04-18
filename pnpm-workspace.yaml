@@ -1,4 +1,3 @@
 packages:
+  # Include all packages in the apps directory
   - 'apps/*'
-  - 'demo-site'
-  - 'docs'

@@ -20,6 +20,15 @@ async function streamMarkdown(stream: vscode.ChatResponseStream, content: string
   await stream.markdown(spacedContent);
 }
 
+/**
+ * Utility function to show progress in a consistent and thematic way
+ * @param stream The chat response stream
+ * @returns A promise that resolves when the progress message is shown
+ */
+async function showProgress(stream: vscode.ChatResponseStream): Promise<void> {
+  await stream.progress("I'll be your huckleberry");
+}
+
 // Default configuration for Huckleberry
 const DEFAULT_CONFIG: taskmanagerConfig = {
   defaultTasksLocation: 'tasks',
@@ -177,6 +186,7 @@ async function handleInitializeTaskTracking(
   toolManager: ToolManager
 ): Promise<void> {
   console.log('🎯 Initializing task tracking...');
+  await showProgress(stream);
   await streamMarkdown(stream, '📋 **Initializing task tracking for this project**');
   
   try {
@@ -320,6 +330,7 @@ async function handleParseRequirementsRequest(
   toolManager: ToolManager
 ): Promise<void> {
   console.log('📄 Processing requirements parsing request:', prompt);
+  await showProgress(stream);
   
   const filenameMatch = prompt.match(/parse\s+(\S+)\s+and/i);
   const filename = filenameMatch ? filenameMatch[1] : "requirements.md";
@@ -387,6 +398,7 @@ async function handleCreateTaskRequest(
   toolManager: ToolManager
 ): Promise<void> {
   console.log('✏️ Processing create task request:', prompt);
+  await showProgress(stream);
   
   const descriptionMatch = prompt.match(/create a task( to)?:?\s+(.+)/i);
   const description = descriptionMatch ? descriptionMatch[2].trim() : "New task";
@@ -400,18 +412,98 @@ async function handleCreateTaskRequest(
   
   await streamMarkdown(stream, `✏️ **Creating new task**`);
   
-  const priority = config.defaultTaskPriority;
-  
-  await streamMarkdown(stream, `
+  try {
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders || folders.length === 0) {
+      throw new Error('No workspace folder is open');
+    }
+
+    const workspaceFolder = folders[0].uri.fsPath;
+    const tasksDir = path.join(workspaceFolder, config.defaultTasksLocation);
+    const tasksJsonPath = path.join(tasksDir, 'tasks.json');
+
+    // Get the tools we need
+    const readFileTool = toolManager.getTool('readFile');
+    const writeFileTool = toolManager.getTool('writeFile');
+    if (!readFileTool || !writeFileTool) {
+      throw new Error('Required tools not found');
+    }
+
+    // Read existing tasks.json
+    let tasksData: TaskCollection;
+    try {
+      const content = await readFileTool.execute({ path: tasksJsonPath });
+      tasksData = JSON.parse(content);
+    } catch (error) {
+      // If file doesn't exist or is invalid, create new structure
+      tasksData = {
+        name: 'Project Tasks',
+        description: 'Task collection for the project',
+        tasks: []
+      };
+    }
+
+    // Create new task
+    const newTask: Task = {
+      id: taskId,
+      title: description,
+      description: description,
+      priority: config.defaultTaskPriority,
+      status: 'todo',
+      completed: false,
+      createdAt: new Date().toISOString(),
+      tags: []
+    };
+
+    // Add to tasks collection
+    tasksData.tasks.push(newTask);
+
+    // Write back to tasks.json
+    await writeFileTool.execute({
+      path: tasksJsonPath,
+      content: JSON.stringify(tasksData, null, 2),
+      createParentDirectories: true
+    });
+
+    // If using markdown template, create individual task file
+    if (config.taskFileTemplate === 'markdown') {
+      const taskFilePath = path.join(tasksDir, `${taskId}.md`);
+      const taskContent = `# ${taskId}: ${description}
+
+## Details
+- **Priority**: ${config.defaultTaskPriority}
+- **Status**: To Do
+- **Created**: ${new Date().toLocaleDateString()}
+
+## Description
+${description}
+
+## Notes
+- Created via Huckleberry Task Manager
+`;
+
+      await writeFileTool.execute({
+        path: taskFilePath,
+        content: taskContent,
+        createParentDirectories: true
+      });
+    }
+
+    // Send success message
+    await streamMarkdown(stream, `
 ✅ Task created successfully!
 
 **${taskId}**: ${description}
-- **Priority**: ${priority}
+- **Priority**: ${config.defaultTaskPriority}
 - **Status**: Open
 - **Created**: ${new Date().toLocaleDateString()}
 
 You can mark this task as complete with: \`@Huckleberry Mark task ${taskId} as complete\`
-  `);
+    `);
+  } catch (error) {
+    console.error('Failed to create task:', error);
+    await streamMarkdown(stream, `❌ Failed to create task: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /**
@@ -426,6 +518,7 @@ async function handleMarkTaskDoneRequest(
   toolManager: ToolManager
 ): Promise<void> {
   console.log('✅ Processing mark task done request:', prompt);
+  await showProgress(stream);
   
   const taskIdMatch = prompt.match(/task\s+([A-Z]+-\d+)/i);
   const taskId = taskIdMatch ? taskIdMatch[1].toUpperCase() : "UNKNOWN";
