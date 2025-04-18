@@ -165,19 +165,25 @@ async function handleInitializeTaskTracking(
   stream: vscode.ChatResponseStream, 
   toolManager: ToolManager
 ): Promise<void> {
+  console.log('🎯 Initializing task tracking...');
   await stream.markdown('📋 **Initializing task tracking for this project**');
   
   try {
-    // Get the workspace folders
     const folders = vscode.workspace.workspaceFolders;
+    console.log('📂 Workspace folders:', folders?.map(f => f.uri.fsPath));
+    
     if (!folders || folders.length === 0) {
+      console.log('⚠️ No workspace folders found');
       await stream.markdown('⚠️ No workspace folder is open. Please open a folder or workspace first.');
       return;
     }
     
     const config = getConfiguration();
+    console.log('⚙️ Loaded configuration:', config);
+    
     const workspaceFolder = folders[0].uri.fsPath;
     const tasksDir = path.join(workspaceFolder, config.defaultTasksLocation);
+    console.log('📁 Tasks directory:', tasksDir);
     
     await stream.markdown(`I'll set up task tracking in: \`${config.defaultTasksLocation}\``);
     
@@ -190,7 +196,7 @@ Tasks will be stored in the \`${config.defaultTasksLocation}\` directory.
     
 You can now create tasks and manage them through our chat interface.`);
   } catch (error) {
-    console.error('Error initializing task tracking:', error);
+    console.error('❌ Error initializing task tracking:', error);
     await stream.markdown(`❌ Failed to initialize task tracking: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -206,13 +212,15 @@ async function handlePriorityTaskQuery(
   stream: vscode.ChatResponseStream, 
   toolManager: ToolManager
 ): Promise<void> {
-  // Extract priority from the prompt
+  console.log('🔍 Processing priority task query:', prompt);
+  
   let priority = "high";
   if (prompt.toLowerCase().includes("low priority")) {
     priority = "low";
   } else if (prompt.toLowerCase().includes("medium priority")) {
     priority = "medium";
   }
+  console.log('📊 Detected priority level:', priority);
 
   await stream.markdown(`📋 **${priority.toUpperCase()} Priority Tasks**`);
   
@@ -250,9 +258,11 @@ async function handleParseRequirementsRequest(
   stream: vscode.ChatResponseStream, 
   toolManager: ToolManager
 ): Promise<void> {
-  // Extract filename from prompt
+  console.log('📄 Processing requirements parsing request:', prompt);
+  
   const filenameMatch = prompt.match(/parse\s+(\S+)\s+and/i);
   const filename = filenameMatch ? filenameMatch[1] : "requirements.md";
+  console.log('📑 Target file:', filename);
   
   await stream.markdown(`🔍 **Parsing ${filename} for requirements**`);
   
@@ -277,7 +287,7 @@ async function handleParseRequirementsRequest(
 These tasks have been added to your task collection.
     `);
   } catch (error) {
-    console.error('Error parsing requirements:', error);
+    console.error('❌ Error parsing requirements:', error);
     await stream.markdown(`❌ Failed to parse requirements: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -315,15 +325,21 @@ async function handleCreateTaskRequest(
   stream: vscode.ChatResponseStream, 
   toolManager: ToolManager
 ): Promise<void> {
-  // Extract task description from prompt
+  console.log('✏️ Processing create task request:', prompt);
+  
   const descriptionMatch = prompt.match(/create a task( to)?:?\s+(.+)/i);
   const description = descriptionMatch ? descriptionMatch[2].trim() : "New task";
+  console.log('📝 Task description:', description);
+  
+  const config = getConfiguration();
+  console.log('⚙️ Using configuration:', config);
+  
+  const taskId = `TASK-${Math.floor(Math.random() * 900) + 100}`;
+  console.log('🏷️ Generated task ID:', taskId);
   
   await stream.markdown(`✏️ **Creating new task**`);
   
-  const config = getConfiguration();
   const priority = config.defaultTaskPriority;
-  const taskId = `TASK-${Math.floor(Math.random() * 900) + 100}`; // Generate random 3-digit task ID
   
   await stream.markdown(`
 ✅ Task created successfully!
@@ -348,9 +364,11 @@ async function handleMarkTaskDoneRequest(
   stream: vscode.ChatResponseStream, 
   toolManager: ToolManager
 ): Promise<void> {
-  // Extract task ID from prompt
+  console.log('✅ Processing mark task done request:', prompt);
+  
   const taskIdMatch = prompt.match(/task\s+([A-Z]+-\d+)/i);
   const taskId = taskIdMatch ? taskIdMatch[1].toUpperCase() : "UNKNOWN";
+  console.log('🎯 Target task ID:', taskId);
   
   await stream.markdown(`✅ **Marking task ${taskId} as complete**`);
   
@@ -377,19 +395,22 @@ function manageTasks(): void {
  * @returns The Huckleberry configuration
  */
 function getConfiguration(): taskmanagerConfig {
+  console.log('⚙️ Loading Huckleberry configuration...');
   const config = vscode.workspace.getConfiguration('huckleberry.taskmanager');
   
-  // Fix for TaskPriority issue
   const defaultPriority = (config.get('defaultTaskPriority') || DEFAULT_CONFIG.defaultTaskPriority) as string;
   const taskPriority = defaultPriority as TaskPriority;
   
-  return {
-    defaultTasksLocation: config.get('defaultTasksLocation') || DEFAULT_CONFIG.defaultTasksLocation,
+  const finalConfig: taskmanagerConfig = {
+    defaultTasksLocation: config.get('defaultTasksLocation') as string || DEFAULT_CONFIG.defaultTasksLocation,
     taskFileTemplate: (config.get('taskFileTemplate') || DEFAULT_CONFIG.taskFileTemplate) as 'markdown' | 'json',
     defaultTaskPriority: taskPriority,
-    defaultDueDate: config.get('defaultDueDate'),
-    customDueDateDays: config.get('customDueDateDays')
+    defaultDueDate: config.get('defaultDueDate') || 'none',
+    customDueDateDays: config.get('customDueDateDays') || 0
   };
+  
+  console.log('📋 Loaded configuration:', finalConfig);
+  return finalConfig;
 }
 
 /**
@@ -417,13 +438,26 @@ export function activate(context: vscode.ExtensionContext): void {
   // Register the manage tasks command
   const manageTasksDisposable = vscode.commands.registerCommand('huckleberry-extension.manageTasks', manageTasks);
 
+  console.log('Registering Huckleberry chat participant...');
   // Register the chat participant with the correct VS Code API
   const taskmanagerDisposable = vscode.chat.createChatParticipant(
     'huckleberry-extension.taskmanager',
     async (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
-      return handleChatRequest(request, context, response, token, toolManager);
+      console.log('🔵 Chat request received:', {
+        prompt: request.prompt,
+        contextLength: context.history.length
+      });
+
+      try {
+        await handleChatRequest(request, context, response, token, toolManager);
+        console.log('✅ Chat request handled successfully');
+      } catch (error) {
+        console.error('❌ Error handling chat request:', error);
+        throw error;
+      }
     }
   );
+  console.log('Chat participant registered successfully');
 
   // Add all disposables to the context subscriptions
   context.subscriptions.push(helloWorldDisposable);

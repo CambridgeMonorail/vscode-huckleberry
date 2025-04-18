@@ -4,6 +4,8 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
+    "build": "nx build",
+    "build:all": "nx run-many --target=build --all",
     "build:extension": "nx build huckleberry-extension",
     "watch:extension": "nx build huckleberry-extension --watch",
     "package:extension": "cd apps/huckleberry-extension && npx vsce package --no-dependencies",

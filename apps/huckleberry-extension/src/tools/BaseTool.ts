@@ -14,7 +14,22 @@ export abstract class BaseTool<T extends BaseToolParams> {
   /**
    * The unique identifier for this tool
    */
-  public abstract readonly id: string;
+  public readonly id: string;
+
+  /**
+   * Flag to enable or disable debug logging
+   */
+  private debugEnabled: boolean;
+
+  /**
+   * Constructor for the BaseTool class
+   * @param id The unique identifier for the tool
+   */
+  constructor(id: string) {
+    this.id = id;
+    this.debugEnabled = process.env['HUCKLEBERRY_DEBUG'] === 'true';
+    this.debug(`🛠️ Tool ${id} initialized`);
+  }
 
   /**
    * The display name for this tool
@@ -62,6 +77,31 @@ export abstract class BaseTool<T extends BaseToolParams> {
    */
   protected showInfo(message: string): void {
     vscode.window.showInformationMessage(`Task Manager: ${message}`);
+  }
+
+  /**
+   * Logs a debug message to the console
+   * @param message The debug message
+   * @param data Optional data to log
+   */
+  protected debug(message: string, data?: unknown): void {
+    if (this.debugEnabled) {
+      const logMessage = `[${this.id}] ${message}`;
+      console.log(data ? `${logMessage}:` : logMessage, data || '');
+    }
+  }
+
+  /**
+   * Logs an error message to the console
+   * @param error The error object or message
+   * @param context Optional context for the error
+   */
+  protected logError(error: unknown, context?: string): void {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${this.id}] ${context ? context + ': ' : ''}${errorMessage}`);
+    if (error instanceof Error && error.stack) {
+      console.error(`Stack trace:\n${error.stack}`);
+    }
   }
 
   /**

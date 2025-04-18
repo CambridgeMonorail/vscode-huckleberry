@@ -13,7 +13,7 @@
     },
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["apps/huckleberry-docs/build"],
+      "outputs": ["{projectRoot}/build"],
       "options": {
         "command": "docusaurus build",
         "cwd": "apps/huckleberry-docs"

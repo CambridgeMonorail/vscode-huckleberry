@@ -27,9 +27,13 @@ export interface MarkDoneToolParams extends BaseToolParams {
  * Tool for marking tasks as done/undone in markdown files
  */
 export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
-  public readonly id = 'markDone';
+  public override readonly id = 'markDone';
   public readonly name = 'Mark Task Done';
   public readonly description = 'Marks a task as done or undone in a task file';
+
+  constructor() {
+    super('markDone');
+  }
 
   /**
    * Executes the mark task done/undone operation
@@ -42,6 +46,12 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
     taskIdentifier: string;
     isDone: boolean;
   }> {
+    this.debug('Executing mark task operation', { 
+      filePath: params.filePath,
+      taskIdentifier: params.taskIdentifier,
+      isDone: params.isDone
+    });
+
     try {
       const { filePath, taskIdentifier, isDone } = params;
       this.log(`Marking task ${isDone ? 'done' : 'undone'}: ${taskIdentifier} in file: ${filePath}`);
@@ -57,6 +67,11 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       // Read the file content
       let content = await fs.promises.readFile(resolvedPath, 'utf-8');
       
+      this.debug('Read file content', {
+        filePath: resolvedPath,
+        contentLength: content.length
+      });
+
       // Determine file type based on extension
       const extension = path.extname(filePath).toLowerCase();
       
@@ -98,6 +113,12 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       // Write the updated content back to the file
       await fs.promises.writeFile(resolvedPath, updatedContent, 'utf-8');
       
+      this.debug('Task marked successfully', {
+        filePath: resolvedPath,
+        taskIdentifier,
+        isDone
+      });
+
       this.showInfo(`Successfully ${isDone ? 'marked task as done' : 'marked task as undone'}: ${taskIdentifier}`);
       return { 
         success: true, 
@@ -107,6 +128,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      this.logError(error, `Failed to mark task: ${message}`);
       this.showError(`Failed to mark task: ${message}`);
       throw error;
     }
@@ -120,6 +142,8 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
    * @returns The updated content
    */
   private processMarkdownFile(content: string, taskIdentifier: string, isDone: boolean): string {
+    this.debug('Processing markdown file', { taskIdentifier, isDone });
+
     // Create regex patterns for both unchecked and checked task items
     const uncheckedPattern = new RegExp(`(- \\[ \\]\\s+)(.*${this.escapeRegExp(taskIdentifier)}.*)`, 'gim');
     const checkedPattern = new RegExp(`(- \\[x\\]\\s+)(.*${this.escapeRegExp(taskIdentifier)}.*)`, 'gim');
@@ -142,6 +166,8 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
    * @returns The updated content
    */
   private processJsonFile(content: string, taskIdentifier: string, isDone: boolean): string {
+    this.debug('Processing JSON file', { taskIdentifier, isDone });
+
     try {
       // Parse the JSON content
       const tasksData = JSON.parse(content);
@@ -200,7 +226,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       // No changes made
       return content;
     } catch (error) {
-      this.log('Error processing JSON file', error);
+      this.logError(error, 'Error processing JSON file');
       // Return the original content if there was an error
       return content;
     }
@@ -221,6 +247,8 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
    * @returns The resolved absolute path
    */
   private resolvePath(filePath: string): string {
+    this.debug('Resolving file path', { filePath });
+
     // If it's already an absolute path, return it
     if (path.isAbsolute(filePath)) {
       return filePath;
