@@ -31,6 +31,7 @@ Powered by the VS Code Language Model API and Copilot Chat integration, Hucklebe
 - 🔄 Break down tasks into subtasks for complex projects
 - 📊 Get suggestions for the next tasks to tackle
 - 💾 Persistent task state stored in your project files
+- 🤖 Language Model Tools integration for seamless AI-assisted task management
 
 ## Why a VS Code Extension (Not Just an MCP Tool)?
 
@@ -40,6 +41,7 @@ While GitHub Copilot can use Model Context Protocol (MCP) tools, Huckleberry is 
    - Register as a first-class chat participant with `@Huckleberry` mention support
    - Maintain conversation context across chat sessions
    - Access the same language models used by GitHub Copilot
+   - Register Language Model Tools for direct AI use without manual commands
 
 2. **Enhanced Capabilities**: Rather than being just a tool that Copilot can call, Huckleberry:
    - Can direct and guide the Copilot agent proactively
@@ -79,7 +81,7 @@ After installation:
 
 ```
 # Project setup
-@Huckleberry Initialize task management for this project
+@Huckleberry Initialize task tracking for this project
 
 # Creating tasks
 @Huckleberry Create a task to implement user authentication
@@ -100,6 +102,21 @@ After installation:
 ```
 
 You can also access Huckleberry from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) by typing "Huckleberry: Manage Tasks".
+
+### Language Model Tools
+
+Huckleberry now integrates with the VS Code Language Model Tools API, allowing the AI to directly interact with task management features without requiring explicit `@Huckleberry` mentions. The following tools are available:
+
+| Tool | Description |
+|------|-------------|
+| `huckleberry.createTask` | Creates a new task with optional priority |
+| `huckleberry.initializeTaskTracking` | Sets up task tracking for the workspace |
+| `huckleberry.scanTodos` | Scans the codebase for TODOs and creates tasks |
+| `huckleberry.listTasks` | Lists all tasks with optional filtering by priority or status |
+| `huckleberry.markTaskDone` | Marks a specified task as complete |
+| `huckleberry.changeTaskPriority` | Changes a task's priority |
+
+This integration provides a more seamless experience as the language model can directly perform task operations when appropriate during conversations.
 
 ## How It Works
 

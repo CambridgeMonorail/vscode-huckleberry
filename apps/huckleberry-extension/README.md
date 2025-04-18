@@ -18,6 +18,7 @@ Huckleberry Task Manager is a VS Code extension that brings AI-powered task mana
 - 🔄 **Task Decomposition** - Break complex tasks into manageable subtasks
 - 📊 **Priority Management** - Organize tasks by priority, due date, and dependencies
 - 💾 **Workspace Integration** - Tasks are stored in your project files for version control and team sharing
+- 🤖 **Language Model Integration** - Tasks can be created and managed directly by VS Code's language model
 
 ## Getting Started
 
@@ -99,6 +100,21 @@ Interact with Huckleberry through the VS Code chat interface by addressing `@Huc
 | `@Huckleberry Parse requirements.md and create tasks` | Extract tasks from a requirements document |
 
 You can also start a conversation with Huckleberry by selecting it from the chat participants in the VS Code chat panel.
+
+### Language Model Tool Integration
+
+Huckleberry now provides Language Model Tools that allow VS Code's language model to directly interact with its task management capabilities:
+
+| Tool | Description |
+|------|-------------|
+| `huckleberry.createTask` | Creates a new task with optional priority |
+| `huckleberry.initializeTaskTracking` | Sets up task tracking for the workspace |
+| `huckleberry.scanTodos` | Scans the codebase for TODOs and creates tasks |
+| `huckleberry.listTasks` | Lists all tasks with optional filtering by priority or status |
+| `huckleberry.markTaskDone` | Marks a specified task as complete |
+| `huckleberry.changeTaskPriority` | Changes a task's priority |
+
+With this integration, the language model can perform task management operations without requiring explicit `@Huckleberry` mentions, creating a more seamless experience.
 
 ## Privacy and Security
 

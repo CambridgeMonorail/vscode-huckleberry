@@ -7,6 +7,7 @@ import { WriteFileTool } from './tools/WriteFileTool';
 import { MarkDoneTool } from './tools/MarkDoneTool';
 import { ToolManager } from './services/toolManager';
 import { ChatService } from './services/chatService';
+import { LanguageModelToolsProvider } from './services/languageModelToolsProvider';
 import { showInfo } from './utils/uiHelpers';
 import { isWorkspaceAvailable, notifyNoWorkspace } from './handlers/chatHandler';
 import { recommendAgentMode, detectCopilotMode } from './utils/copilotHelper';
@@ -18,6 +19,7 @@ import { initDebugChannel, logWithChannel, LogLevel, dumpState } from './utils/d
 interface ExtensionState {
   chatService: ChatService;
   toolManager: ToolManager;
+  languageModelToolsProvider: LanguageModelToolsProvider;
 }
 
 /**
@@ -218,10 +220,25 @@ export function activate(context: vscode.ExtensionContext): void {
     // Initialize chat service
     const chatService = new ChatService(context, toolManager);
 
+    // Initialize and register language model tools
+    const languageModelToolsProvider = new LanguageModelToolsProvider(toolManager);
+    try {
+      logWithChannel(LogLevel.INFO, '🔨 Registering language model tools...');
+      const toolDisposables = languageModelToolsProvider.registerAllTools(context);
+      logWithChannel(LogLevel.INFO, `✅ Successfully registered ${toolDisposables.length} language model tools`);
+    } catch (toolError) {
+      logWithChannel(LogLevel.ERROR, '❌ Failed to register language model tools:', toolError);
+      // Don't throw here, allow the extension to continue even if tools registration fails
+      vscode.window.showWarningMessage(
+        'Huckleberry: Some language model tools failed to register. Advanced AI integration may be limited.'
+      );
+    }
+
     // Store extension state
     extensionState = {
       chatService,
-      toolManager
+      toolManager,
+      languageModelToolsProvider
     };
     
     // Register commands
@@ -358,8 +375,20 @@ export function deactivate(): void {
   logWithChannel(LogLevel.INFO, '👋 Deactivating Huckleberry extension');
   
   if (extensionState) {
-    // Clean up any resources
+    // Clean up language model tools
+    if (extensionState.languageModelToolsProvider) {
+      try {
+        extensionState.languageModelToolsProvider.dispose();
+        logWithChannel(LogLevel.DEBUG, '✓ Language model tools disposed');
+      } catch (error) {
+        logWithChannel(LogLevel.ERROR, '❌ Error disposing language model tools:', error);
+      }
+    }
+    
+    // Clean up chat service
     extensionState.chatService.disposeAll();
+    
+    // Clear the extension state
     extensionState = null;
   }
 }

@@ -23,7 +23,14 @@
   "activationEvents": [
     "onStartupFinished",
     "onChatParticipant:huckleberry",
-    "onCommand:huckleberry-extension.helloWorld"
+    "onCommand:huckleberry-extension.helloWorld",
+    "onLanguageModelTool:fetch_project_info",
+    "onLanguageModelTool:huckleberry.createTask",
+    "onLanguageModelTool:huckleberry.initializeTaskTracking",
+    "onLanguageModelTool:huckleberry.scanTodos",
+    "onLanguageModelTool:huckleberry.listTasks",
+    "onLanguageModelTool:huckleberry.markTaskDone",
+    "onLanguageModelTool:huckleberry.changeTaskPriority"
   ],
   "contributes": {
     "commands": [
@@ -66,6 +73,159 @@
             "description": "Show the task management interface"
           }
         ]
+      }
+    ],
+    "languageModelTools": [
+      {
+        "name": "fetch_project_info",
+        "displayName": "Fetch Project Info",
+        "description": "Retrieves information about the current project.",
+        "modelDescription": "Use this tool to fetch details about the current project based on its ID.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "fetchProjectInfo",
+        "userDescription": "Fetches project information given a project ID.",
+        "icon": "resources/fetch-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "projectId": {
+              "type": "string",
+              "description": "The ID of the project."
+            }
+          },
+          "required": ["projectId"]
+        }
+      },
+      {
+        "name": "huckleberry.createTask",
+        "displayName": "Create Task",
+        "description": "Creates a new task in the Huckleberry Task Manager",
+        "modelDescription": "Use this tool to create a new task with optional priority and due date information.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "createHuckleberryTask",
+        "userDescription": "Creates a task in your project's task management system",
+        "icon": "resources/create-task-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of the task"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical"],
+              "description": "Priority of the task"
+            }
+          },
+          "required": ["description"]
+        }
+      },
+      {
+        "name": "huckleberry.initializeTaskTracking",
+        "displayName": "Initialize Task Tracking",
+        "description": "Initialize task tracking for a project",
+        "modelDescription": "Use this tool to set up task tracking for a project workspace.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "initializeHuckleberryTaskTracking",
+        "userDescription": "Sets up the task tracking system in your project",
+        "icon": "resources/initialize-tasks-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "huckleberry.scanTodos",
+        "displayName": "Scan TODOs",
+        "description": "Scans the codebase for TODO comments and converts them to tasks",
+        "modelDescription": "Use this tool to scan the codebase for TODO comments and create tasks from them.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "scanTodosHuckleberry",
+        "userDescription": "Finds TODOs in your code and adds them to your task list",
+        "icon": "resources/scan-todos-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Optional file pattern to scan (e.g., '**/*.ts'). If not provided, will scan all files."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "huckleberry.listTasks",
+        "displayName": "List Tasks",
+        "description": "Lists tasks from the task manager",
+        "modelDescription": "Use this tool to retrieve and list tasks, optionally filtered by priority or status.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "listHuckleberryTasks",
+        "userDescription": "Shows your current tasks with optional filtering",
+        "icon": "resources/create-task-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "priority": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical", "all"],
+              "description": "Filter tasks by priority"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["open", "in_progress", "done", "all"],
+              "description": "Filter tasks by status"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "huckleberry.markTaskDone",
+        "displayName": "Mark Task Done",
+        "description": "Marks a task as complete",
+        "modelDescription": "Use this tool to mark a task as complete by providing the task ID.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "completeHuckleberryTask",
+        "userDescription": "Marks a task as completed",
+        "icon": "resources/initialize-tasks-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "taskId": {
+              "type": "string",
+              "description": "ID of the task to mark as done"
+            }
+          },
+          "required": ["taskId"]
+        }
+      },
+      {
+        "name": "huckleberry.changeTaskPriority",
+        "displayName": "Change Task Priority",
+        "description": "Changes the priority of a task",
+        "modelDescription": "Use this tool to change the priority of a task by providing the task ID and new priority.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "updateHuckleberryTaskPriority",
+        "userDescription": "Updates the priority of a task",
+        "icon": "resources/create-task-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "taskId": {
+              "type": "string",
+              "description": "ID of the task to update"
+            },
+            "priority": {
+              "type": "string",
+              "enum": ["low", "medium", "high", "critical"],
+              "description": "New priority for the task"
+            }
+          },
+          "required": ["taskId", "priority"]
+        }
       }
     ],
     "configuration": {
