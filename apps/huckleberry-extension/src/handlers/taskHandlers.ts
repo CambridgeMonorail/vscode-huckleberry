@@ -117,29 +117,64 @@ export async function handlePriorityTaskQuery(
   }
   console.log('📊 Detected priority level:', priority);
 
-  await streamMarkdown(stream, `📋 **${priority.toUpperCase()} Priority Tasks**`);
-  
-  // TODO: Implement actual task retrieval from tasks.json
-  if (priority === "high") {
-    await streamMarkdown(stream, `
-1. 🔴 **TASK-001**: Implement user authentication system
-2. 🔴 **TASK-004**: Fix critical security vulnerability in data layer
-    `);
-  } else if (priority === "medium") {
-    await streamMarkdown(stream, `
-1. 🟠 **TASK-002**: Add unit tests for core components
-2. 🟠 **TASK-005**: Update documentation for API endpoints
-    `);
-  } else {
-    await streamMarkdown(stream, `
-1. 🟢 **TASK-003**: Refactor utility functions
-2. 🟢 **TASK-006**: Improve code comments for better readability
-    `);
+  try {
+    // Get workspace folder
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders || folders.length === 0) {
+      throw new Error('No workspace folder is open');
+    }
+
+    const config = getConfiguration();
+    const workspaceFolder = folders[0].uri.fsPath;
+    const tasksJsonPath = path.join(workspaceFolder, config.defaultTasksLocation, 'tasks.json');
+
+    // Get the ReadFileTool instance
+    const readFileTool = toolManager.getTool('readFile');
+    if (!readFileTool) {
+      throw new Error('ReadFileTool not found');
+    }
+
+    // Read and parse tasks.json
+    let tasksData: TaskCollection;
+    try {
+      const content = await readFileTool.execute({ path: tasksJsonPath });
+      tasksData = JSON.parse(content as string);
+    } catch (error) {
+      throw new Error(`Failed to read tasks: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    // Filter tasks by priority
+    const priorityTasks = tasksData.tasks.filter(task => 
+      task.priority?.toLowerCase() === priority && !task.completed
+    );
+
+    await streamMarkdown(stream, `📋 **${priority.toUpperCase()} Priority Tasks**`);
+
+    if (priorityTasks.length === 0) {
+      await streamMarkdown(stream, `\nNo ${priority} priority tasks found.`);
+      return;
+    }
+
+    // Map priority to emoji
+    const priorityEmoji = {
+      high: '🔴',
+      medium: '🟠',
+      low: '🟢',
+      critical: '⚠️'
+    };
+
+    // Format and display tasks
+    const taskList = priorityTasks
+      .map((task, index) => `${index + 1}. ${priorityEmoji[task.priority as keyof typeof priorityEmoji]} **${task.id}**: ${task.title}`)
+      .join('\n');
+
+    await streamMarkdown(stream, `\n${taskList}`);
+    
+    await streamMarkdown(stream, `\nYou can mark any task as complete with: \`@Huckleberry Mark task TASK-XXX as complete\``);
+  } catch (error) {
+    console.error('Failed to retrieve tasks:', error);
+    await streamMarkdown(stream, `❌ Failed to retrieve tasks: ${error instanceof Error ? error.message : String(error)}`);
   }
-  
-  await streamMarkdown(stream, `
-You can mark any task as complete with: \`@Huckleberry Mark task TASK-XXX as complete\`
-  `);
 }
 
 /**
