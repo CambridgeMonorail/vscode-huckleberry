@@ -37,6 +37,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
