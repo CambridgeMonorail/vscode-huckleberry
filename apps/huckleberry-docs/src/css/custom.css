@@ -52,6 +52,7 @@
 
 /* Headings styling to match classic logo feel */
 h1, h2, h3, h4, h5, h6 {
+  color: var(--ifm-color-primary-dark);
   font-family: var(--ifm-heading-font-family);
   letter-spacing: 0.5px;
 }
