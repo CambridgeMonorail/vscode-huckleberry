@@ -55,7 +55,9 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install
+        # Using --shamefully-hoist to ensure dependencies are available at top level
+        # Using --no-strict-peer-dependencies to handle peer dependencies
+        run: pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
 
       - name: Run Nx Release (version bump and git tag only)
         env:
@@ -67,12 +69,20 @@ jobs:
         id: package_version
         run: |
           VERSION=$(node -p "require('./apps/huckleberry-extension/package.json').version")
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
 
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
-        run: pnpm exec nx package huckleberry-extension
+        run: |
+          # Run packaging with NODE_OPTIONS to increase memory limit if needed
+          NODE_OPTIONS="--max-old-space-size=4096" pnpm exec nx package huckleberry-extension
+          
+      - name: List Generated VSIX
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: |
+          echo "Looking for generated VSIX file:"
+          find apps/huckleberry-extension -name "*.vsix" -type f
 
       - name: Create GitHub Release
         if: ${{ github.event.inputs.dryRun != 'true' }}
