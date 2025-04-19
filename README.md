@@ -11,6 +11,7 @@
     <a href="#usage">Usage</a> •
     <a href="#development">Development</a> •
     <a href="#roadmap">Roadmap</a> •
+    <a href="https://cambridgemonorail.github.io/vscode-huckleberry/">Documentation</a> •
     <a href="#license">License</a>
   </p>
 </div>
@@ -102,6 +103,8 @@ After installation:
 ```
 
 You can also access Huckleberry from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) by typing "Huckleberry: Manage Tasks".
+
+For comprehensive documentation and detailed usage examples, visit our [official documentation site](https://cambridgemonorail.github.io/vscode-huckleberry/).
 
 ### Language Model Tools
 

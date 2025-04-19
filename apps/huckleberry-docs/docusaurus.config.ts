@@ -4,16 +4,19 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
+// Determine if we're in a GitHub Pages deployment environment
+const isDeployPreview = process.env.GITHUB_ACTIONS === 'true';
+
 const config: Config = {
   title: 'Huckleberry',
   tagline: 'AI-powered task management inside Visual Studio Code',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://huckleberry-docs.example.com',
+  url: 'https://cambridgemonorail.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: isDeployPreview ? '/vscode-huckleberry/' : '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.

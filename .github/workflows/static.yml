@@ -56,6 +56,8 @@ jobs:
         
       - name: Build Docusaurus site
         run: pnpm exec nx build huckleberry-docs
+        env:
+          GITHUB_ACTIONS: 'true'
         
       - name: Setup Pages
         uses: actions/configure-pages@v5
