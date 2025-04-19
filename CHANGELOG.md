@@ -1,3 +1,13 @@
+## 0.1.5 (2025-04-19)
+
+### 🩹 Fixes
+
+- **release:** update VSIX file naming for consistency ([06ba917](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/06ba917))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.4 (2025-04-19)
 
 ### 🚀 Features
