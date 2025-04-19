@@ -1,0 +1,30 @@
+## 0.1.1 (2025-04-19)
+
+### 🚀 Features
+
+- add TypeScript base configuration and Vitest workspace settings ([871b829](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/871b829))
+- initialize huckleberry extension with TypeScript, configuration files, and basic functionality ([c75f5f9](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/c75f5f9))
+- add launch and task configurations for debugging the Huckleberry extension and React app ([3ce045c](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/3ce045c))
+- enhance workspace configuration with TypeScript and ESLint rules, update nx.json for task dependencies ([ddbaf92](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/ddbaf92))
+- Implement Task Master functionality with tool management and chat integration ([c9cad89](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/c9cad89))
+- add icon files for Huckleberry extension and update package.json ([e1c4cd7](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/e1c4cd7))
+- implement task management features with handlers and tool manager ([daf2510](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/daf2510))
+- enhance priority task query handler to read tasks from tasks.json and display them dynamically ([8b1b50b](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/8b1b50b))
+- enhance task management with priority handling and fallback responses ([35bd641](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/35bd641))
+- Implement task management features including creation, querying, and status updates ([89b6fbc](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/89b6fbc))
+- **assets:** add new logo assets in PNG and SVG formats for Huckleberry Docs ([1248e00](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/1248e00))
+- **assets:** update SVG files for improved visual consistency ([5b5c4c2](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/5b5c4c2))
+- **ci:** update workflow for deploying Docusaurus site to GitHub Pages ([3f200fe](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/3f200fe))
+- **docs:** add initial README.md for Huckleberry documentation ([106b547](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/106b547))
+- **docs): add link to official documentation site in README.md feat(ci): set GITHUB_ACTIONS environment variable for deployment fix(docusaurus:** update baseUrl for GitHub Pages deployment ([779c41b](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/779c41b))
+- **extension:** integrate language model tools for task management ([4ea49c5](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/4ea49c5))
+- **release:** add firstRelease input to release workflow ([7d23a3d](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/7d23a3d))
+
+### 🩹 Fixes
+
+- **HomepageHeader:** use useBaseUrl for image source path ([6e7fe6d](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/6e7fe6d))
+- **release:** correct command arguments for Nx release step ([ad98d5d](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/ad98d5d))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris

@@ -1,7 +1,7 @@
 {
   "name": "huckleberry-extension",
   "displayName": "Huckleberry Task Manager",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
   "publisher": "CambridgeMonorail",
   "repository": {
@@ -93,7 +93,9 @@
               "description": "The ID of the project."
             }
           },
-          "required": ["projectId"]
+          "required": [
+            "projectId"
+          ]
         }
       },
       {
@@ -114,11 +116,18 @@
             },
             "priority": {
               "type": "string",
-              "enum": ["low", "medium", "high", "critical"],
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical"
+              ],
               "description": "Priority of the task"
             }
           },
-          "required": ["description"]
+          "required": [
+            "description"
+          ]
         }
       },
       {
@@ -170,12 +179,23 @@
           "properties": {
             "priority": {
               "type": "string",
-              "enum": ["low", "medium", "high", "critical", "all"],
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical",
+                "all"
+              ],
               "description": "Filter tasks by priority"
             },
             "status": {
               "type": "string",
-              "enum": ["open", "in_progress", "done", "all"],
+              "enum": [
+                "open",
+                "in_progress",
+                "done",
+                "all"
+              ],
               "description": "Filter tasks by status"
             }
           },
@@ -199,7 +219,9 @@
               "description": "ID of the task to mark as done"
             }
           },
-          "required": ["taskId"]
+          "required": [
+            "taskId"
+          ]
         }
       },
       {
@@ -220,11 +242,19 @@
             },
             "priority": {
               "type": "string",
-              "enum": ["low", "medium", "high", "critical"],
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical"
+              ],
               "description": "New priority for the task"
             }
           },
-          "required": ["taskId", "priority"]
+          "required": [
+            "taskId",
+            "priority"
+          ]
         }
       }
     ],
