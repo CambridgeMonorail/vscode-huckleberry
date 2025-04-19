@@ -50,7 +50,7 @@ jobs:
       - name: Run Nx Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm nx release ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.releaseType != '' && format('--version-increment {0}', github.event.inputs.releaseType) || '' }}
+        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }}
 
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
