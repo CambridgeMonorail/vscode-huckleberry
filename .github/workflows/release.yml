@@ -92,7 +92,7 @@ jobs:
           name: Release v${{ steps.package_version.outputs.version }}
           draft: false
           prerelease: false
-          files: apps/huckleberry-extension/huckleberry-extension-*.vsix
+          files: apps/huckleberry-extension/vscode-copilot-huckleberry-*.vsix
           generate_release_notes: true
           body: |
             ## Huckleberry Extension v${{ steps.package_version.outputs.version }}
