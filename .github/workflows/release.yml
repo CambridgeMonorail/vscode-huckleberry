@@ -57,19 +57,40 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Run Nx Release
+      - name: Run Nx Release (version bump and git tag only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }}
+        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }} --no-changelog
+
+      - name: Get Package Version
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        id: package_version
+        run: |
+          VERSION=$(node -p "require('./apps/huckleberry-extension/package.json').version")
+          echo "::set-output name=version::$VERSION"
+          echo "Package version: $VERSION"
 
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: pnpm exec nx package huckleberry-extension
 
-      - name: Upload VSIX to Release
+      - name: Create GitHub Release
         if: ${{ github.event.inputs.dryRun != 'true' }}
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ steps.package_version.outputs.version }}
+          name: Release v${{ steps.package_version.outputs.version }}
+          draft: false
+          prerelease: false
           files: apps/huckleberry-extension/huckleberry-extension-*.vsix
+          generate_release_notes: true
+          body: |
+            ## Huckleberry Extension v${{ steps.package_version.outputs.version }}
+            
+            ### Installation
+            Download the VSIX file and install it manually in VS Code:
+            - Go to Extensions view (Ctrl+Shift+X)
+            - Click on "..." (More Actions) > "Install from VSIX..."
+            - Select the downloaded VSIX file
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

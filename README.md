@@ -61,6 +61,13 @@ This architecture allows Huckleberry to provide a richer, more integrated task m
 
 > **Note**: Huckleberry is not yet available on the VS Code Marketplace.
 
+**Pre-release Installation**: Until the official marketplace release, you can download the latest installable VSIX file from our [GitHub Releases page](https://github.com/CambridgeMonorail/vscode-huckleberry/releases). Install it in VS Code by:
+
+1. Opening VS Code
+2. Going to the Extensions view (Ctrl+Shift+X / Cmd+Shift+X)
+3. Clicking on the "..." at the top of the Extensions view
+4. Selecting "Install from VSIX..." and choosing the downloaded file
+
 Once released, installation will be as simple as:
 
 ```
