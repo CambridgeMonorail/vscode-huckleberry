@@ -1,3 +1,18 @@
+## 0.1.2 (2025-04-19)
+
+### 🚀 Features
+
+- **release:** enhance release workflow with version retrieval and notes ([5555cd2](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/5555cd2))
+
+### 🩹 Fixes
+
+- **release:** improve dependency installation and packaging steps ([9417b4b](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/9417b4b))
+- **release:** remove unnecessary --no-changelog flag from Nx release command ([04da449](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/04da449))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.1 (2025-04-19)
 
 ### 🚀 Features
