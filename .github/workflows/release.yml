@@ -75,8 +75,8 @@ jobs:
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
-          # Run packaging with NODE_OPTIONS to increase memory limit if needed
-          NODE_OPTIONS="--max-old-space-size=4096" pnpm exec nx package huckleberry-extension
+          # Use the package:extension script that works locally
+          pnpm package:extension
           
       - name: List Generated VSIX
         if: ${{ github.event.inputs.dryRun != 'true' }}
