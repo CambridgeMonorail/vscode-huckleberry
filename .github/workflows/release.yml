@@ -62,7 +62,7 @@ jobs:
       - name: Run Nx Release (version bump and git tag only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }} --no-changelog
+        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }}
 
       - name: Get Package Version
         if: ${{ github.event.inputs.dryRun != 'true' }}
