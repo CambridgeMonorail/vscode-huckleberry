@@ -1,3 +1,13 @@
+## 0.1.4 (2025-04-19)
+
+### 🚀 Features
+
+- **extension:** update extension name and commands for consistency docs: enhance installation instructions and add development workflow docs: add new tags for blog content categorization style: update hero banner styles and replace images build: change build commands to use new extension name ([f7ea1de](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/f7ea1de))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.3 (2025-04-19)
 
 ### 🩹 Fixes
