@@ -3,7 +3,7 @@
   align-items: center;
   padding: 2rem 0;
   width: 100%;
-  background-color: #f8f3ea; /* Match the cream background color */
+  background-color: var(--ifm-background-surface-color);
 }
 
 .featureSvg {
@@ -18,4 +18,9 @@
 /* Optional hover effect for feature icons */
 .featureSvg:hover {
   transform: translateY(-5px);
+}
+
+/* Ensure SVG icons are visible in dark mode */
+html[data-theme='dark'] .featureSvg {
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.1)) brightness(0.9);
 }

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Question or Discussion
+    url: https://github.com/CambridgeMonorail/vscode-huckleberry/discussions
+    about: Ask questions or start discussions about Huckleberry Task Manager
+  - name: 📚 Documentation
+    url: https://github.com/CambridgeMonorail/vscode-huckleberry/tree/main/apps/huckleberry-docs
+    about: Visit our documentation for guides and usage information

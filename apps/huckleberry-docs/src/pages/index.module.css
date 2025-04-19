@@ -50,3 +50,51 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+/* Inspiration section styling */
+.inspiration {
+  padding: 4rem 0;
+  background-color: rgba(248, 243, 234, 0.5);
+  border-top: 1px solid #e0d5c0;
+  border-bottom: 1px solid #e0d5c0;
+}
+
+.inspirationTitle {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-family: 'Georgia', serif;
+  color: #4d301b;
+  font-size: 2.2rem;
+  letter-spacing: 0.5px;
+}
+
+.inspirationContent {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #584332;
+}
+
+.inspirationContent p {
+  margin-bottom: 1.2rem;
+}
+
+.inspirationContent a {
+  color: #6e4527;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.inspirationContent a:hover {
+  color: #8f5a33;
+}
+
+@media screen and (max-width: 768px) {
+  .inspirationTitle {
+    font-size: 1.8rem;
+  }
+  
+  .inspirationContent {
+    font-size: 1rem;
+  }
+}
