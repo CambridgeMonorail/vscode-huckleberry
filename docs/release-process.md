@@ -1,138 +1,120 @@
 # Huckleberry Release Process
 
-This document outlines the automated release process for the Huckleberry VS Code extension within our Nx monorepo.
+This document outlines the release process for the Huckleberry project. It provides guidance on how to create and publish new releases of the VS Code extension and other components.
 
-## Release Automation Overview
+## Release Workflow
 
-Huckleberry uses an automated release process built on:
+The Huckleberry project uses GitHub Actions to automate the release process. The workflow handles versioning, generating changelogs, and publishing new releases.
 
-- **Nx Release** for version management and changelog generation
-- **Conventional Commits** for standardized commit messages
-- **GitHub Actions** for CI/CD automation
-- **VS Code Extension Packaging** for creating VSIX files
+### Prerequisites
 
-## Prerequisites
+Before triggering a release, make sure:
 
-Before contributing to the project, ensure you have:
+1. All changes intended for the release are merged to the main branch
+2. All tests are passing
+3. The code adheres to the project's coding standards and guidelines
+4. All features for the release are complete
 
-1. **Conventional Commits Knowledge**: All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification
-2. **Husky and Commitlint**: These are configured to enforce commit message standards
-3. **GitHub Permissions**: Proper write access to create releases (for maintainers)
+### Triggering a Release
 
-## Commit Message Format
+To trigger a release:
 
-All commits must follow this format:
+1. Go to the GitHub repository
+2. Navigate to the "Actions" tab
+3. Select the "Release" workflow
+4. Click "Run workflow"
+5. Configure the following options:
+   - **Branch**: Select the branch to release from (usually `main`)
+   - **Release Type**: Choose one of:
+     - `patch`: For backward-compatible bug fixes (e.g., 1.0.0 → 1.0.1)
+     - `minor`: For backward-compatible new features (e.g., 1.0.0 → 1.1.0)
+     - `major`: For breaking changes (e.g., 1.0.0 → 2.0.0)
+   - **Dry Run**: Enable to preview changes without publishing (recommended first)
+   - **First Release**: Enable ONLY for the initial release (when no version tags exist)
 
+### First-Time Release
+
+When making the very first release of the project:
+
+1. Set "First Release" to `true`
+2. The workflow will use the version from the package.json file as the base version
+3. It will create the appropriate git tag and GitHub release
+
+For all subsequent releases, leave "First Release" unchecked, as the workflow will determine the next version based on the existing git tags.
+
+## Manual Release Process
+
+In case you need to handle the release process manually:
+
+### Creating Version Tags Manually
+
+```bash
+# Get the current version
+VERSION=$(node -p "require('./apps/huckleberry-extension/package.json').version")
+
+# Create and push git tag
+git tag v${VERSION}
+git push origin v${VERSION}
 ```
-<type>[optional scope]: <description>
 
-[optional body]
+### Running the Release Process Locally
 
-[optional footer(s)]
+```bash
+# For a dry run
+pnpm nx release patch --dry-run
+
+# For an actual release
+pnpm nx release patch
+
+# For a first-time release
+pnpm nx release patch --first-release
 ```
 
-Common types include:
+## Versioning Strategy
 
-- `feat`: New feature (minor version bump)
-- `fix`: Bug fixes (patch version bump)
-- `docs`: Documentation changes only
-- `style`: Code style changes (formatting, semicolons, etc.)
-- `refactor`: Code changes that neither fix bugs nor add features
-- `perf`: Performance improvements
-- `test`: Adding or correcting tests
-- `build`: Changes to the build system or dependencies
-- `ci`: Changes to CI configuration files and scripts
-- `chore`: Other changes that don't modify src or test files
+The Huckleberry project follows the [Semantic Versioning](https://semver.org/) specification:
 
-Breaking changes are indicated by adding a `!` after the type/scope or adding a footer with `BREAKING CHANGE:`.
+- **MAJOR** version when making incompatible API changes
+- **MINOR** version when adding functionality in a backward-compatible manner
+- **PATCH** version when making backward-compatible bug fixes
 
-## Release Process Workflow
+### Conventional Commits
 
-### 1. Development Phase
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages. These commit messages are used to determine the type of version change and to generate the changelog.
 
-1. Create a feature branch from `main`
-2. Make your changes following the project's coding standards
-3. Commit your changes using conventional commit messages
-   - The commit-msg hook will validate your commit messages
-4. Open a pull request to `main`
-5. After code review, merge the PR into `main`
+Examples:
+- `fix:` commits trigger a PATCH release
+- `feat:` commits trigger a MINOR release
+- Any commit with `BREAKING CHANGE:` in the footer or `!` after the type/scope triggers a MAJOR release
 
-### 2. Manual Release Process
+## Post-Release Steps
 
-Currently, releases are triggered manually via GitHub Actions:
+After a successful release:
 
-1. Navigate to the GitHub repository's "Actions" tab
-2. Select the "Release" workflow
-3. Click the "Run workflow" button
-4. Configure the release parameters:
-   - **Release type**: Choose patch, minor, or major version increment
-   - **Dry run**: Toggle to test the release process without creating actual releases
-
-The workflow will:
-
-1. **Check Out Code**: Retrieve the full git history
-2. **Set Up Environment**: Configure Node.js and pnpm
-3. **Run Nx Release**:
-   - Analyze commit messages to determine the next version (semantic versioning)
-   - Update version numbers in affected packages
-   - Generate changelogs
-   - Create a git tag
-   - Create a GitHub release
-4. **Package the Extension**: Create a `.vsix` file (unless dry run is enabled)
-5. **Upload Assets**: Attach the `.vsix` file to the GitHub release (unless dry run is enabled)
-
-## Local Manual Release (if needed)
-
-For exceptional cases where a local manual release is required:
-
-1. Ensure you're on the latest `main` branch
-2. Run `pnpm nx release version` to determine and update the next version
-3. Run `pnpm nx release changelog` to generate changelogs
-4. Run `pnpm nx package huckleberry-extension` to create the VSIX file
-5. Create a GitHub release manually and upload the VSIX file
-
-## Version Numbering
-
-We follow [Semantic Versioning](https://semver.org/):
-
-- **MAJOR** version: incompatible API changes (X.0.0)
-- **MINOR** version: add functionality in a backward-compatible manner (0.X.0)
-- **PATCH** version: backward-compatible bug fixes (0.0.X)
-
-The version is automatically incremented based on the commit messages since the last release or can be explicitly specified via the workflow input parameters.
-
-## Release Artifacts
-
-Each release produces:
-
-1. **Updated package.json** files with new version numbers
-2. **CHANGELOG.md** updates documenting changes
-3. **Git tag** for the new version
-4. **GitHub release** with release notes
-5. **VSIX package** for VS Code extension installation
-
-## Publishing to VS Code Marketplace
-
-Currently, publishing to the VS Code Marketplace is a manual step:
-
-1. Download the `.vsix` file from the GitHub release
-2. Use the VS Code Marketplace publisher account credentials
-3. Publish using `vsce publish -p <token> /path/to/extension.vsix`
-
-*Note: Future iterations of this process may automate the marketplace publication step.*
+1. Verify the new version is available on the GitHub Releases page
+2. Check that the VSIX file is attached to the release
+3. Verify the changelog is accurate and reflects all changes made
+4. If relevant, update the documentation site to reflect the new version
+5. Announce the release on appropriate channels
 
 ## Troubleshooting
 
-### Common Issues
+### Release Workflow Fails to Determine Version
 
-1. **Failed Commit Validation**: Ensure your commit follows the conventional commits format
-2. **Release Failed**: Check GitHub Actions logs for specific errors
-3. **Version Not Incrementing**: Ensure you have commits with the appropriate type (`feat`, `fix`, etc.)
+If the workflow fails with an error about not finding git tags:
 
-### Getting Help
+1. Use the "First Release" option for the initial release
+2. For subsequent releases, verify that git tags exist following the pattern `v{version}`
+3. Check that the git tags are pushed to the remote repository
 
-If you encounter issues with the release process:
+### VSIX File Not Attaching to Release
 
-1. Check the GitHub Actions workflow logs
-2. Review the Nx Release documentation
-3. Contact the project maintainers
+Ensure that:
+1. The extension packaging step completes successfully
+2. The path to the VSIX file in the workflow matches the actual output location
+
+## Additional Resources
+
+- [Nx Release Documentation](https://nx.dev/features/manage-releases)
+- [Semantic Versioning](https://semver.org/)
+- [Conventional Commits](https://www.conventionalcommits.org/)

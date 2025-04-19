@@ -17,6 +17,11 @@ on:
         required: false
         default: false
         type: boolean
+      firstRelease:
+        description: 'First release (use for initial version)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   release:
@@ -50,7 +55,7 @@ jobs:
       - name: Run Nx Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }}
+        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }}
 
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
