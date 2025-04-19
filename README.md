@@ -145,17 +145,20 @@ This project is built with an Nx monorepo containing both the VS Code extension 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/vscode-huckleberry.git
+git clone https://github.com/CambridgeMonorail/vscode-huckleberry.git
 cd vscode-huckleberry
 
 # Install dependencies
-npm install
+pnpm install
 
 # Build the extension
-nx build huckleberry-extension
+pnpm exec nx build huckleberry-extension
+
+# Run extension in development mode
+pnpm exec nx watch huckleberry-extension
 
 # Package the extension
-nx package huckleberry-extension
+pnpm exec nx package huckleberry-extension
 ```
 
 For detailed setup instructions, see [workspace setup documentation](./docs/workspace-setup.md).
@@ -166,7 +169,8 @@ For detailed setup instructions, see [workspace setup documentation](./docs/work
 vscode-huckleberry/
 ├─ apps/
 │  ├─ huckleberry-extension/  # VS Code extension (TypeScript)
-│  └─ huckleberry-docs/       # Documentation site (Docusaurus)
+│  ├─ huckleberry-docs/       # Documentation site (Docusaurus)
+│  └─ demo-site/              # React SPA for demonstration purposes
 ├─ assets/
 │  └─ images/                 # Project logos and assets
 └─ docs/
@@ -181,8 +185,39 @@ The project is organized as an Nx monorepo with the following components:
 
 - **huckleberry-extension**: The core VS Code extension implementing the Task Manager chat participant and AI integration
 - **huckleberry-docs**: Documentation site built with Docusaurus
+- **demo-site**: React SPA for demonstration and testing purposes
 - **assets**: Shared images and design resources used across the project
 - **docs**: Project-level documentation and guides
+
+### Extension Development
+
+#### Development Workflow
+
+1. **Setup**: Use the instructions above to set up your development environment
+2. **Development**:
+   - Extension: Use `pnpm exec nx build huckleberry-extension --watch` for continuous builds during development
+   - Demo site: Use `pnpm exec nx serve demo-site` to start the development server
+3. **Testing**: Run `pnpm exec nx test huckleberry-extension` to execute tests
+4. **Building**: Run `pnpm exec nx build huckleberry-extension` to build the extension
+5. **Debugging**:
+   - From VS Code: Use the "Run Extension" launch configuration
+   - For detailed debug setup, see [debug setup documentation](./docs/debug-setup.md)
+
+#### VS Code Extension Architecture
+
+The extension is built around these core components:
+
+1. **Chat Participant**: Registers as a named participant in VS Code's chat interface
+2. **Command Handlers**: Process chat and palette commands for task management
+3. **Task Service**: Core functionality for creating, updating, and managing tasks
+4. **Storage Service**: Handles persistence of tasks to the file system
+5. **Language Model Tools**: Integrates with VS Code's language model API
+
+#### VS Code Extension Requirements
+
+- VS Code version 1.93 or later (for Language Model API support)
+- Node.js 18+ for development
+- TypeScript 5.0+
 
 ## Roadmap
 

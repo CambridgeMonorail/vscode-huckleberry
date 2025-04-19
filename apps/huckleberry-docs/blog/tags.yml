@@ -17,3 +17,23 @@ hola:
   label: Hola
   permalink: /hola
   description: Hola tag description
+
+huckleberry:
+  label: Huckleberry
+  permalink: /huckleberry
+  description: Content related to the Huckleberry task management system
+
+development:
+  label: Development
+  permalink: /development
+  description: Development processes, patterns, and best practices
+
+ai-agents:
+  label: AI Agents
+  permalink: /ai-agents
+  description: Topics related to AI agents and intelligent assistants
+
+vs-code:
+  label: VS Code
+  permalink: /vs-code
+  description: Content related to Visual Studio Code and extensions

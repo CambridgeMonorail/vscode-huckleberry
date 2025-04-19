@@ -22,6 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@huckleberry/extension/*": ["apps/huckleberry-extension/src/*"],
+      "@vscode-copilot-huckleberry/*": ["apps/huckleberry-extension/src/*"],
       "@huckleberry/shared/*": ["shared/*"]
     }
   },

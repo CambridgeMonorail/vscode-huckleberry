@@ -242,12 +242,12 @@ export function activate(context: vscode.ExtensionContext): void {
     };
     
     // Register commands
-    const helloWorldDisposable = vscode.commands.registerCommand('huckleberry-extension.helloWorld', () => {
+    const helloWorldDisposable = vscode.commands.registerCommand('vscode-copilot-huckleberry.helloWorld', () => {
       showInfo('Hello from Huckleberry!');
       logWithChannel(LogLevel.DEBUG, 'Hello World command executed');
     });
 
-    const manageTasksDisposable = vscode.commands.registerCommand('huckleberry-extension.manageTasks', () => {
+    const manageTasksDisposable = vscode.commands.registerCommand('vscode-copilot-huckleberry.manageTasks', () => {
       // Check workspace availability before proceeding
       if (!isWorkspaceAvailable()) {
         notifyNoWorkspace();
@@ -258,19 +258,19 @@ export function activate(context: vscode.ExtensionContext): void {
     });
 
     const checkCopilotAgentModeDisposable = vscode.commands.registerCommand(
-      'huckleberry-extension.checkCopilotAgentMode', 
+      'vscode-copilot-huckleberry.checkCopilotAgentMode', 
       checkCopilotAgentMode
     );
     
     // Add the test chat command
     const testChatDisposable = vscode.commands.registerCommand(
-      'huckleberry-extension.testChat', 
+      'vscode-copilot-huckleberry.testChat', 
       testHuckleberryChat
     );
     
     // Add the force refresh command
     const forceRefreshDisposable = vscode.commands.registerCommand(
-      'huckleberry-extension.forceRefreshChatParticipants', 
+      'vscode-copilot-huckleberry.forceRefreshChatParticipants', 
       forceRefreshChatParticipants
     );
 

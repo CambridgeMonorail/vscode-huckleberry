@@ -8,8 +8,25 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #4d301b 0%, #6e4527 100%); /* Updated to match sepia/brown theme */
+  background: url('/img/hero-banner.png') center center/cover no-repeat;
   color: #f8f3ea; /* Light cream color for text */
+}
+
+/* Add a dark overlay to ensure text remains readable on any background image */
+.heroBanner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Dark overlay for better text visibility */
+  z-index: 1;
+}
+
+.heroBanner > div {
+  position: relative;
+  z-index: 2; /* Place content above the overlay */
 }
 
 .heroLogo {

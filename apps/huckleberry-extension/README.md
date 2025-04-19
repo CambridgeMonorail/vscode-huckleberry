@@ -128,26 +128,6 @@ All task management operations are performed locally within VS Code. When you in
 
 No default keyboard shortcuts are assigned, but you can add your own through VS Code's keyboard shortcuts settings.
 
-## Extension Development
-
-This extension is part of the Huckleberry project, a monorepo built with Nx. For development setup:
-
-```bash
-# Clone the repo
-git clone https://github.com/CambridgeMonorail/vscode-huckleberry.git
-
-# Install dependencies
-pnpm install
-
-# Build the extension
-pnpm run build:extension
-
-# Package the extension
-pnpm run package:extension
-```
-
-For more information about development, please see the [project repository](https://github.com/CambridgeMonorail/vscode-huckleberry).
-
 ## Privacy Notice
 
 Huckleberry Task Manager stores all task data locally in your workspace and does not send task information to external servers.

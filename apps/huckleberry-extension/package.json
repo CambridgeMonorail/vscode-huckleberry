@@ -1,5 +1,5 @@
 {
-  "name": "huckleberry-extension",
+  "name": "vscode-copilot-huckleberry",
   "displayName": "Huckleberry Task Manager",
   "version": "0.1.3",
   "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
@@ -23,7 +23,6 @@
   "activationEvents": [
     "onStartupFinished",
     "onChatParticipant:huckleberry",
-    "onCommand:huckleberry-extension.helloWorld",
     "onLanguageModelTool:fetch_project_info",
     "onLanguageModelTool:huckleberry.createTask",
     "onLanguageModelTool:huckleberry.initializeTaskTracking",
@@ -35,27 +34,27 @@
   "contributes": {
     "commands": [
       {
-        "command": "huckleberry-extension.helloWorld",
+        "command": "vscode-copilot-huckleberry.helloWorld",
         "title": "Huckleberry: Hello World"
       },
       {
-        "command": "huckleberry-extension.manageTasks",
+        "command": "vscode-copilot-huckleberry.manageTasks",
         "title": "Huckleberry: Manage Tasks",
         "category": "Huckleberry",
         "description": "Open the Huckleberry task management interface"
       },
       {
-        "command": "huckleberry-extension.checkCopilotAgentMode",
+        "command": "vscode-copilot-huckleberry.checkCopilotAgentMode",
         "title": "Huckleberry: Check Copilot Agent Mode"
       },
       {
-        "command": "huckleberry-extension.testChat",
+        "command": "vscode-copilot-huckleberry.testChat",
         "title": "Huckleberry: Test Chat Integration",
         "category": "Huckleberry",
         "description": "Test the chat integration and diagnose potential issues"
       },
       {
-        "command": "huckleberry-extension.forceRefreshChatParticipants",
+        "command": "vscode-copilot-huckleberry.forceRefreshChatParticipants",
         "title": "Huckleberry: Refresh Chat Participants",
         "category": "Huckleberry",
         "description": "Force refresh of chat participants if they stop responding"

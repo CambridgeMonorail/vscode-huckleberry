@@ -1,5 +1,5 @@
 {
-  "name": "huckleberry-extension",
+  "name": "vscode-copilot-huckleberry",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/huckleberry-extension/src",
   "projectType": "application",
