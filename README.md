@@ -169,10 +169,10 @@ vscode-huckleberry/
 
 The project is organized as an Nx monorepo with the following components:
 
-* **huckleberry-extension**: The core VS Code extension implementing the Task Manager chat participant and AI integration
-* **huckleberry-docs**: Documentation site built with Docusaurus
-* **assets**: Shared images and design resources used across the project
-* **docs**: Project-level documentation and guides
+- **huckleberry-extension**: The core VS Code extension implementing the Task Manager chat participant and AI integration
+- **huckleberry-docs**: Documentation site built with Docusaurus
+- **assets**: Shared images and design resources used across the project
+- **docs**: Project-level documentation and guides
 
 ## Roadmap
 

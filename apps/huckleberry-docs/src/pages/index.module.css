@@ -8,6 +8,18 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, #4d301b 0%, #6e4527 100%); /* Updated to match sepia/brown theme */
+  color: #f8f3ea; /* Light cream color for text */
+}
+
+.heroLogo {
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0px 5px 10px rgba(0, 0, 0, 0.2));
+  background-color: rgba(248, 243, 234, 0.8); /* Semi-transparent cream background */
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 90%;
 }
 
 @media screen and (max-width: 996px) {
@@ -20,4 +32,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Style the Get Started button to match theme */
+.buttons a {
+  background-color: #f8f3ea;
+  color: #6e4527;
+  border: 1px solid #e0d5c0;
+  transition: all 0.3s ease;
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.5px;
+}
+
+.buttons a:hover {
+  background-color: #e0d5c0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

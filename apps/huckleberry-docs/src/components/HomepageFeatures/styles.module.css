@@ -3,9 +3,19 @@
   align-items: center;
   padding: 2rem 0;
   width: 100%;
+  background-color: #f8f3ea; /* Match the cream background color */
 }
 
 .featureSvg {
-  height: 200px;
-  width: 200px;
+  height: 120px;  /* Reduced from 200px */
+  width: 120px;   /* Reduced from 200px */
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+/* Optional hover effect for feature icons */
+.featureSvg:hover {
+  transform: translateY(-5px);
 }

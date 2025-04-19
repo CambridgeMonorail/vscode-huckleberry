@@ -6,25 +6,69 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  /* New color palette based on Huckleberry logo - sepia/brown tones */
+  --ifm-color-primary: #6e4527;
+  --ifm-color-primary-dark: #633e23;
+  --ifm-color-primary-darker: #5d3a21;
+  --ifm-color-primary-darkest: #4d301b;
+  --ifm-color-primary-light: #794c2b;
+  --ifm-color-primary-lighter: #7f502d;
+  --ifm-color-primary-lightest: #8f5a33;
+  --ifm-background-color: #f8f3ea; /* Light cream background color */
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-heading-font-family: 'Georgia', serif; /* More classic serif font for headings */
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* For readability concerns, we use a slightly different palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: #d3ad8c;
+  --ifm-color-primary-dark: #c99c75;
+  --ifm-color-primary-darker: #c4936a;
+  --ifm-color-primary-darkest: #b3784a;
+  --ifm-color-primary-light: #ddbea3;
+  --ifm-color-primary-lighter: #e2c7ae;
+  --ifm-color-primary-lightest: #f0e2d3;
+  --ifm-background-color: #2c2520; /* Dark sepia background */
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Customizations */
+.footer--dark {
+  --ifm-footer-background-color: var(--ifm-color-primary-darkest);
+}
+
+.hero {
+  background: linear-gradient(to bottom right, var(--ifm-color-primary-darkest), var(--ifm-color-primary));
+  color: #f8f3ea;
+}
+
+/* Logo styling */
+.navbar__logo img {
+  height: 2rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings styling to match classic logo feel */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ifm-heading-font-family);
+  letter-spacing: 0.5px;
+}
+
+/* Main content area background */
+main {
+  background-color: var(--ifm-background-color);
+}
+
+/* Add a classic border to images in content */
+.markdown img {
+  border: 1px solid #e0d5c0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Make the homepage container warmer */
+[class*='docMainContainer'] {
+  background-color: var(--ifm-background-color);
 }
