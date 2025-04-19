@@ -219,12 +219,23 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // Initialize chat service
     const chatService = new ChatService(context, toolManager);
-
-    // Initialize and register language model tools
+    
+    // Register language model tools first to ensure they're ready for activation
+    logWithChannel(LogLevel.INFO, '🔨 Creating language model tools provider...');
     const languageModelToolsProvider = new LanguageModelToolsProvider(toolManager);
+
+    // Initialize and register language model tools - ensure this happens before any activation events
     try {
       logWithChannel(LogLevel.INFO, '🔨 Registering language model tools...');
+      
+      // Force synchronous registration of all tools to ensure they're available
       const toolDisposables = languageModelToolsProvider.registerAllTools(context);
+      
+      // Add all tool disposables to context subscriptions
+      toolDisposables.forEach(disposable => {
+        context.subscriptions.push(disposable);
+      });
+      
       logWithChannel(LogLevel.INFO, `✅ Successfully registered ${toolDisposables.length} language model tools`);
     } catch (toolError) {
       logWithChannel(LogLevel.ERROR, '❌ Failed to register language model tools:', toolError);

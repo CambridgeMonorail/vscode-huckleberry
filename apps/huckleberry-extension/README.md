@@ -10,6 +10,8 @@
 
 Huckleberry Task Manager is a VS Code extension that brings AI-powered task management directly into your coding workflow. Using the VS Code Chat interface, you can have natural conversations with a dedicated Task Manager agent that helps you track, manage, and organize project tasks without ever leaving your development environment.
 
+For comprehensive documentation, visit [https://cambridgemonorail.github.io/vscode-huckleberry/](https://cambridgemonorail.github.io/vscode-huckleberry/).
+
 ## Features
 
 - 🗣️ **Natural Language Interface** - Create and manage tasks using conversational language

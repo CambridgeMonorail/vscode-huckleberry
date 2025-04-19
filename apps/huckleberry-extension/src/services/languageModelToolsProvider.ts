@@ -91,6 +91,7 @@ interface TaskPriorityChangeInput {
 export class LanguageModelToolsProvider {
   private toolManager: ToolManager;
   private disposables: vscode.Disposable[] = [];
+  private initialized: boolean = false;
 
   /**
    * Creates a new LanguageModelToolsProvider
@@ -106,15 +107,26 @@ export class LanguageModelToolsProvider {
    * @returns Array of disposables for all registered tools
    */
   public registerAllTools(context: vscode.ExtensionContext): vscode.Disposable[] {
+    if (this.initialized) {
+      logWithChannel(LogLevel.WARN, 'LanguageModelToolsProvider already initialized, skipping registration');
+      return this.disposables;
+    }
+
     logWithChannel(LogLevel.INFO, '🔧 Registering language model tools for Huckleberry');
     
     try {
       // Store reference to toolManager for use in the closures
       const toolManager = this.toolManager;
+
+      // Explicitly check for and log VS Code API availability
+      if (!vscode.lm || typeof vscode.lm.registerTool !== 'function') {
+        throw new Error('VS Code Language Model Tools API not available');
+      }
       
       // Create Task tool
-      this.disposables.push(
-        vscode.lm.registerTool('huckleberry.createTask', {
+      try {
+        logWithChannel(LogLevel.DEBUG, 'Registering huckleberry.createTask tool...');
+        const createTaskDisposable = vscode.lm.registerTool('huckleberry.createTask', {
           async invoke(options, token) {
             const input = options.input as TaskWithPriorityInput;
             const description = input?.description;
@@ -159,12 +171,18 @@ export class LanguageModelToolsProvider {
               };
             }
           }
-        })
-      );
+        });
+        this.disposables.push(createTaskDisposable);
+        logWithChannel(LogLevel.DEBUG, '✓ huckleberry.createTask registered successfully');
+      } catch (error) {
+        logWithChannel(LogLevel.ERROR, 'Failed to register huckleberry.createTask tool:', error);
+        throw error; // Re-throw to handle in the main try/catch
+      }
 
       // Initialize Task Tracking tool
-      this.disposables.push(
-        vscode.lm.registerTool('huckleberry.initializeTaskTracking', {
+      try {
+        logWithChannel(LogLevel.DEBUG, 'Registering huckleberry.initializeTaskTracking tool...');
+        const initializeToolDisposable = vscode.lm.registerTool('huckleberry.initializeTaskTracking', {
           async invoke(options, token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
@@ -192,8 +210,13 @@ export class LanguageModelToolsProvider {
               };
             }
           }
-        })
-      );
+        });
+        this.disposables.push(initializeToolDisposable);
+        logWithChannel(LogLevel.DEBUG, '✓ huckleberry.initializeTaskTracking registered successfully');
+      } catch (error) {
+        logWithChannel(LogLevel.ERROR, 'Failed to register huckleberry.initializeTaskTracking tool:', error);
+        throw error;
+      }
 
       // Scan TODOs tool
       this.disposables.push(
@@ -383,6 +406,7 @@ export class LanguageModelToolsProvider {
         context.subscriptions.push(disposable);
       });
 
+      this.initialized = true;
       logWithChannel(LogLevel.INFO, `✅ Successfully registered ${this.disposables.length} language model tools`);
       return [...this.disposables];
     } catch (error) {
@@ -398,5 +422,6 @@ export class LanguageModelToolsProvider {
     logWithChannel(LogLevel.INFO, `Disposing ${this.disposables.length} language model tools`);
     this.disposables.forEach(disposable => disposable.dispose());
     this.disposables = [];
+    this.initialized = false;
   }
 }
