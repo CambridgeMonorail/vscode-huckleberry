@@ -1,3 +1,13 @@
+## 0.1.3 (2025-04-19)
+
+### 🩹 Fixes
+
+- **release:** update packaging step to use local script ([06037bb](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/06037bb))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.2 (2025-04-19)
 
 ### 🚀 Features
