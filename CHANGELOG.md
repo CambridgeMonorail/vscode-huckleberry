@@ -1,3 +1,14 @@
+## 0.1.6 (2025-04-20)
+
+### 🚀 Features
+
+- **docs): add comprehensive workspace setup checklist feat(extension): update categories and tags in package.json fix(extension:** ensure synchronous registration of language model tools ([6447dcf](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/6447dcf))
+- **docs): add manual testing guide for Huckleberry extension feat(docs): update copilot instructions with project purpose refactor(extension:** standardize language model tool names ([94d8f5a](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/94d8f5a))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.5 (2025-04-19)
 
 ### 🩹 Fixes
