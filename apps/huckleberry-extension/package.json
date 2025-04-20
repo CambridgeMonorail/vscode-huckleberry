@@ -25,19 +25,15 @@
   "activationEvents": [
     "onStartupFinished",
     "onChatParticipant:huckleberry",
-    "onLanguageModelTool:huckleberry.createTask",
-    "onLanguageModelTool:huckleberry.initializeTaskTracking",
-    "onLanguageModelTool:huckleberry.scanTodos",
-    "onLanguageModelTool:huckleberry.listTasks",
-    "onLanguageModelTool:huckleberry.markTaskDone",
-    "onLanguageModelTool:huckleberry.changeTaskPriority"
+    "onLanguageModelTool:create_task",
+    "onLanguageModelTool:initialize_tracking",
+    "onLanguageModelTool:scan_todos",
+    "onLanguageModelTool:list_tasks",
+    "onLanguageModelTool:mark_task_done",
+    "onLanguageModelTool:update_task_priority"
   ],
   "contributes": {
     "commands": [
-      {
-        "command": "vscode-copilot-huckleberry.helloWorld",
-        "title": "Huckleberry: Hello World"
-      },
       {
         "command": "vscode-copilot-huckleberry.manageTasks",
         "title": "Huckleberry: Manage Tasks",
@@ -45,20 +41,85 @@
         "description": "Open the Huckleberry task management interface"
       },
       {
-        "command": "vscode-copilot-huckleberry.checkCopilotAgentMode",
-        "title": "Huckleberry: Check Copilot Agent Mode"
+        "command": "vscode-copilot-huckleberry.initializeTaskTracking",
+        "title": "Huckleberry: Initialize Task Tracking",
+        "category": "Huckleberry",
+        "description": "Set up task tracking for the current workspace"
       },
       {
-        "command": "vscode-copilot-huckleberry.testChat",
-        "title": "Huckleberry: Test Chat Integration",
+        "command": "vscode-copilot-huckleberry.createTask",
+        "title": "Huckleberry: Create Task",
         "category": "Huckleberry",
-        "description": "Test the chat integration and diagnose potential issues"
+        "description": "Create a new task in the workspace"
       },
       {
-        "command": "vscode-copilot-huckleberry.forceRefreshChatParticipants",
-        "title": "Huckleberry: Refresh Chat Participants",
+        "command": "vscode-copilot-huckleberry.listTasks",
+        "title": "Huckleberry: List Tasks",
         "category": "Huckleberry",
-        "description": "Force refresh of chat participants if they stop responding"
+        "description": "List all tasks in the workspace"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.markTaskComplete",
+        "title": "Huckleberry: Mark Task Complete",
+        "category": "Huckleberry",
+        "description": "Mark a task as completed"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.changeTaskPriority",
+        "title": "Huckleberry: Change Task Priority",
+        "category": "Huckleberry",
+        "description": "Change the priority of a task"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.scanTodos",
+        "title": "Huckleberry: Scan TODOs",
+        "category": "Huckleberry",
+        "description": "Scan workspace files for TODO comments and convert them to tasks"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.parseRequirementsDocument",
+        "title": "Huckleberry: Parse Requirements Document",
+        "category": "Huckleberry",
+        "description": "Parse a requirements document and create tasks from it"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.openTaskExplorer",
+        "title": "Huckleberry: Open Task Explorer",
+        "category": "Huckleberry",
+        "description": "Open the Task Explorer view to visualize and manage tasks"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.createSubtasks",
+        "title": "Huckleberry: Create Subtasks",
+        "category": "Huckleberry",
+        "description": "Break down a task into multiple subtasks"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.exportTasks",
+        "title": "Huckleberry: Export Tasks",
+        "category": "Huckleberry",
+        "description": "Export tasks to a different format (markdown, CSV, JSON)"
+      },
+      {
+        "command": "vscode-copilot-huckleberry._checkCopilotAgentMode",
+        "title": "Huckleberry (Dev): Check Copilot Agent Mode",
+        "enablement": "huckleberry.developmentMode",
+        "category": "Huckleberry",
+        "description": "Check if Copilot Agent Mode is enabled (development only)"
+      },
+      {
+        "command": "vscode-copilot-huckleberry._testChat",
+        "title": "Huckleberry (Dev): Test Chat Integration",
+        "enablement": "huckleberry.developmentMode",
+        "category": "Huckleberry",
+        "description": "Test the chat integration and diagnose potential issues (development only)"
+      },
+      {
+        "command": "vscode-copilot-huckleberry._forceRefreshChatParticipants",
+        "title": "Huckleberry (Dev): Refresh Chat Participants",
+        "enablement": "huckleberry.developmentMode",
+        "category": "Huckleberry",
+        "description": "Force refresh of chat participants if they stop responding (development only)"
       }
     ],
     "chatParticipants": [
@@ -77,10 +138,9 @@
     ],
     "languageModelTools": [
       {
-        "name": "huckleberry.createTask",
+        "name": "create_task",
         "displayName": "Create Task",
-        "description": "Creates a new task in the Huckleberry Task Manager",
-        "modelDescription": "Use this tool to create a new task with optional priority and due date information.",
+        "modelDescription": "Creates a new task in the Huckleberry Task Manager. Use this tool to create a new task with optional priority and due date information.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "createHuckleberryTask",
         "userDescription": "Creates a task in your project's task management system",
@@ -109,10 +169,9 @@
         }
       },
       {
-        "name": "huckleberry.initializeTaskTracking",
+        "name": "initialize_tracking",
         "displayName": "Initialize Task Tracking",
-        "description": "Initialize task tracking for a project",
-        "modelDescription": "Use this tool to set up task tracking for a project workspace.",
+        "modelDescription": "Initialize task tracking for a project workspace. Use this tool to set up task tracking for a project workspace.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "initializeHuckleberryTaskTracking",
         "userDescription": "Sets up the task tracking system in your project",
@@ -124,10 +183,9 @@
         }
       },
       {
-        "name": "huckleberry.scanTodos",
+        "name": "scan_todos",
         "displayName": "Scan TODOs",
-        "description": "Scans the codebase for TODO comments and converts them to tasks",
-        "modelDescription": "Use this tool to scan the codebase for TODO comments and create tasks from them.",
+        "modelDescription": "Scans the codebase for TODO comments and converts them to tasks. Use this tool to scan the codebase for TODO comments and create tasks from them.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "scanTodosHuckleberry",
         "userDescription": "Finds TODOs in your code and adds them to your task list",
@@ -144,10 +202,9 @@
         }
       },
       {
-        "name": "huckleberry.listTasks",
+        "name": "list_tasks",
         "displayName": "List Tasks",
-        "description": "Lists tasks from the task manager",
-        "modelDescription": "Use this tool to retrieve and list tasks, optionally filtered by priority or status.",
+        "modelDescription": "Lists tasks from the task manager. Use this tool to retrieve and list tasks, optionally filtered by priority or status.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "listHuckleberryTasks",
         "userDescription": "Shows your current tasks with optional filtering",
@@ -181,10 +238,9 @@
         }
       },
       {
-        "name": "huckleberry.markTaskDone",
+        "name": "mark_task_done",
         "displayName": "Mark Task Done",
-        "description": "Marks a task as complete",
-        "modelDescription": "Use this tool to mark a task as complete by providing the task ID.",
+        "modelDescription": "Marks a task as complete. Use this tool to mark a task as complete by providing the task ID.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "completeHuckleberryTask",
         "userDescription": "Marks a task as completed",
@@ -203,10 +259,9 @@
         }
       },
       {
-        "name": "huckleberry.changeTaskPriority",
+        "name": "update_task_priority",
         "displayName": "Change Task Priority",
-        "description": "Changes the priority of a task",
-        "modelDescription": "Use this tool to change the priority of a task by providing the task ID and new priority.",
+        "modelDescription": "Changes the priority of a task. Use this tool to change the priority of a task by providing the task ID and new priority.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "updateHuckleberryTaskPriority",
         "userDescription": "Updates the priority of a task",
