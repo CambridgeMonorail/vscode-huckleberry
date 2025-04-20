@@ -125,8 +125,8 @@ export class LanguageModelToolsProvider {
       
       // Create Task tool
       try {
-        logWithChannel(LogLevel.DEBUG, 'Registering huckleberry.createTask tool...');
-        const createTaskDisposable = vscode.lm.registerTool('huckleberry.createTask', {
+        logWithChannel(LogLevel.DEBUG, 'Registering create_task tool...');
+        const createTaskDisposable = vscode.lm.registerTool('create_task', {
           async invoke(options, token) {
             const input = options.input as TaskWithPriorityInput;
             const description = input?.description;
@@ -173,16 +173,16 @@ export class LanguageModelToolsProvider {
           }
         });
         this.disposables.push(createTaskDisposable);
-        logWithChannel(LogLevel.DEBUG, '✓ huckleberry.createTask registered successfully');
+        logWithChannel(LogLevel.DEBUG, '✓ create_task registered successfully');
       } catch (error) {
-        logWithChannel(LogLevel.ERROR, 'Failed to register huckleberry.createTask tool:', error);
+        logWithChannel(LogLevel.ERROR, 'Failed to register create_task tool:', error);
         throw error; // Re-throw to handle in the main try/catch
       }
 
       // Initialize Task Tracking tool
       try {
-        logWithChannel(LogLevel.DEBUG, 'Registering huckleberry.initializeTaskTracking tool...');
-        const initializeToolDisposable = vscode.lm.registerTool('huckleberry.initializeTaskTracking', {
+        logWithChannel(LogLevel.DEBUG, 'Registering initialize_task_tracking tool...');
+        const initializeToolDisposable = vscode.lm.registerTool('initialize_task_tracking', {
           async invoke(options, token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
@@ -212,15 +212,15 @@ export class LanguageModelToolsProvider {
           }
         });
         this.disposables.push(initializeToolDisposable);
-        logWithChannel(LogLevel.DEBUG, '✓ huckleberry.initializeTaskTracking registered successfully');
+        logWithChannel(LogLevel.DEBUG, '✓ initialize_task_tracking registered successfully');
       } catch (error) {
-        logWithChannel(LogLevel.ERROR, 'Failed to register huckleberry.initializeTaskTracking tool:', error);
+        logWithChannel(LogLevel.ERROR, 'Failed to register initialize_task_tracking tool:', error);
         throw error;
       }
 
       // Scan TODOs tool
       this.disposables.push(
-        vscode.lm.registerTool('huckleberry.scanTodos', {
+        vscode.lm.registerTool('scan_todos', {
           async invoke(options, token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
@@ -260,7 +260,7 @@ export class LanguageModelToolsProvider {
 
       // List Tasks tool
       this.disposables.push(
-        vscode.lm.registerTool('huckleberry.listTasks', {
+        vscode.lm.registerTool('list_tasks', {
           async invoke(options, token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
@@ -306,7 +306,7 @@ export class LanguageModelToolsProvider {
 
       // Mark Task Done tool
       this.disposables.push(
-        vscode.lm.registerTool('huckleberry.markTaskDone', {
+        vscode.lm.registerTool('mark_task_done', {
           async invoke(options, token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
@@ -354,7 +354,7 @@ export class LanguageModelToolsProvider {
 
       // Change Task Priority tool
       this.disposables.push(
-        vscode.lm.registerTool('huckleberry.changeTaskPriority', {
+        vscode.lm.registerTool('change_task_priority', {
           async invoke(options, token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();

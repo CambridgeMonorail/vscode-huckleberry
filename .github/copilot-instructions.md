@@ -1,5 +1,9 @@
 # Huckleberry Project - Development Guidelines
 
+## Project Purpose
+
+Huckleberry is an AI-powered task management extension for VS Code that helps developers track and organize tasks directly within their coding environment. It provides a natural language interface through VS Code's chat functionality, allowing users to create, update, and manage tasks without switching contexts. The extension integrates with the VS Code Language Model API, scans code for TODOs, parses requirements documents, and stores all task data locally in the workspace for version control and team sharing.
+
 ## Project Overview
 
 This is a nrwl nx monorepo for the Huckleberry Task Manager VS Code extension and its supporting applications.
