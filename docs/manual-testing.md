@@ -10,11 +10,11 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 - [x] Extension activates properly when opening a workspace
 - [x] Extension registers as a chat participant
 - [x] Language model tools are properly registered
-- [ ] Extension shows up in the Command Palette
+- [x] Extension shows up in the Command Palette
 
 ## Core Chat Participant Functionality
 
-- [ ] @Huckleberry can be mentioned in VS Code Chat
+- [x] @Huckleberry can be mentioned in VS Code Chat
 - [ ] Chat participant responds to messages
 - [ ] Chat participant maintains context across messages in a conversation
 - [ ] Error messages are displayed properly when issues occur
