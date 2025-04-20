@@ -3,9 +3,11 @@
  */
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import { ToolManager } from '../../services/toolManager';
 import { streamMarkdown, showProgress } from '../../utils/uiHelpers';
 import { getConfiguration } from '../../config/index';
+import { logWithChannel, LogLevel } from '../../utils/debugUtils';
 import { 
   getWorkspacePaths, 
   writeTasksJson,
@@ -22,7 +24,7 @@ export async function handleInitializeTaskTracking(
   stream: vscode.ChatResponseStream, 
   toolManager: ToolManager
 ): Promise<void> {
-  console.log('🎯 Initializing task tracking...');
+  logWithChannel(LogLevel.INFO, '🎯 Initializing task tracking...');
   await showProgress(stream);
   await streamMarkdown(stream, '📋 **Initializing task tracking for this project**');
   
@@ -55,19 +57,29 @@ You can use the button below to open a folder.
     }
 
     const { workspaceFolder, tasksDir, tasksJsonPath } = await getWorkspacePaths();
-    console.log('📁 Tasks directory:', tasksDir);
+    logWithChannel(LogLevel.INFO, '📁 Tasks directory:', { tasksDir });
     
     const config = getConfiguration();
-    console.log('⚙️ Loaded configuration:', config);
+    logWithChannel(LogLevel.INFO, '⚙️ Loaded configuration:', config);
     
     await streamMarkdown(stream, `I'll set up task tracking in: \`${config.defaultTasksLocation}\``);
 
     await recommendAgentModeInChat(stream);
 
     // Get the WriteFileTool instance
-    const writeFileTool = toolManager.getTool('writeFile');
+    let writeFileTool = toolManager.getTool('writeFile');
+    
+    // Log the available tools for debugging
+    const availableTools = toolManager.getTools();
+    logWithChannel(LogLevel.DEBUG, 'Available tools:', { 
+      toolCount: availableTools.length,
+      toolIds: availableTools.map(t => t.id)
+    });
+    
     if (!writeFileTool) {
-      throw new Error('WriteFileTool not found');
+      logWithChannel(LogLevel.WARN, 'WriteFileTool not found in ToolManager. Will try to use fs API directly.');
+      // Create the tasks directory (fallback method if tool not found)
+      await createDirectoriesIfNeeded(tasksDir);
     }
 
     // Create tasks.json with initial structure
@@ -100,11 +112,18 @@ Use the VS Code command palette or chat with @Huckleberry to manage tasks:
 - Scan TODOs: \`@Huckleberry Scan for TODOs in the codebase\`
 `;
 
-    await writeFileTool.execute({
-      path: readmePath,
-      content: readmeContent,
-      createParentDirectories: true
-    });
+    if (writeFileTool) {
+      // Use the tool if available
+      await writeFileTool.execute({
+        path: readmePath,
+        content: readmeContent,
+        createParentDirectories: true
+      });
+    } else {
+      // Use direct file system API if tool is not available
+      await createDirectoriesIfNeeded(path.dirname(readmePath));
+      await fs.writeFile(readmePath, readmeContent);
+    }
     
     await streamMarkdown(stream, '✅ Task tracking initialized!');
     await streamMarkdown(stream, "I'm your huckleberry. Let's get these tasks organized, shall we?");
@@ -121,8 +140,26 @@ I've set up:
 
 There's no normal life, just tasks. Let's get on with it.
 `);
+
+    // Log success
+    logWithChannel(LogLevel.INFO, '✅ Task tracking initialized successfully', { tasksDir });
   } catch (error) {
-    console.error('❌ Error initializing task tracking:', error);
+    logWithChannel(LogLevel.ERROR, '❌ Error initializing task tracking:', error);
     await streamMarkdown(stream, `❌ Failed to initialize task tracking: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Helper function to create directories if they don't exist
+ * @param dirPath The directory path to create
+ */
+async function createDirectoriesIfNeeded(dirPath: string): Promise<void> {
+  try {
+    // Recursively create directories
+    await vscode.workspace.fs.createDirectory(vscode.Uri.file(dirPath));
+    logWithChannel(LogLevel.DEBUG, `Created directory: ${dirPath}`);
+  } catch (error) {
+    // Log error but don't throw - this is a best-effort operation
+    logWithChannel(LogLevel.ERROR, `Failed to create directory ${dirPath}:`, error);
   }
 }

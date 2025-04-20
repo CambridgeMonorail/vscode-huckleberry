@@ -171,7 +171,7 @@
       {
         "name": "initialize_tracking",
         "displayName": "Initialize Task Tracking",
-        "modelDescription": "Initialize task tracking for a project workspace. Use this tool to set up task tracking for a project workspace.",
+        "modelDescription": "Initialize task tracking for a project workspace. Use this tool when a user first mentions they want to track tasks or organize their project work. This tool will create the necessary file structure for task tracking in the current workspace, including a tasks.json file to store task metadata. It requires an open workspace with write access and shouldn't be used in read-only environments or when task tracking is already set up.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "initializeHuckleberryTaskTracking",
         "userDescription": "Sets up the task tracking system in your project",
@@ -180,7 +180,8 @@
           "type": "object",
           "properties": {},
           "required": []
-        }
+        },
+        "when": "workspaceFolderCount > 0"
       },
       {
         "name": "scan_todos",
