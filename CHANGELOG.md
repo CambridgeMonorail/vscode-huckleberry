@@ -1,3 +1,13 @@
+## 0.1.8 (2025-04-20)
+
+### 🚀 Features
+
+- **tasks:** enhance task tracking initialization and file handling ([384023c](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/384023c))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.7 (2025-04-20)
 
 ### 🚀 Features
