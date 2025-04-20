@@ -37,3 +37,13 @@ vs-code:
   label: VS Code
   permalink: /vs-code
   description: Content related to Visual Studio Code and extensions
+
+testing:
+  label: Testing
+  permalink: /testing
+  description: Content related to testing methodologies and practices
+
+alpha-release:
+  label: Alpha Release
+  permalink: /alpha-release
+  description: Information about alpha status releases and early development versions

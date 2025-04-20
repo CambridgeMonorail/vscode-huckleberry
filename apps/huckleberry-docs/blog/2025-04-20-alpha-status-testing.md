@@ -7,7 +7,7 @@ tags: [huckleberry, development, testing, alpha-release]
 
 Huckleberry is still in alpha, and for good reason.
 
-If you've taken a glimpse at our README.md, you'll notice that we're quite open about Huckleberry's alpha status. This isn't marketing modesty—it's an honest assessment of where we stand in our journey toward delivering a rock-solid task management experience for developers.
+If you've taken a glimpse at our README.md, you'll notice that we're quite open about Huckleberry's alpha status. This isn't marketing modesty, it's an honest assessment of where we stand in our journey toward delivering a rock-solid task management experience for developers.
 
 Today, I want to pull back the curtain and show you exactly what we mean by "alpha" and why rigorous testing is the backbone of our development process.
 
@@ -15,7 +15,7 @@ Today, I want to pull back the curtain and show you exactly what we mean by "alp
 
 ## What Does "Alpha" Mean to Us?
 
-When we say Huckleberry is in alpha, we're not just being cautious. We're acknowledging that while the core functionality works—and works well for our daily use—there's still a gap between what we have and what we consider "production ready."
+When we say Huckleberry is in alpha, we're not just being cautious. We're acknowledging that while the core functionality works, and works well for our daily use, there's still a gap between what we have and what we consider "production ready."
 
 Alpha, to us, means:
 
@@ -30,7 +30,7 @@ We could have slapped a "v1.0" label on it and called it a day. But that wouldn'
 
 ## Our Testing Methodology
 
-Instead of rushing to market, we've taken a methodical approach to quality. Central to this is our comprehensive [manual testing checklist](https://github.com/yourusername/vscode-huckleberry/blob/main/docs/manual-testing.md)—a living document that tracks every feature, interaction, and edge case that needs validation before we consider Huckleberry ready for prime time.
+Instead of rushing to market, we've taken a methodical approach to quality. Central to this is our comprehensive [manual testing checklist](https://github.com/yourusername/vscode-huckleberry/blob/main/docs/manual-testing.md), a living document that tracks every feature, interaction, and edge case that needs validation before we consider Huckleberry ready for prime time.
 
 This checklist isn't just a formality. It's our source of truth, guiding both our development priorities and our testing efforts.
 
@@ -69,4 +69,4 @@ Our path to beta is clear: complete the testing checklist, fix any issues that s
 
 In the meantime, if you're using the alpha release, we'd love to hear about your experience. What works? What doesn't? What would make Huckleberry more valuable to your workflow?
 
-After all, there's no normal life, just tasks—and we want to make sure Huckleberry handles them with the reliability they deserve.
+After all, there's no normal life, just tasks, and we want to make sure Huckleberry handles them with the reliability they deserve.
