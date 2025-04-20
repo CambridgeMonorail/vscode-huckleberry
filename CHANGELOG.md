@@ -1,3 +1,14 @@
+## 0.1.7 (2025-04-20)
+
+### 🚀 Features
+
+- **extension:** update command names and add product requirements document ([e59d83e](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/e59d83e))
+- **release:** add step to update root package.json version on release ([035d9ba](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/035d9ba))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.6 (2025-04-20)
 
 ### 🚀 Features
