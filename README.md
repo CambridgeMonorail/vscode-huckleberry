@@ -18,8 +18,6 @@
 
 > **⚠️ ALPHA STATUS**: This project is in early development. Features are incomplete, APIs may change, and parts may be non-functional. Contributions and feedback welcome! Huckleberry is not yet available on the VS Code Marketplace.
 
-[![Status](https://img.shields.io/badge/status-alpha-orange)](https://github.com/CambridgeMonorail/vscode-huckleberry)
-[![Version](https://img.shields.io/github/package-json/v/CambridgeMonorail/vscode-huckleberry?color=blue&label=version)](https://github.com/CambridgeMonorail/vscode-huckleberry/releases)
 [![Release](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/release.yml/badge.svg)](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/release.yml)
 [![Deploy Docusaurus to Pages](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/static.yml/badge.svg)](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/static.yml)
 

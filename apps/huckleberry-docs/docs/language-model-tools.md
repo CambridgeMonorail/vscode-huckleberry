@@ -1,175 +1,144 @@
 ---
-sidebar_position: 7
-title: Language Model Tools
+sidebar_position: 5
 ---
 
 # Language Model Tools
 
-Huckleberry provides a set of Language Model Tools that integrate with VS Code's AI features, allowing GitHub Copilot Chat to directly interact with your task management system through natural language.
+Huckleberry integrates with the VS Code Language Model Tools API, allowing AI-powered assistants like GitHub Copilot to directly interact with Huckleberry's task management capabilities.
+
+## What are Language Model Tools?
+
+Language Model Tools is a VS Code API that allows extensions to register "tools" that can be used by language models like GitHub Copilot. When these tools are registered:
+
+1. The language model can detect when a tool might be useful in a conversation
+2. The model can call the tool directly to perform actions or retrieve information
+3. The results are incorporated into the model's response
+
+This creates a seamless experience where the AI can help manage tasks without requiring explicit `@Huckleberry` mentions.
 
 ## Available Tools
 
-Huckleberry offers the following language model tools:
+Huckleberry provides the following Language Model Tools:
 
-### Create Task
+### Task Creation
 
-Creates a new task in your project's task management system.
-
-**Tool Name**: `create_task`
-
-**Parameters**:
-
-- `description` (required): Description of the task to create
-- `priority` (optional): Priority level of the task - can be "low", "medium", "high", or "critical"
-
-**Example Usage**:
-
-Ask GitHub Copilot:
-
-```
-Create a task to implement user authentication
+```typescript
+vscode.lm.registerTool('huckleberry.createTask', {
+  async invoke(options, token) {
+    // Takes a description and optional priority
+    // Creates a new task in the workspace
+  }
+})
 ```
 
-Or with priority:
+**Example use case**: When discussing a feature implementation in chat, Copilot might automatically offer to create a task for it.
 
-```
-Create a high priority task to fix security vulnerability in login
-```
+### Task Tracking Initialization
 
-### Initialize Task Tracking
-
-Sets up task tracking for your project workspace.
-
-**Tool Name**: `initialize_task_tracking`
-
-**Example Usage**:
-
-Ask GitHub Copilot:
-
-```
-Initialize task tracking for this project
+```typescript
+vscode.lm.registerTool('huckleberry.initializeTaskTracking', {
+  async invoke(options, token) {
+    // Sets up the task tracking structure in the current workspace
+  }
+})
 ```
 
-### Scan TODOs
+**Example use case**: When a user first mentions they want to track tasks, the AI can initialize the tracking system.
 
-Scans your codebase for TODO comments and converts them to tracked tasks.
+### TODO Scanning
 
-**Tool Name**: `scan_todos`
-
-**Parameters**:
-
-- `pattern` (optional): File pattern to scan for TODOs (e.g., "**/*.js")
-
-**Example Usage**:
-
-Ask GitHub Copilot:
-
-```
-Scan for TODOs in the codebase
+```typescript
+vscode.lm.registerTool('huckleberry.scanTodos', {
+  async invoke(options, token) {
+    // Scans the codebase for TODO comments and converts them to tasks
+    // Optional pattern parameter to filter which files to scan
+  }
+})
 ```
 
-Or with a specific pattern:
+**Example use case**: When discussing code quality or cleanup work, the AI might suggest scanning for TODOs.
 
-```
-Scan for TODOs in JavaScript files
-```
+### Task Listing
 
-### List Tasks
-
-Shows your current tasks with optional filtering.
-
-**Tool Name**: `list_tasks`
-
-**Parameters**:
-
-- `priority` (optional): Filter by priority - can be "low", "medium", "high", "critical", or "all"
-- `status` (optional): Filter by status - can be "open", "in_progress", "done", or "all"
-
-**Example Usage**:
-
-Ask GitHub Copilot:
-
-```
-Show me all my tasks
+```typescript
+vscode.lm.registerTool('huckleberry.listTasks', {
+  async invoke(options, token) {
+    // Lists tasks with optional filtering by priority or status
+  }
+})
 ```
 
-Or with filters:
+**Example use case**: When planning work for the day, the AI can retrieve the current task list.
 
-```
-What high priority tasks are still open?
-```
+### Task Completion
 
-### Mark Task Done
-
-Marks a task as completed.
-
-**Tool Name**: `mark_task_done`
-
-**Parameters**:
-
-- `taskId` (required): ID of the task to mark as done
-
-**Example Usage**:
-
-Ask GitHub Copilot:
-
-```
-Mark task HUCK-123 as complete
+```typescript
+vscode.lm.registerTool('huckleberry.markTaskDone', {
+  async invoke(options, token) {
+    // Marks a specified task as complete
+    // Requires a taskId parameter
+  }
+})
 ```
 
-### Change Task Priority
+**Example use case**: After helping implement a feature, the AI could offer to mark the related task as complete.
 
-Updates the priority of a task.
+### Task Priority Management
 
-**Tool Name**: `change_task_priority`
-
-**Parameters**:
-
-- `taskId` (required): ID of the task to update
-- `priority` (required): New priority for the task - can be "low", "medium", "high", or "critical"
-
-**Example Usage**:
-
-Ask GitHub Copilot:
-
-```
-Change task HUCK-123 to high priority
+```typescript
+vscode.lm.registerTool('huckleberry.changeTaskPriority', {
+  async invoke(options, token) {
+    // Changes a task's priority
+    // Requires taskId and priority parameters
+  }
+})
 ```
 
-## Using with GitHub Copilot
-
-To use Huckleberry's language model tools with GitHub Copilot Chat:
-
-1. Make sure GitHub Copilot and GitHub Copilot Chat are installed and enabled in VS Code
-2. The Huckleberry extension should also be installed and active
-3. Open a workspace where you want to manage tasks
-4. Start a conversation with GitHub Copilot Chat and ask about your tasks or request actions using natural language
-
-For example, you might start with:
-
-```
-@copilot I need to start tracking tasks for this project
-```
-
-GitHub Copilot will use Huckleberry's language model tools to help you manage your tasks.
+**Example use case**: When discussing urgent issues, the AI might suggest increasing the priority of related tasks.
 
 ## How It Works
 
-When you interact with GitHub Copilot Chat, GitHub Copilot can access the language model tools registered by the Huckleberry extension. This allows it to:
+Behind the scenes, these tools connect to the same task management functionality that powers the `@Huckleberry` chat commands. The key difference is that these tools can be invoked automatically by the language model without requiring an explicit mention.
 
-1. Parse your natural language requests
-2. Map them to the appropriate tool
-3. Provide the necessary parameters to execute the tool
-4. Return the results in a conversational format
+The implementation uses the [VS Code Language Model API](https://code.visualstudio.com/api/extension-guides/language-model) to register the tools and handle their invocation.
 
-This integration creates a seamless experience where you can manage your tasks through natural language, without leaving your coding environment.
+## Technical Implementation
 
-## Troubleshooting
+Each tool:
 
-If language model tools aren't working correctly:
+1. Validates the input parameters
+2. Checks for workspace availability
+3. Processes the request through Huckleberry's task management system
+4. Returns a formatted result to the language model
 
-1. Make sure you have a workspace open (tools only work within a workspace)
-2. Check that GitHub Copilot and Huckleberry extensions are properly installed and activated
-3. Try reloading VS Code
-4. Enable Agent Mode in GitHub Copilot settings for best results
-5. Check the Output panel (Huckleberry Debug channel) for any error messages
+All tools use proper error handling and logging to ensure reliability and provide meaningful error messages.
+
+## Example Workflow
+
+Here's an example of how Language Model Tools might be used in a natural conversation:
+
+**User**: "I need to implement user authentication for my app."
+
+**GitHub Copilot**: "That's a good feature to implement. Would you like me to create a task for implementing user authentication?"
+
+**User**: "Yes, please."
+
+**GitHub Copilot**: "I've created task TASK-001: Implement user authentication. Is there anything else you'd like to add to this task?"
+
+Behind the scenes, Copilot detected that task creation would be helpful and used the `huckleberry.createTask` tool to create the task.
+
+## Benefits of Tool Integration
+
+- **Seamless experience**: The AI can manage tasks without breaking the conversational flow
+- **Contextual awareness**: Tools are invoked based on the conversation context
+- **Reduced friction**: Users don't need to remember specific command syntax
+- **Proactive assistance**: The AI can suggest task operations at appropriate moments
+
+## Extending the Tools
+
+The tool system is designed to be extensible. Future versions of Huckleberry may include additional tools for:
+
+- Task dependency management
+- Time tracking
+- Task decomposition
+- Integration with external systems

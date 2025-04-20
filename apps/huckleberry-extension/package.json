@@ -1,7 +1,7 @@
 {
   "name": "vscode-copilot-huckleberry",
   "displayName": "Huckleberry Task Manager",
-  "version": "0.1.6",
+  "version": "0.1.5",
   "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
   "publisher": "CambridgeMonorail",
   "repository": {
@@ -25,12 +25,12 @@
   "activationEvents": [
     "onStartupFinished",
     "onChatParticipant:huckleberry",
-    "onLanguageModelTool:create_task",
-    "onLanguageModelTool:initialize_task_tracking",
-    "onLanguageModelTool:scan_todos",
-    "onLanguageModelTool:list_tasks",
-    "onLanguageModelTool:mark_task_done",
-    "onLanguageModelTool:change_task_priority"
+    "onLanguageModelTool:huckleberry.createTask",
+    "onLanguageModelTool:huckleberry.initializeTaskTracking",
+    "onLanguageModelTool:huckleberry.scanTodos",
+    "onLanguageModelTool:huckleberry.listTasks",
+    "onLanguageModelTool:huckleberry.markTaskDone",
+    "onLanguageModelTool:huckleberry.changeTaskPriority"
   ],
   "contributes": {
     "commands": [
@@ -77,8 +77,9 @@
     ],
     "languageModelTools": [
       {
-        "name": "create_task",
+        "name": "huckleberry.createTask",
         "displayName": "Create Task",
+        "description": "Creates a new task in the Huckleberry Task Manager",
         "modelDescription": "Use this tool to create a new task with optional priority and due date information.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "createHuckleberryTask",
@@ -108,8 +109,9 @@
         }
       },
       {
-        "name": "initialize_task_tracking",
+        "name": "huckleberry.initializeTaskTracking",
         "displayName": "Initialize Task Tracking",
+        "description": "Initialize task tracking for a project",
         "modelDescription": "Use this tool to set up task tracking for a project workspace.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "initializeHuckleberryTaskTracking",
@@ -122,8 +124,9 @@
         }
       },
       {
-        "name": "scan_todos",
+        "name": "huckleberry.scanTodos",
         "displayName": "Scan TODOs",
+        "description": "Scans the codebase for TODO comments and converts them to tasks",
         "modelDescription": "Use this tool to scan the codebase for TODO comments and create tasks from them.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "scanTodosHuckleberry",
@@ -141,8 +144,9 @@
         }
       },
       {
-        "name": "list_tasks",
+        "name": "huckleberry.listTasks",
         "displayName": "List Tasks",
+        "description": "Lists tasks from the task manager",
         "modelDescription": "Use this tool to retrieve and list tasks, optionally filtered by priority or status.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "listHuckleberryTasks",
@@ -177,8 +181,9 @@
         }
       },
       {
-        "name": "mark_task_done",
+        "name": "huckleberry.markTaskDone",
         "displayName": "Mark Task Done",
+        "description": "Marks a task as complete",
         "modelDescription": "Use this tool to mark a task as complete by providing the task ID.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "completeHuckleberryTask",
@@ -198,8 +203,9 @@
         }
       },
       {
-        "name": "change_task_priority",
+        "name": "huckleberry.changeTaskPriority",
         "displayName": "Change Task Priority",
+        "description": "Changes the priority of a task",
         "modelDescription": "Use this tool to change the priority of a task by providing the task ID and new priority.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "updateHuckleberryTaskPriority",
