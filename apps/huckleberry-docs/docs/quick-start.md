@@ -6,6 +6,8 @@ sidebar_position: 3
 
 This guide will get you up and running with Huckleberry Task Manager in just a few minutes.
 
+> **Note:** Haven't installed Huckleberry yet? Check out the [Installation Guide](./installation.md) first.
+
 ## Initialize Task Tracking
 
 After installing Huckleberry, the first step is to initialize task tracking in your workspace:

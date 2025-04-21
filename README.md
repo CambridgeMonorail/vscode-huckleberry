@@ -120,20 +120,22 @@ You can also access Huckleberry from the Command Palette (`Ctrl+Shift+P` / `Cmd+
 
 For comprehensive documentation and detailed usage examples, visit our [official documentation site](https://cambridgemonorail.github.io/vscode-huckleberry/).
 
-### Language Model Tools
+### Agent Mode Language Model Tools
 
-Huckleberry now integrates with the VS Code Language Model Tools API, allowing the AI to directly interact with task management features without requiring explicit `@Huckleberry` mentions. The following tools are available:
+Huckleberry integrates with the VS Code Language Model Tools API (also known as "Copilot agent mode"), allowing the AI to directly interact with task management features without requiring explicit `@Huckleberry` mentions. The following tools are available to Copilot when in agent mode:
 
 | Tool | Description |
 |------|-------------|
-| `huckleberry.createTask` | Creates a new task with optional priority |
-| `huckleberry.initializeTaskTracking` | Sets up task tracking for the workspace |
-| `huckleberry.scanTodos` | Scans the codebase for TODOs and creates tasks |
-| `huckleberry.listTasks` | Lists all tasks with optional filtering by priority or status |
-| `huckleberry.markTaskDone` | Marks a specified task as complete |
-| `huckleberry.changeTaskPriority` | Changes a task's priority |
+| `create_task` | Creates a new task with optional priority |
+| `initialize_tracking` | Sets up task tracking for a project workspace |
+| `scan_todos` | Scans the codebase for TODO comments and converts them to tasks |
+| `list_tasks` | Lists tasks with optional filtering by priority or status |
+| `mark_task_done` | Marks a task as complete by providing the task ID |
+| `update_task_priority` | Changes the priority of a task by providing the task ID and new priority |
 
-This integration provides a more seamless experience as the language model can directly perform task operations when appropriate during conversations.
+> **💡 Pro tip:** For the best experience with Huckleberry's language model tools, we currently recommend using Claude models in Copilot agent mode. Enable agent mode by opening VS Code settings and setting `github.copilot.chat.localeOverride` to `"en-US"`, then selecting Claude as your model from the Copilot chat dropdown.
+
+This integration provides a seamless experience as the language model can directly perform task operations when appropriate during conversations, without requiring you to explicitly mention Huckleberry.
 
 ## How It Works
 

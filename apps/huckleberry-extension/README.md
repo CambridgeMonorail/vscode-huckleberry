@@ -103,20 +103,20 @@ Interact with Huckleberry through the VS Code chat interface by addressing `@Huc
 
 You can also start a conversation with Huckleberry by selecting it from the chat participants in the VS Code chat panel.
 
-### Language Model Tool Integration
+### Agent Mode Language Model Tool Integration
 
-Huckleberry now provides Language Model Tools that allow VS Code's language model to directly interact with its task management capabilities:
+Huckleberry integrates with the VS Code Language Model Tools API (also known as "Copilot agent mode"), allowing the AI to directly interact with task management features without requiring explicit `@Huckleberry` mentions. The following tools are available to Copilot when in agent mode:
 
 | Tool | Description |
 |------|-------------|
-| `huckleberry.createTask` | Creates a new task with optional priority |
-| `huckleberry.initializeTaskTracking` | Sets up task tracking for the workspace |
-| `huckleberry.scanTodos` | Scans the codebase for TODOs and creates tasks |
-| `huckleberry.listTasks` | Lists all tasks with optional filtering by priority or status |
-| `huckleberry.markTaskDone` | Marks a specified task as complete |
-| `huckleberry.changeTaskPriority` | Changes a task's priority |
+| `create_task` | Creates a new task with optional priority |
+| `initialize_tracking` | Sets up task tracking for a project workspace |
+| `scan_todos` | Scans the codebase for TODO comments and converts them to tasks |
+| `list_tasks` | Lists tasks from the task manager with optional filtering by priority or status |
+| `mark_task_done` | Marks a task as complete by providing the task ID |
+| `update_task_priority` | Changes the priority of a task by providing the task ID and new priority |
 
-With this integration, the language model can perform task management operations without requiring explicit `@Huckleberry` mentions, creating a more seamless experience.
+With this integration, VS Code's language models (like GitHub Copilot) can perform task management operations without requiring explicit `@Huckleberry` mentions, creating a more seamless experience.
 
 ## Privacy and Security
 
