@@ -21,6 +21,52 @@ import {
 } from '../handlers/taskHandlers';
 
 /**
+ * Enhanced error logging utility
+ * @param area The area/component where the error occurred
+ * @param error The error object
+ * @param additionalInfo Optional additional context information
+ */
+export function logDetailedError(area: string, error: unknown, additionalInfo?: Record<string, unknown>): void {
+  let errorMessage = 'Unknown error';
+  let errorStack = '';
+  let errorObject: Record<string, unknown> = {};
+  
+  if (error instanceof Error) {
+    errorMessage = error.message;
+    errorStack = error.stack || '';
+    errorObject = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      ...Object.getOwnPropertyNames(error).reduce((acc, prop) => {
+        acc[prop] = (error as any)[prop];
+        return acc;
+      }, {} as Record<string, unknown>)
+    };
+  } else if (typeof error === 'string') {
+    errorMessage = error;
+  } else {
+    try {
+      errorMessage = JSON.stringify(error);
+      errorObject = error as Record<string, unknown>;
+    } catch (e) {
+      errorMessage = 'Error cannot be stringified';
+    }
+  }
+  
+  logWithChannel(LogLevel.ERROR, `[${area}] Error: ${errorMessage}`);
+  if (errorStack) {
+    logWithChannel(LogLevel.DEBUG, `[${area}] Stack: ${errorStack}`);
+  }
+  
+  logWithChannel(LogLevel.DEBUG, `[${area}] Error details:`, errorObject);
+  
+  if (additionalInfo) {
+    logWithChannel(LogLevel.DEBUG, `[${area}] Additional context:`, additionalInfo);
+  }
+}
+
+/**
  * Response stream wrapper for tool results
  */
 class ToolResponseStream {
@@ -46,6 +92,16 @@ class ToolResponseStream {
    */
   public getResult(): string {
     return this.result.join("\n");
+  }
+
+  /**
+   * Progress method implementation to match the expected interface
+   * @param message Progress message
+   * @returns Promise that resolves when progress is updated
+   */
+  public async progress(message: string): Promise<void> {
+    // Silently ignore progress updates for now
+    return Promise.resolve();
   }
 }
 
@@ -85,6 +141,54 @@ interface TaskIdInput {
 interface TaskPriorityChangeInput {
   taskId?: string;
   priority?: string;
+}
+
+/**
+ * Checks if task tracking is initialized in the current workspace
+ * @returns A promise resolving to true if initialized, false otherwise
+ */
+async function isTaskTrackingInitialized(): Promise<boolean> {
+  try {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      logWithChannel(LogLevel.DEBUG, 'Task tracking initialization check failed: No workspace folders');
+      return false;
+    }
+    
+    const { tasksDir, tasksJsonPath } = await getWorkspacePaths();
+    
+    // Check for required files/directories using try/catch with await instead of Promise chains
+    let tasksJsonExists = false;
+    let tasksDirExists = false;
+    
+    try {
+      // Check if tasks.json exists
+      const tasksJsonStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
+      tasksJsonExists = true;
+    } catch (error) {
+      // File doesn't exist or is inaccessible
+      tasksJsonExists = false;
+    }
+    
+    try {
+      // Check if tasks directory exists and is actually a directory
+      const tasksDirStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksDir));
+      tasksDirExists = tasksDirStat.type === vscode.FileType.Directory;
+    } catch (error) {
+      // Directory doesn't exist or is inaccessible
+      tasksDirExists = false;
+    }
+    
+    const isInitialized = tasksJsonExists && tasksDirExists;
+    logWithChannel(LogLevel.DEBUG, `Task tracking initialization check: ${isInitialized ? 'Initialized' : 'Not initialized'}`);
+    logWithChannel(LogLevel.DEBUG, `- tasks.json exists: ${tasksJsonExists}`);
+    logWithChannel(LogLevel.DEBUG, `- tasks/ directory exists: ${tasksDirExists}`);
+    
+    return isInitialized;
+  } catch (error) {
+    logDetailedError('isTaskTrackingInitialized', error);
+    return false;
+  }
 }
 
 /**
@@ -165,6 +269,12 @@ export class LanguageModelToolsProvider {
             }
             
             try {
+              // Check if task tracking has been initialized
+              const isInitialized = await isTaskTrackingInitialized();
+              if (!isInitialized) {
+                throw new Error('Task tracking has not been initialized in this workspace. Please run "Initialize Task Tracking" first.');
+              }
+              
               const stream = new ToolResponseStream();
               // Construct a prompt that the existing handler can understand
               const prompt = priority 
@@ -178,7 +288,13 @@ export class LanguageModelToolsProvider {
                 new vscode.LanguageModelTextPart(stream.getResult())
               ]);
             } catch (error) {
-              logWithChannel(LogLevel.ERROR, 'Error in createTask tool:', error);
+              // Enhanced error logging with details
+              logDetailedError('createTask', error, { 
+                description, 
+                priority,
+                workspaceAvailable: isWorkspaceAvailable()
+              });
+              
               throw new Error(`Failed to create task: ${error instanceof Error ? error.message : String(error)}`);
             }
           }
