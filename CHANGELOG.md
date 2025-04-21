@@ -1,3 +1,13 @@
+## 0.1.11 (2025-04-21)
+
+### 🚀 Features
+
+- **commands:** add British and American spelling variants for task tracking ([f358b13](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/f358b13))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.10 (2025-04-21)
 
 ### 🚀 Features
