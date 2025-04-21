@@ -14,9 +14,8 @@ This directory contains technical documentation for the Huckleberry project, cov
 |----------|-------------|
 | [Workspace Setup](./workspace-setup.md) | Instructions for setting up your development environment |
 | [Debug Setup](./debug-setup.md) | Configuration for debugging the extension during development |
-| [Implementation Guide](./implementation-guide.md) | Technical details on the implementation of key features |
-| [Task Master](./task-master.md) | Documentation for the Task Manager core functionality |
-| [Tasks](./tasks.md) | Project task tracking and management documentation |
+| [PRD](./PRD.md) | Product Requirements Document detailing the project vision and requirements |
+| [Manual Testing](./manual-testing.md) | Guidelines for manually testing the extension |
 | [Release Process](./release-process.md) | Steps for releasing new versions of the extension |
 
 ## Contributing to Documentation

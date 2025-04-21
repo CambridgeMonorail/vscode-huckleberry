@@ -11,7 +11,8 @@ import { logWithChannel, LogLevel } from '../../utils/debugUtils';
 import { 
   getWorkspacePaths, 
   writeTasksJson,
-  recommendAgentModeInChat 
+  recommendAgentModeInChat,
+  readTasksJson 
 } from './taskUtils';
 import { TaskCollection } from '../../types';
 
@@ -82,18 +83,52 @@ You can use the button below to open a folder.
       await createDirectoriesIfNeeded(tasksDir);
     }
 
-    // Create tasks.json with initial structure
-    const initialTasksJson: TaskCollection = {
-      name: 'Project Tasks',
-      description: 'Task collection for the project',
-      tasks: []
-    };
+    // Check if tasks.json already exists by attempting to read it
+    let existingData: TaskCollection | null = null;
+    let isAlreadyInitialized = false;
+    
+    try {
+      // Try to read existing tasks.json
+      existingData = await readTasksJson(toolManager, tasksJsonPath);
+      
+      // Check if the file actually exists (not just created by readTasksJson)
+      const readFileTool = toolManager.getTool('readFile');
+      if (readFileTool) {
+        await readFileTool.execute({ path: tasksJsonPath });
+        isAlreadyInitialized = true;
+      } else {
+        // Fallback to direct file system API
+        await fs.access(tasksJsonPath);
+        isAlreadyInitialized = true;
+      }
+      
+      logWithChannel(LogLevel.INFO, '📋 Found existing tasks.json, preserving tasks', {
+        taskCount: existingData.tasks.length
+      });
+    } catch (error) {
+      // If we can't read the file, it likely doesn't exist
+      isAlreadyInitialized = false;
+      logWithChannel(LogLevel.DEBUG, 'No existing tasks.json found, will create new one');
+    }
+    
+    // If we couldn't read existing data, create a new structure
+    if (!existingData) {
+      existingData = {
+        name: 'Project Tasks',
+        description: 'Task collection for the project',
+        tasks: []
+      };
+    }
 
-    await writeTasksJson(toolManager, tasksJsonPath, initialTasksJson);
+    // Write the tasks.json (either with preserved data or new empty data)
+    await writeTasksJson(toolManager, tasksJsonPath, existingData);
 
-    // Create README.md in tasks directory
+    // Create README.md in tasks directory if it doesn't exist
     const readmePath = path.join(tasksDir, 'README.md');
-    const readmeContent = `# Tasks Directory
+    const readmeExists = await fileExists(readmePath);
+    
+    if (!readmeExists) {
+      const readmeContent = `# Tasks Directory
 
 This directory contains task files for the project managed by Huckleberry Task Manager.
 
@@ -112,22 +147,35 @@ Use the VS Code command palette or chat with @Huckleberry to manage tasks:
 - Scan TODOs: \`@Huckleberry Scan for TODOs in the codebase\`
 `;
 
-    if (writeFileTool) {
-      // Use the tool if available
-      await writeFileTool.execute({
-        path: readmePath,
-        content: readmeContent,
-        createParentDirectories: true
-      });
-    } else {
-      // Use direct file system API if tool is not available
-      await createDirectoriesIfNeeded(path.dirname(readmePath));
-      await fs.writeFile(readmePath, readmeContent);
+      if (writeFileTool) {
+        // Use the tool if available
+        await writeFileTool.execute({
+          path: readmePath,
+          content: readmeContent,
+          createParentDirectories: true
+        });
+      } else {
+        // Use direct file system API if tool is not available
+        await createDirectoriesIfNeeded(path.dirname(readmePath));
+        await fs.writeFile(readmePath, readmeContent);
+      }
     }
     
-    await streamMarkdown(stream, '✅ Task tracking initialized!');
-    await streamMarkdown(stream, "I'm your huckleberry. Let's get these tasks organized, shall we?");
-    await streamMarkdown(stream, `
+    // Response depends on whether we're initializing for the first time or not
+    if (isAlreadyInitialized) {
+      await streamMarkdown(stream, '✅ Task tracking already initialized!');
+      await streamMarkdown(stream, "I'm your huckleberry. Existing tasks have been preserved.");
+      await streamMarkdown(stream, `
+Tasks are stored in the \`${config.defaultTasksLocation}\` directory.
+- Current task count: **${existingData.tasks.length}**
+- Default task priority: **${config.defaultTaskPriority}**
+    
+You can continue managing your tasks through our chat interface.
+`);
+    } else {
+      await streamMarkdown(stream, '✅ Task tracking initialized!');
+      await streamMarkdown(stream, "I'm your huckleberry. Let's get these tasks organized, shall we?");
+      await streamMarkdown(stream, `
 Tasks will be stored in the \`${config.defaultTasksLocation}\` directory.
 - Default task priority: **${config.defaultTaskPriority}**
 - Task file format: **${config.taskFileTemplate}**
@@ -140,9 +188,14 @@ I've set up:
 
 There's no normal life, just tasks. Let's get on with it.
 `);
+    }
 
     // Log success
-    logWithChannel(LogLevel.INFO, '✅ Task tracking initialized successfully', { tasksDir });
+    logWithChannel(LogLevel.INFO, '✅ Task tracking initialized successfully', { 
+      tasksDir,
+      isAlreadyInitialized,
+      taskCount: existingData.tasks.length
+    });
   } catch (error) {
     logWithChannel(LogLevel.ERROR, '❌ Error initializing task tracking:', error);
     await streamMarkdown(stream, `❌ Failed to initialize task tracking: ${error instanceof Error ? error.message : String(error)}`);
@@ -161,5 +214,19 @@ async function createDirectoriesIfNeeded(dirPath: string): Promise<void> {
   } catch (error) {
     // Log error but don't throw - this is a best-effort operation
     logWithChannel(LogLevel.ERROR, `Failed to create directory ${dirPath}:`, error);
+  }
+}
+
+/**
+ * Helper function to check if a file exists
+ * @param filePath Path to the file to check
+ * @returns Promise resolving to true if the file exists, false otherwise
+ */
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
   }
 }

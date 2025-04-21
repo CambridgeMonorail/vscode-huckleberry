@@ -15,26 +15,26 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 ## Core Chat Participant Functionality
 
 - [x] @Huckleberry can be mentioned in VS Code Chat
-- [ ] Chat participant responds to messages
-- [ ] Chat participant maintains context across messages in a conversation
-- [ ] Error messages are displayed properly when issues occur
+- [x] Chat participant responds to messages
+- [x] Chat participant maintains context across messages in a conversation
+- [x] Error messages are displayed properly when issues occur
 
 ## Task Initialization
 
-- [ ] `@Huckleberry Initialize task tracking for this project` creates proper task structure
-- [ ] Task initialization creates `tasks.json` file
-- [ ] Task initialization creates tasks directory
-- [ ] Task initialization produces confirmation message
-- [ ] Task initialization fails gracefully if already initialized
+- [x] `@Huckleberry Initialize task tracking for this project` creates proper task structure
+- [x] Task initialization creates `tasks.json` file
+- [x] Task initialization creates tasks directory
+- [x] Task initialization produces confirmation message
+- [x] Task initialization fails gracefully if already initialized
 
 ## Task Creation and Management
 
-- [ ] `@Huckleberry Create a task to implement user authentication` creates new task
-- [ ] `@Huckleberry Create a high priority task to fix security vulnerability` creates high priority task
-- [ ] Created tasks have unique IDs
-- [ ] Created tasks have appropriate metadata (priority, status, etc.)
-- [ ] Tasks can be created with explicit priority levels (high, medium, low)
-- [ ] Tasks are stored properly in task files
+- [x] `@Huckleberry Create a task to implement user authentication` creates new task
+- [x] `@Huckleberry Create a high priority task to fix security vulnerability` creates high priority task
+- [x] Created tasks have unique IDs
+- [x] Created tasks have appropriate metadata (priority, status, etc.)
+- [x] Tasks can be created with explicit priority levels (high, medium, low)
+- [x] Tasks are stored properly in task files
 - [ ] `@Huckleberry List all tasks` shows all tasks correctly
 - [ ] `@Huckleberry What tasks are high priority?` filters tasks by priority
 
