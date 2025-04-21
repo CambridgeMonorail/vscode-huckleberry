@@ -12,7 +12,6 @@ import { showInfo } from './utils/uiHelpers';
 import { isWorkspaceAvailable, notifyNoWorkspace } from './handlers/chatHandler';
 import { recommendAgentMode, detectCopilotMode } from './utils/copilotHelper';
 import { initDebugChannel, logWithChannel, LogLevel, dumpState } from './utils/debugUtils';
-import * as commandHandlers from './handlers/commandHandlers';
 
 /**
  * State of the extension including key services
@@ -289,7 +288,51 @@ export function activate(context: vscode.ExtensionContext): void {
     // British spelling variant (command alias)
     const initialiseTaskTrackingDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.initialiseTaskTracking', 
-      () => commandHandlers.handleInitializeTaskTrackingCommand()
+      () => {
+        // Check workspace availability before proceeding
+        if (!isWorkspaceAvailable()) {
+          notifyNoWorkspace();
+          return;
+        }
+        
+        try {
+          logWithChannel(LogLevel.INFO, '🎯 Command: Initialize Task Tracking');
+          
+          // Open chat with Huckleberry and send the initialize command
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open', 
+            '@huckleberry Initialize task tracking for this project'
+          );
+        } catch (error) {
+          logWithChannel(LogLevel.ERROR, 'Error in initializeTaskTracking command:', error);
+          vscode.window.showErrorMessage(`Failed to initialize task tracking: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+    );
+
+    // American spelling variant
+    const initializeTaskTrackingDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.initializeTaskTracking', 
+      () => {
+        // Check workspace availability before proceeding
+        if (!isWorkspaceAvailable()) {
+          notifyNoWorkspace();
+          return;
+        }
+        
+        try {
+          logWithChannel(LogLevel.INFO, '🎯 Command: Initialize Task Tracking');
+          
+          // Open chat with Huckleberry and send the initialize command
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open', 
+            '@huckleberry Initialize task tracking for this project'
+          );
+        } catch (error) {
+          logWithChannel(LogLevel.ERROR, 'Error in initializeTaskTracking command:', error);
+          vscode.window.showErrorMessage(`Failed to initialize task tracking: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
     );
 
     // Register workspace change listener to detect when workspace folders are added/removed
@@ -341,6 +384,7 @@ export function activate(context: vscode.ExtensionContext): void {
       testChatDisposable,
       forceRefreshDisposable,
       initialiseTaskTrackingDisposable,
+      initializeTaskTrackingDisposable,
       workspaceFoldersChangeDisposable
     );
 

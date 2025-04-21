@@ -139,6 +139,7 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 ## Notes on Testing
 
 For each feature, document any issues encountered during testing including:
+
 - Steps to reproduce
 - Expected vs. actual behavior
 - Error messages or logs
