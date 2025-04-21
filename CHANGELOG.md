@@ -1,3 +1,13 @@
+## 0.1.10 (2025-04-21)
+
+### 🚀 Features
+
+- **languageModelTools:** add British spelling variant for task tracking ([71d9872](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/71d9872))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.9 (2025-04-21)
 
 ### 🚀 Features
