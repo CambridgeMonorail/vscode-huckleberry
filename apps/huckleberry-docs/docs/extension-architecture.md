@@ -59,6 +59,19 @@ The Language Model Tools (`tools/`) allow VS Code's language model (like GitHub 
 - Validation and execution of tools
 - Result formatting for the language model
 
+### Agent Mode Implementation
+
+The Agent Mode implementation (`tools/`) allows VS Code's AI assistants (like GitHub Copilot) to directly interact with Huckleberry's functionality:
+
+- **createTask**: Creates a new task with optional priority 
+- **initializeTracking**: Sets up task tracking in a workspace
+- **scanTodos**: Converts TODO comments to tasks
+- **listTasks**: Lists and filters tasks
+- **markTaskDone**: Completes a task
+- **updateTaskPriority**: Changes a task's priority level
+
+These tools are registered with VS Code's Language Model Tools API, enabling seamless integration with AI assistants in agent mode. While users experience these as "Agent Mode Features," they're implemented as Language Model Tools in the codebase.
+
 ### File System Interaction
 
 The File System Service (`services/fileSystem.ts`) manages all interactions with the workspace file system:

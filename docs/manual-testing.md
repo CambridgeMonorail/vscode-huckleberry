@@ -35,7 +35,7 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 - [x] Created tasks have appropriate metadata (priority, status, etc.)
 - [x] Tasks can be created with explicit priority levels (high, medium, low)
 - [x] Tasks are stored properly in task files
-- [ ] `@Huckleberry List all tasks` shows all tasks correctly
+- [x] `@Huckleberry List all tasks` shows all tasks correctly
 - [ ] `@Huckleberry What tasks are high priority?` filters tasks by priority
 
 ## Task Status Management

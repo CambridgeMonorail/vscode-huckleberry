@@ -102,5 +102,5 @@ These files are stored locally and can be committed to version control to share 
 Now that you've learned the basics, you can:
 
 - Explore [all features](./features.md) of Huckleberry
-- Learn about [Language Model Tools integration](./language-model-tools.md)
+- Learn about [Agent Mode Features](./language-model-tools.md)
 - See more [advanced usage examples](./usage.md)

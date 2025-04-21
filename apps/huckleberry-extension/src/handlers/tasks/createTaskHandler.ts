@@ -23,6 +23,13 @@ import {
  * @returns The extracted task description or a default
  */
 function extractTaskDescription(prompt: string): string {
+  // Handle priority-specific patterns first
+  const priorityMatch = prompt.match(/create a (high|medium|low|critical) priority task( to)?:?\s+(.+)/i);
+  if (priorityMatch) {
+    return priorityMatch[3].trim();
+  }
+  
+  // Handle standard patterns
   const descriptionMatch = prompt.match(/create a task( to)?:?\s+(.+)/i);
   return descriptionMatch ? descriptionMatch[2].trim() : "New task";
 }

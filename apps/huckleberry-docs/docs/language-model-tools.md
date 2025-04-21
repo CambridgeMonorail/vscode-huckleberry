@@ -2,34 +2,31 @@
 sidebar_position: 5
 ---
 
-# Language Model Tools (Agent Mode)
+# Agent Mode Features
 
-Huckleberry integrates with the VS Code Language Model Tools API (also known as "Copilot Agent Mode"), allowing AI-powered assistants like GitHub Copilot to directly interact with Huckleberry's task management capabilities without requiring explicit `@Huckleberry` mentions.
+Huckleberry integrates with VS Code's AI assistants (like GitHub Copilot) through "Agent Mode," allowing these assistants to directly interact with Huckleberry's task management capabilities without requiring explicit `@Huckleberry` mentions.
 
-> **💡 Pro tip:** For the best experience with Huckleberry's language model tools, we currently recommend using Claude models in Copilot agent mode. Enable agent mode by opening VS Code settings and setting `github.copilot.chat.localeOverride` to `"en-US"`, then selecting Claude as your model from the Copilot chat dropdown.
+> **💡 Pro tip:** For the best experience with Huckleberry's agent mode features, we currently recommend using Claude models in Copilot agent mode. Enable agent mode by opening VS Code settings and setting `github.copilot.chat.localeOverride` to `"en-US"`, then selecting Claude as your model from the Copilot chat dropdown.
 
-## What are Language Model Tools?
+## What is Agent Mode?
 
-Language Model Tools (or Agent Mode) is a VS Code API that allows extensions to register "tools" that can be used by language models like GitHub Copilot. When these tools are registered:
+Agent Mode is a VS Code capability that allows AI assistants like GitHub Copilot to use extension-provided tools to perform actions in your workspace. Technically, this works through the VS Code Language Model Tools API, but as a user, you'll experience it as enhanced capabilities of your AI assistant.
 
-1. The language model can detect when a tool might be useful in a conversation
-2. The model can call the tool directly to perform actions or retrieve information
-3. The results are incorporated into the model's response
+When Huckleberry's agent mode features are available:
+
+1. The AI assistant can detect when a task management action might be helpful in your conversation
+2. The assistant can perform those actions directly (create tasks, list tasks, etc.)
+3. The results are incorporated into the assistant's response
 
 This creates a seamless experience where the AI can help manage tasks without requiring explicit `@Huckleberry` mentions.
 
-## Available Tools
+## Available Agent Mode Features
 
-Huckleberry provides the following Language Model Tools for use in agent mode:
+Huckleberry provides the following features for use in agent mode:
 
 ### create_task
 
 **Purpose:** Creates a new task in the Huckleberry Task Manager
-
-**Parameters:**
-
-- `description` (required): Description of the task
-- `priority` (optional): Priority level - can be "low", "medium", "high", or "critical"
 
 **Example usage scenarios:**
 
@@ -50,8 +47,6 @@ Copilot: I've created task TASK-001: Implement user authentication with high pri
 
 **Purpose:** Sets up task tracking for a project workspace
 
-**Parameters:** None required
-
 **Example usage scenarios:**
 
 - When starting a new project
@@ -70,10 +65,6 @@ Copilot: I've set up task tracking in the 'tasks' directory. You can now create 
 ### scan_todos
 
 **Purpose:** Scans the codebase for TODO comments and converts them to tasks
-
-**Parameters:**
-
-- `pattern` (optional): File pattern to scan (e.g., '**/*.ts') - if not provided, scans all files
 
 **Example usage scenarios:**
 
@@ -94,11 +85,6 @@ Copilot: I'll scan for TODOs in TypeScript files. I found 5 TODOs and created ta
 
 **Purpose:** Lists tasks from the task manager with optional filtering
 
-**Parameters:**
-
-- `priority` (optional): Filter by "low", "medium", "high", "critical", or "all"
-- `status` (optional): Filter by "open", "in_progress", "done", or "all"
-
 **Example usage scenarios:**
 
 - When planning daily work
@@ -116,10 +102,6 @@ Copilot: Let me check the high priority tasks for you.
 ### mark_task_done
 
 **Purpose:** Marks a task as complete
-
-**Parameters:**
-
-- `taskId` (required): ID of the task to mark as done
 
 **Example usage scenarios:**
 
@@ -140,11 +122,6 @@ Copilot: I've marked task TASK-003 as complete.
 
 **Purpose:** Changes the priority of a task
 
-**Parameters:**
-
-- `taskId` (required): ID of the task to update
-- `priority` (required): New priority - can be "low", "medium", "high", or "critical"
-
 **Example usage scenarios:**
 
 - When reprioritizing work
@@ -160,9 +137,9 @@ User: Yes, make it critical
 Copilot: I've updated task TASK-007 to critical priority.
 ```
 
-## How to Use Agent Mode Tools
+## How to Use Agent Mode Features
 
-To use Huckleberry's tools in agent mode:
+To use Huckleberry's features in agent mode:
 
 1. Make sure Copilot Agent Mode is enabled (look for "Agent:" in the chat interface header)
 2. If Agent Mode is not enabled:
@@ -173,11 +150,11 @@ To use Huckleberry's tools in agent mode:
 3. Select Claude as your model from the Copilot chat dropdown (recommended for best results)
 4. Start chatting with Copilot about your tasks and project
 
-Copilot will automatically detect when to use Huckleberry's tools based on the conversation context.
+Copilot will automatically detect when to use Huckleberry's task management features based on the conversation context.
 
 ## Example Complete Workflow
 
-Here's a complete example of a task management workflow using Huckleberry's agent mode tools:
+Here's a complete example of a task management workflow using Huckleberry's agent mode features:
 
 **User**: "I'm starting a new feature for our e-commerce platform. I need to track the tasks for it."
 
@@ -219,18 +196,22 @@ Would you like to see all your current tasks?"
 
 These would be good tasks to focus on first."
 
-## Benefits of Tool Integration
+## Benefits of Agent Mode Integration
 
 - **Seamless experience**: The AI can manage tasks without breaking the conversational flow
-- **Contextual awareness**: Tools are invoked based on the conversation context
+- **Contextual awareness**: Features are invoked based on the conversation context
 - **Reduced friction**: Users don't need to remember specific command syntax
 - **Proactive assistance**: The AI can suggest task operations at appropriate moments
 
 ## Troubleshooting
 
-If you're having issues with Huckleberry's Agent Mode tools:
+If you're having issues with Huckleberry's Agent Mode features:
 
 1. **Check Agent Mode status**: Make sure "Agent:" appears in the chat interface header
 2. **Verify tool registration**: Run the command "Huckleberry (Dev): Check Copilot Agent Mode"
 3. **Try a different model**: Different models have varying capabilities with tools. Claude models currently perform best with Huckleberry.
 4. **Restart VS Code**: Sometimes a VS Code restart is needed after changing agent mode settings
+
+## Technical Details
+
+Behind the scenes, Huckleberry implements these features using VS Code's Language Model Tools API. This API allows extensions to register tools that can be called by language models like GitHub Copilot. If you're a developer interested in how this works, see our [Extension Architecture](./extension-architecture.md) documentation.

@@ -20,14 +20,19 @@ Manage tasks through simple, conversational language in VS Code's chat interface
 ### Task Creation and Organization
 
 - **Task Creation**: Create tasks with descriptions, priorities, and due dates
+
 - **Task Categories**: Organize tasks into categories or areas
+
 - **Priority Levels**: Assign low, medium, or high priority to tasks
+
 - **Task Status**: Track task completion status (todo, in-progress, done)
 
 ### Task Discovery
 
 - **TODO Comment Scanning**: Automatically discover tasks from `TODO` comments in your code
+
 - **Requirements Parsing**: Parse project requirement documents to generate tasks
+
 - **Task Decomposition**: Break down complex tasks into manageable subtasks
 
 ## Integration Features
@@ -35,32 +40,41 @@ Manage tasks through simple, conversational language in VS Code's chat interface
 ### VS Code Integration
 
 - **Chat Participant**: Integration with VS Code's chat interface via `@Huckleberry` mentions
+
 - **Command Palette**: Access commands through VS Code's command palette
-- **Language Model Tools**: Direct AI integration through VS Code's Language Model API
+
+- **Agent Mode Integration**: Direct AI integration through VS Code's Language Model API
+
 - **Workspace Storage**: All tasks stored locally in your workspace files
 
-### Language Model Tools
+### Agent Mode Tools
 
-Huckleberry provides tools that VS Code's language model (like GitHub Copilot) can directly use:
+Huckleberry integrates with VS Code's Language Model API (known as "Agent Mode"), allowing AI assistants like GitHub Copilot to directly interact with Huckleberry's task management features without requiring explicit `@Huckleberry` mentions.
 
-| Tool | Description |
-|------|-------------|
-| `huckleberry.createTask` | Creates a new task with optional priority |
-| `huckleberry.initializeTaskTracking` | Sets up task tracking for the workspace |
-| `huckleberry.scanTodos` | Scans the codebase for TODOs and creates tasks |
-| `huckleberry.listTasks` | Lists all tasks with optional filtering by priority or status |
-| `huckleberry.markTaskDone` | Marks a specified task as complete |
-| `huckleberry.changeTaskPriority` | Changes a task's priority |
+Key agent mode capabilities include:
 
-This allows for a seamless experience where the language model can directly perform task operations when appropriate during conversations.
+- Creating and updating tasks through natural conversation
+
+- Initializing task tracking for new projects
+
+- Scanning codebase for TODOs
+
+- Listing and filtering tasks
+
+- Updating task status and priority
+
+For complete details on available tools and how they work, see the [Language Model Tools (Agent Mode)](./language-model-tools.md) documentation.
 
 ## Storage and Persistence
 
 Huckleberry stores tasks locally in your workspace, making them:
 
 - **Version controlled**: Track task changes with your code
+
 - **Team accessible**: Share tasks with your team
+
 - **Transparent**: All data stored as plain text files
+
 - **Portable**: No dependency on external servers or services
 
 ## Upcoming Features
@@ -70,9 +84,13 @@ The following features are on our roadmap but may not be available in the curren
 :::
 
 - **Tree View**: A dedicated tree view for task visualization and management
+
 - **VS Code Tasks Integration**: Integration with VS Code's built-in task system
+
 - **Task Dependencies**: Define and track dependencies between tasks
+
 - **Time Tracking**: Track time spent on tasks
+
 - **Reporting**: Generate reports of task progress and completion
 
 ## Feature Comparison

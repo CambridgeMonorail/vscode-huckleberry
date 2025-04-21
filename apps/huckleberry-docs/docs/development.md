@@ -89,7 +89,7 @@ The VS Code extension follows a modular architecture:
 - **src/extension.ts**: Main entry point
 - **src/services/**: Core services that handle the business logic
 - **src/handlers/**: Command and event handlers
-- **src/tools/**: Language model tools implementation
+- **src/tools/**: Agent mode features implementation (VS Code Language Model Tools API)
 - **src/utils/**: Utility functions and helpers
 - **src/config/**: Configuration and settings
 
