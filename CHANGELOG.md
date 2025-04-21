@@ -1,3 +1,13 @@
+## 0.1.9 (2025-04-21)
+
+### 🚀 Features
+
+- **logging:** enhance error logging utility and add task tracking check ([95c450d](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/95c450d))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.8 (2025-04-20)
 
 ### 🚀 Features
