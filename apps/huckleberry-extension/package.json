@@ -27,6 +27,7 @@
     "onChatParticipant:huckleberry",
     "onLanguageModelTool:create_task",
     "onLanguageModelTool:initialize_tracking",
+    "onLanguageModelTool:initialise_tracking",
     "onLanguageModelTool:scan_todos",
     "onLanguageModelTool:list_tasks",
     "onLanguageModelTool:mark_task_done",
@@ -45,6 +46,12 @@
         "title": "Huckleberry: Initialize Task Tracking",
         "category": "Huckleberry",
         "description": "Set up task tracking for the current workspace"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.initialiseTaskTracking",
+        "title": "Huckleberry: Initialise Task Tracking",
+        "category": "Huckleberry",
+        "description": "Set up task tracking for the current workspace (British spelling)"
       },
       {
         "command": "vscode-copilot-huckleberry.createTask",
@@ -174,6 +181,21 @@
         "modelDescription": "Initialize task tracking for a project workspace. Use this tool when a user first mentions they want to track tasks or organize their project work. This tool will create the necessary file structure for task tracking in the current workspace, including a tasks.json file to store task metadata. It requires an open workspace with write access and shouldn't be used in read-only environments or when task tracking is already set up.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "initializeHuckleberryTaskTracking",
+        "userDescription": "Sets up the task tracking system in your project",
+        "icon": "resources/initialize-tasks-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        },
+        "when": "workspaceFolderCount > 0"
+      },
+      {
+        "name": "initialise_tracking",
+        "displayName": "Initialise Task Tracking",
+        "modelDescription": "Initialise task tracking for a project workspace. Use this tool when a user first mentions they want to track tasks or organize their project work. This tool will create the necessary file structure for task tracking in the current workspace, including a tasks.json file to store task metadata. It requires an open workspace with write access and shouldn't be used in read-only environments or when task tracking is already set up.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "initialiseHuckleberryTaskTracking",
         "userDescription": "Sets up the task tracking system in your project",
         "icon": "resources/initialize-tasks-icon.svg",
         "inputSchema": {

@@ -383,6 +383,83 @@ export class LanguageModelToolsProvider {
         throw error;
       }
 
+      // British spelling alias for Initialize Task Tracking tool
+      try {
+        logWithChannel(LogLevel.DEBUG, 'Registering initialise_tracking tool (British spelling alias)...');
+        const initialiseToolDisposable = vscode.lm.registerTool('initialise_tracking', {
+          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+            const config = getConfiguration();
+            
+            // Get the potential tasks directory location for better context
+            let tasksLocation: string;
+            try {
+              const folders = vscode.workspace.workspaceFolders;
+              if (folders && folders.length > 0) {
+                const workspaceFolder = folders[0].uri.fsPath;
+                tasksLocation = `${workspaceFolder}/${config.defaultTasksLocation}`;
+              } else {
+                tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
+              }
+            } catch (error) {
+              tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
+            }
+            
+            // Return a PreparedToolInvocation object with confirmationMessages as required by VS Code API
+            return {
+              confirmationMessages: {
+                title: 'Initialise Task Tracking',
+                message: new vscode.MarkdownString(
+                  `**Initialise Task Tracking**\n\n` +
+                  `This will set up task tracking in your workspace by:\n\n` +
+                  `- Creating a \`${config.defaultTasksLocation}\` directory\n` + 
+                  `- Adding \`tasks.json\` for storing task metadata\n` + 
+                  `- Setting up a README with usage instructions\n\n` +
+                  `Location: \`${tasksLocation}\``
+                )
+              },
+              invocationMessage: `Initialising task tracking in ${config.defaultTasksLocation}...`
+            };
+          },
+          
+          async invoke(options, token) {
+            if (!isWorkspaceAvailable()) {
+              notifyNoWorkspace();
+              throw new Error("No workspace available. Please open a workspace to use this tool.");
+            }
+            
+            try {
+              // Create a custom stream to collect output from the handler
+              const stream = new ToolResponseStream();
+              
+              // Process the task initialization
+              await handleInitializeTaskTracking(stream as any, toolManager);
+              
+              // Get the workspace folder and task directory for the result message
+              const { tasksDir } = await getWorkspacePaths();
+              
+              // Use VS Code's recommended LanguageModelToolResult format
+              return new vscode.LanguageModelToolResult([
+                new vscode.LanguageModelTextPart(
+                  `✅ Task tracking initialised successfully in ${tasksDir}\n\n` +
+                  stream.getResult()
+                )
+              ]);
+            } catch (error) {
+              logWithChannel(LogLevel.ERROR, 'Error in initialiseTaskTracking tool:', error);
+              throw new Error(
+                `Failed to initialise task tracking: ${error instanceof Error ? error.message : String(error)}. ` +
+                `Make sure you have write access to the workspace directory.`
+              );
+            }
+          }
+        });
+        this.disposables.push(initialiseToolDisposable);
+        logWithChannel(LogLevel.DEBUG, '✓ initialise_tracking registered successfully');
+      } catch (error) {
+        logWithChannel(LogLevel.ERROR, 'Failed to register initialise_tracking tool:', error);
+        throw error;
+      }
+
       // Scan TODOs tool
       this.disposables.push(
         vscode.lm.registerTool('scan_todos', {

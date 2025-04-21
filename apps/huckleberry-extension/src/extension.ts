@@ -12,6 +12,7 @@ import { showInfo } from './utils/uiHelpers';
 import { isWorkspaceAvailable, notifyNoWorkspace } from './handlers/chatHandler';
 import { recommendAgentMode, detectCopilotMode } from './utils/copilotHelper';
 import { initDebugChannel, logWithChannel, LogLevel, dumpState } from './utils/debugUtils';
+import * as commandHandlers from './handlers/commandHandlers';
 
 /**
  * State of the extension including key services
@@ -285,6 +286,12 @@ export function activate(context: vscode.ExtensionContext): void {
       forceRefreshChatParticipants
     );
 
+    // British spelling variant (command alias)
+    const initialiseTaskTrackingDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.initialiseTaskTracking', 
+      () => commandHandlers.handleInitializeTaskTrackingCommand()
+    );
+
     // Register workspace change listener to detect when workspace folders are added/removed
     const workspaceFoldersChangeDisposable = vscode.workspace.onDidChangeWorkspaceFolders(async e => {
       const foldersAdded = e.added.length > 0;
@@ -333,6 +340,7 @@ export function activate(context: vscode.ExtensionContext): void {
       checkCopilotAgentModeDisposable,
       testChatDisposable,
       forceRefreshDisposable,
+      initialiseTaskTrackingDisposable,
       workspaceFoldersChangeDisposable
     );
 
