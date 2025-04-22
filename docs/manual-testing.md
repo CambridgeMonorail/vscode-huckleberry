@@ -48,15 +48,15 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 
 ## Task Prioritization
 
-- [ ] `@Huckleberry Prioritize tasks` sorts tasks by status and priority
-- [ ] High priority tasks appear before medium and low priority tasks
-- [ ] Incomplete tasks appear before completed tasks
+- [x] `@Huckleberry Prioritize tasks` sorts tasks by status and priority
+- [x] High priority tasks appear before medium and low priority tasks
+- [x] Incomplete tasks appear before completed tasks
 
 ## Next Task Suggestions
 
 - [x] `@Huckleberry What task should I work on next?` suggests appropriate next task
-- [ ] Next task suggestions consider priority and dependencies 
-- [ ] Next task suggestions provide rationale for the recommendation
+- [x] Next task suggestions consider priority and dependencies 
+- [ x Next task suggestions provide rationale for the recommendation
 
 ## Task Decomposition
 

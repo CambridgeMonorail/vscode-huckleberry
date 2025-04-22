@@ -11,10 +11,11 @@ One of Huckleberry's most powerful features is its ability to scan your codebase
 When you ask Huckleberry to scan for TODOs, it:
 
 1. Searches through files in your workspace for specific comment patterns
-2. Extracts the TODO comments along with their context
-3. Creates a task for each unique TODO
-4. Includes file location information in the task
-5. Adds appropriate links between the task and the code
+2. Automatically respects .gitignore patterns to exclude ignored files
+3. Extracts the TODO comments along with their context
+4. Creates a task for each unique TODO
+5. Includes file location information in the task
+6. Adds appropriate links between the task and the code
 
 ## Basic Usage
 
@@ -125,6 +126,16 @@ You can customize which patterns Huckleberry recognizes as TODOs via settings:
 
 ## Advanced Options
 
+### .gitignore Integration
+
+Huckleberry automatically respects patterns defined in your project's `.gitignore` file when scanning for TODOs. This means:
+
+- Files and directories excluded by .gitignore rules are skipped during scanning
+- Build artifacts, dependency folders, and other ignored files won't generate TODO tasks
+- Scanning is more efficient and produces cleaner results focused on your actual source code
+
+This integration works automatically when a `.gitignore` file is present in your workspace root directory, with no additional configuration required.
+
 ### Automatic Scanning
 
 You can configure Huckleberry to automatically scan for TODOs when initializing task tracking:
@@ -200,6 +211,7 @@ If Huckleberry isn't finding your TODOs:
 1. Check that your TODO format matches a recognized pattern
 2. Verify that you're scanning the right files (check your glob pattern)
 3. Make sure there's a space between the TODO keyword and the colon (e.g., `TODO: ` not `TODO:`)
+4. Confirm that your files aren't being excluded by patterns in your `.gitignore` file
 
 ### File Access Issues
 
@@ -207,10 +219,12 @@ If you see errors about file access:
 
 1. Verify that VS Code has access permissions to the files you're trying to scan
 2. Check if the files are excluded in your `.gitignore` or VS Code's `files.exclude` setting
+3. For files explicitly excluded by `.gitignore` that you want to scan, use a targeted glob pattern
 
 ### Performance Issues
 
 For large codebases:
 
 1. Use specific glob patterns to limit scanning to relevant files
-2. Increase the timeout setting if scans are timing out
+2. Take advantage of the automatic `.gitignore` integration to exclude build artifacts and dependencies
+3. Increase the timeout setting if scans are timing out

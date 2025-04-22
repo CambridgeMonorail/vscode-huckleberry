@@ -3,6 +3,7 @@
  */
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { Task, TaskPriority, TaskStatus } from '../../types';
 import { ToolManager } from '../../services/toolManager';
 import { streamMarkdown, showProgress } from '../../utils/uiHelpers';
@@ -43,6 +44,71 @@ interface TodoComment {
    * Optional priority specified in the TODO
    */
   priority?: string;
+}
+
+/**
+ * Reads and parses .gitignore file if it exists in the workspace
+ * @param workspacePath The path to the workspace root
+ * @returns An array of glob patterns to exclude, or empty array if no .gitignore exists
+ */
+async function getGitIgnoreExclusions(workspacePath: string): Promise<string[]> {
+  try {
+    const gitignorePath = path.join(workspacePath, '.gitignore');
+    
+    // Check if .gitignore exists
+    const gitignoreUri = vscode.Uri.file(gitignorePath);
+    try {
+      await vscode.workspace.fs.stat(gitignoreUri);
+    } catch (err) {
+      // No .gitignore file found
+      return [];
+    }
+    
+    // Read .gitignore content
+    const rawContent = await vscode.workspace.fs.readFile(gitignoreUri);
+    const content = new TextDecoder().decode(rawContent);
+    
+    // Parse .gitignore patterns
+    return parseGitignore(content);
+  } catch (error) {
+    console.warn('Error reading .gitignore:', error);
+    return [];
+  }
+}
+
+/**
+ * Parse gitignore content into glob patterns
+ * @param content The content of .gitignore file
+ * @returns Array of glob patterns for exclusion
+ */
+function parseGitignore(content: string): string[] {
+  const lines = content.split(/\r?\n/);
+  
+  return lines
+    .map(line => line.trim())
+    // Remove comments and empty lines
+    .filter(line => line && !line.startsWith('#'))
+    // Convert gitignore patterns to glob patterns
+    .map(pattern => {
+      // Remove leading slash if present
+      if (pattern.startsWith('/')) {
+        pattern = pattern.substring(1);
+      }
+      
+      // Handle negation (!) patterns - we'll skip these for simplicity
+      if (pattern.startsWith('!')) {
+        return null;
+      }
+      
+      // Convert directory indicators (trailing /) to glob
+      if (pattern.endsWith('/')) {
+        pattern = pattern.slice(0, -1) + '/**';
+      }
+      
+      // Ensure all patterns are treated as globs
+      return `**/${pattern}`;
+    })
+    .filter((pattern): pattern is string => pattern !== null);
 }
 
 /**
@@ -142,8 +208,18 @@ export async function handleScanTodosRequest(
     const filePattern = extractFilePattern(prompt);
     await streamMarkdown(stream, `Scanning for TODOs in files matching: \`${filePattern}\``);
     
-    // Find all matching files in the workspace
-    const files = await vscode.workspace.findFiles(filePattern, '**/node_modules/**');
+    // Get exclusion patterns from .gitignore if it exists
+    const gitIgnoreExclusions = await getGitIgnoreExclusions(workspaceFolder);
+    let excludePattern = '**/node_modules/**';
+    
+    if (gitIgnoreExclusions.length > 0) {
+      // Add .gitignore exclusions to the exclusion pattern
+      excludePattern = `{**/node_modules/**,${gitIgnoreExclusions.join(',')}}`;
+      await streamMarkdown(stream, `Respecting .gitignore patterns (${gitIgnoreExclusions.length} patterns found)`);
+    }
+    
+    // Find all matching files in the workspace, excluding patterns from .gitignore
+    const files = await vscode.workspace.findFiles(filePattern, excludePattern);
     
     if (files.length === 0) {
       await streamMarkdown(stream, `No files matching \`${filePattern}\` found in this workspace.`);
