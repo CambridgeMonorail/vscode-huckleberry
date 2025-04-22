@@ -96,6 +96,12 @@
         "description": "Sort tasks by status and priority"
       },
       {
+        "command": "vscode-copilot-huckleberry.getNextTask",
+        "title": "Huckleberry: Get Next Task",
+        "category": "Huckleberry",
+        "description": "Suggest the next task to work on"
+      },
+      {
         "command": "vscode-copilot-huckleberry.parseRequirementsDocument",
         "title": "Huckleberry: Parse Requirements Document",
         "category": "Huckleberry",
@@ -333,6 +339,20 @@
         "toolReferenceName": "prioritizeHuckleberryTasks",
         "userDescription": "Sorts tasks by status and priority",
         "icon": "resources/initialize-tasks-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "next_task",
+        "displayName": "Get Next Task",
+        "modelDescription": "Suggests the next task to work on based on priority and status. Use this tool to help users decide which task they should focus on next from their task list.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "getNextHuckleberryTask",
+        "userDescription": "Suggests the next task you should work on",
+        "icon": "resources/create-task-icon.svg",
         "inputSchema": {
           "type": "object",
           "properties": {},

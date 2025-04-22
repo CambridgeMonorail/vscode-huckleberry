@@ -746,6 +746,52 @@ export class LanguageModelToolsProvider {
         })
       );
 
+      // Next Task tool
+      this.disposables.push(
+        vscode.lm.registerTool('next_task', {
+          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+            return {
+              confirmationMessages: {
+                title: 'Get Next Task',
+                message: new vscode.MarkdownString(
+                  `**Get Next Task Recommendation**\n\n` +
+                  `This will analyze your task list and recommend the next task to work on ` +
+                  `based on priority and status.`
+                )
+              },
+              invocationMessage: `Finding the next task you should work on...`
+            };
+          },
+          
+          async invoke(options, token) {
+            if (!isWorkspaceAvailable()) {
+              notifyNoWorkspace();
+              throw new Error("No workspace available. Please open a workspace to use this tool.");
+            }
+            
+            try {
+              // Create a stream for collecting output
+              const stream = new ToolResponseStream();
+              
+              // Import and call the handler dynamically to avoid circular dependencies
+              const { handleNextTaskRequest } = require('../handlers/tasks/nextTaskHandler');
+              await handleNextTaskRequest('What task should I work on next?', stream as any, toolManager);
+              
+              // Return the results
+              return new vscode.LanguageModelToolResult([
+                new vscode.LanguageModelTextPart(stream.getResult())
+              ]);
+            } catch (error) {
+              logWithChannel(LogLevel.ERROR, 'Error in nextTask tool:', error);
+              throw new Error(
+                `Failed to get next task recommendation: ${error instanceof Error ? error.message : String(error)}. ` +
+                `Make sure task tracking has been initialized.`
+              );
+            }
+          }
+        })
+      );
+
       // Register all disposables with the extension context
       this.disposables.forEach(disposable => {
         context.subscriptions.push(disposable);

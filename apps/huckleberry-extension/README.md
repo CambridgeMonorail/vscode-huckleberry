@@ -52,6 +52,7 @@ Try these commands in the VS Code chat panel:
 @Huckleberry Mark task TASK-123 as complete
 @Huckleberry Mark task TASK-123 as high priority
 @Huckleberry Parse requirements.md and create tasks
+@Huckleberry What task should I work on next?
 ```
 
 ## Settings
@@ -100,6 +101,7 @@ Interact with Huckleberry through the VS Code chat interface by addressing `@Huc
 | `@Huckleberry Mark task TASK-123 as complete` | Mark the specified task as completed |
 | `@Huckleberry Mark task TASK-123 as high priority` | Mark the specified task as high priority |
 | `@Huckleberry Parse requirements.md and create tasks` | Extract tasks from a requirements document |
+| `@Huckleberry What task should I work on next?` | Suggest the next task to work on based on priority and dependencies |
 
 You can also start a conversation with Huckleberry by selecting it from the chat participants in the VS Code chat panel.
 

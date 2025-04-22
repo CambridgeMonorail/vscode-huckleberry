@@ -190,6 +190,27 @@ async function forceRefreshChatParticipants(): Promise<void> {
 }
 
 /**
+ * Command handler for getting the next task suggestion
+ */
+function getNextTask(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and send the next task command
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry What task should I work on next?'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in getNextTask command:', error);
+    vscode.window.showErrorMessage(`Failed to get next task recommendation: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Prompts the user to reload the window when a workspace is opened.
  */
 function promptReloadOnWorkspaceOpen(): void {
@@ -310,6 +331,12 @@ export function activate(context: vscode.ExtensionContext): void {
       forceRefreshChatParticipants
     );
 
+    // Add the next task command
+    const getNextTaskDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.getNextTask', 
+      getNextTask
+    );
+
     // British spelling variant (command alias)
     const initialiseTaskTrackingDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.initialiseTaskTracking', 
@@ -409,6 +436,7 @@ export function activate(context: vscode.ExtensionContext): void {
       checkCopilotAgentModeDisposable,
       testChatDisposable,
       forceRefreshDisposable,
+      getNextTaskDisposable,
       initialiseTaskTrackingDisposable,
       initializeTaskTrackingDisposable,
       workspaceFoldersChangeDisposable

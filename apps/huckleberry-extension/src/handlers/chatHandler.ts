@@ -76,6 +76,29 @@ function isPrioritizeTasksRequest(prompt: string): boolean {
 }
 
 /**
+ * Determines if the prompt is a next task request
+ * @param prompt The user's prompt text
+ * @returns True if the prompt appears to be a next task request
+ */
+function isNextTaskRequest(prompt: string): boolean {
+  const keywords = [
+    'next task',
+    'what should i work on',
+    'what to work on',
+    'suggest a task',
+    'which task should i',
+    'recommend a task',
+    'suggest next task',
+    'what task should i do next',
+    'what\'s my next task'
+  ];
+  
+  const lowerPrompt = prompt.toLowerCase();
+  
+  return keywords.some(keyword => lowerPrompt.includes(keyword));
+}
+
+/**
  * Handle chat requests for Huckleberry
  * @param request The chat request
  * @param context The chat context
@@ -238,6 +261,12 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       // Import the handler here to avoid circular dependencies
       const { handlePrioritizeTasksRequest } = require('./tasks/taskPrioritizer');
       await handlePrioritizeTasksRequest(cleanedPrompt, stream, toolManager);
+      return;
+    } else if (isNextTaskRequest(cleanedPrompt)) {
+      logWithChannel(LogLevel.INFO, 'Detected next task request');
+      // Import the handler here to avoid circular dependencies
+      const { handleNextTaskRequest } = require('./tasks/nextTaskHandler');
+      await handleNextTaskRequest(cleanedPrompt, stream, toolManager);
       return;
     }
     
