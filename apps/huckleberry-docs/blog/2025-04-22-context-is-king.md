@@ -5,7 +5,7 @@ authors: [tim]
 tags: [huckleberry, copilot, context, ai-agents, productivity]
 ---
 
-If you've ever used GitHub Copilot in agent mode, you'll know it can do a lot — but only if it knows what you're actually trying to do.
+If you've ever used GitHub Copilot in agent mode, you'll know it can do a lot, but only if it knows what you're actually trying to do.
 
 That's where Huckleberry comes in.
 
@@ -30,7 +30,7 @@ It helps by:
   A well-scoped task helps Copilot do the right thing on the first attempt.
 
 - **Making conversations feel natural**  
-  You can ask Huckleberry to suggest the next task, update priorities, or mark things as done — all without leaving your editor.
+  You can ask Huckleberry to suggest the next task, update priorities, or mark things as done, all without leaving your editor.
 
 Think of it as a project whisperer. It translates your intentions into something Copilot can actually act on, so you don't have to keep repeating yourself.
 
@@ -65,4 +65,3 @@ Huckleberry's not finished. Some features are still being tested, and the occasi
 
 If you've ever felt like you were constantly having to explain the obvious to your AI assistant, Huckleberry might be what you've been waiting for.
 
-We're halfway there. And yes, we're living on a prayer.

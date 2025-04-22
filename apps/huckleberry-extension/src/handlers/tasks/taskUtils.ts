@@ -176,6 +176,9 @@ export function createTaskObject(
  */
 export async function recommendAgentModeInChat(stream: vscode.ChatResponseStream): Promise<void> {
   try {
+    // Temporarily disabled based on user feedback that these notifications are annoying
+    // Keep implementation for potential future re-enablement
+    /*
     // Import dynamically to avoid circular dependencies
     const { detectCopilotMode } = await import('../../utils/copilotHelper');
     const modeInfo = await detectCopilotMode();
@@ -187,6 +190,10 @@ export async function recommendAgentModeInChat(stream: vscode.ChatResponseStream
 > You can do this by running \`Huckleberry: Check Copilot Agent Mode\` from the command palette.
       `);
     }
+    */
+    
+    // Just log that the recommendation was suppressed
+    console.debug('Agent mode chat recommendation suppressed based on user feedback');
   } catch (error) {
     // Silently ignore errors in recommendation logic
     console.warn('Error checking agent mode for recommendation:', error);

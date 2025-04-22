@@ -269,7 +269,10 @@ export function activate(context: vscode.ExtensionContext): void {
       logWithChannel(LogLevel.INFO, 'Copilot mode detected:', modeInfo);
       
       if (modeInfo.isAvailable && !modeInfo.isAgentModeEnabled) {
-        recommendAgentMode();
+        // Temporarily disabled based on user feedback that the popup is unnecessary
+        // Keep this code for potential future re-enablement
+        // recommendAgentMode();
+        logWithChannel(LogLevel.DEBUG, 'Agent mode recommendation suppressed based on user feedback');
       }
     }).catch(error => {
       logWithChannel(LogLevel.ERROR, 'Error checking Copilot mode:', error);
