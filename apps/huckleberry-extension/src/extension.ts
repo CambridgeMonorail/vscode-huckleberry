@@ -335,6 +335,10 @@ export function activate(context: vscode.ExtensionContext): void {
       prioritizeTasks();
     });
 
+    const prioritiseTasksDisposable = vscode.commands.registerCommand('vscode-copilot-huckleberry.prioritiseTasks', () => {
+      prioritizeTasks();
+    });
+
     const checkCopilotAgentModeDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.checkCopilotAgentMode', 
       checkCopilotAgentMode
@@ -460,6 +464,7 @@ export function activate(context: vscode.ExtensionContext): void {
       helloWorldDisposable,
       manageTasksDisposable,
       prioritizeTasksDisposable,
+      prioritiseTasksDisposable,
       checkCopilotAgentModeDisposable,
       testChatDisposable,
       forceRefreshDisposable,
