@@ -1,3 +1,13 @@
+## 0.1.15 (2025-04-22)
+
+### 🚀 Features
+
+- **todos:** integrate .gitignore support for TODO scanning and update docs ([c402b55](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/c402b55))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.14 (2025-04-22)
 
 ### 🩹 Fixes
