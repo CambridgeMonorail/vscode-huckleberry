@@ -105,7 +105,12 @@ async function checkCopilotAgentMode(): Promise<void> {
       });
     } else {
       // Show recommendation notification
-      recommendAgentMode(true);
+      // Temporarily disabled based on user feedback that the popup is unnecessary
+      // Keep this code for potential future re-enablement
+      // recommendAgentMode(true);
+      
+      // Just log that agent mode is not enabled without showing notification based on user feedback
+      logWithChannel(LogLevel.DEBUG, 'Copilot agent mode is not enabled, but suppressing notification based on user feedback');
     }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error checking Copilot agent mode:', error);
