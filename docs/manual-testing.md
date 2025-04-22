@@ -46,6 +46,18 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 - [x] Status changes are reflected in task files
 - [x] Task status changes fail gracefully for invalid task IDs
 
+## Task Prioritization
+
+- [ ] `@Huckleberry Prioritize tasks` sorts tasks by status and priority
+- [ ] High priority tasks appear before medium and low priority tasks
+- [ ] Incomplete tasks appear before completed tasks
+
+## Next Task Suggestions
+
+- [ ] `@Huckleberry What task should I work on next?` suggests appropriate next task
+- [ ] Next task suggestions consider priority and dependencies 
+- [ ] Next task suggestions provide rationale for the recommendation
+
 ## Task Decomposition
 
 - [ ] `@Huckleberry Break TASK-123 into subtasks` creates subtasks
@@ -70,14 +82,24 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 - [ ] Document parsing extracts dependencies where inferred
 - [ ] Document parsing generates meaningful task descriptions
 
+## Help and Documentation
+
+- [ ] `@Huckleberry help` shows general help information
+- [ ] `@Huckleberry help task-creation` shows topic-specific help
+- [ ] Help information is accurate and matches implemented functionality
+- [ ] Help includes examples of command usage
+
 ## Language Model Tools Integration
 
-- [ ] `huckleberry.createTask` tool works from VS Code's language model
-- [ ] `huckleberry.initializeTaskTracking` tool works from VS Code's language model
-- [ ] `huckleberry.scanTodos` tool works from VS Code's language model
-- [ ] `huckleberry.listTasks` tool works from VS Code's language model
-- [ ] `huckleberry.markTaskDone` tool works from VS Code's language model
-- [ ] `huckleberry.changeTaskPriority` tool works from VS Code's language model
+- [ ] `create_task` tool works from VS Code's language model
+- [ ] `initialize_tracking` and `initialise_tracking` tools work from VS Code's language model
+- [ ] `scan_todos` tool works from VS Code's language model
+- [ ] `list_tasks` tool works from VS Code's language model
+- [ ] `mark_task_done` tool works from VS Code's language model
+- [ ] `update_task_priority` tool works from VS Code's language model
+- [ ] `prioritize_tasks` tool works from VS Code's language model
+- [ ] `next_task` tool works from VS Code's language model
+- [ ] `help` tool works from VS Code's language model
 - [ ] Tools can be invoked during normal chat without explicit @Huckleberry mentions
 
 ## Settings and Configuration
@@ -91,8 +113,24 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 ## Command Palette Integration
 
 - [ ] `Huckleberry: Manage Tasks` command is available in Command Palette
-- [ ] Command Palette command opens task management UI
-- [ ] Task management works via Command Palette as expected
+- [ ] `Huckleberry: Initialize Task Tracking` / `Initialise Task Tracking` commands work as expected
+- [ ] `Huckleberry: Create Task` command works as expected
+- [ ] `Huckleberry: List Tasks` command works as expected
+- [ ] `Huckleberry: Mark Task Complete` command works as expected
+- [ ] `Huckleberry: Change Task Priority` command works as expected
+- [ ] `Huckleberry: Scan TODOs` / `Scan for TODOs` commands work as expected
+- [ ] `Huckleberry: Prioritize Tasks` command works as expected
+- [ ] `Huckleberry: Get Next Task` command works as expected
+- [ ] `Huckleberry: Get Help` command works as expected
+- [ ] `Huckleberry: Parse Requirements Document` command works as expected
+- [ ] Command Palette commands provide appropriate feedback and error messages
+
+## Developer Mode Commands
+
+- [ ] `Huckleberry (Dev): Check Copilot Agent Mode` verifies Copilot agent mode status
+- [ ] `Huckleberry (Dev): Test Chat Integration` validates chat participant functionality
+- [ ] `Huckleberry (Dev): Refresh Chat Participants` successfully refreshes chat integration
+- [ ] Developer commands are only visible when development mode is enabled
 
 ## Error Handling
 
@@ -167,4 +205,4 @@ Use this format for reporting issues:
 
 ---
 
-*Last Updated: April 20, 2025*
+*Last Updated: April 22, 2025*
