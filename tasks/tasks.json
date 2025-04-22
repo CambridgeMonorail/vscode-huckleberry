@@ -1,0 +1,27 @@
+{
+  "name": "Project Tasks",
+  "description": "Task collection for the project",
+  "tasks": [
+    {
+      "id": "TASK-972",
+      "title": "implement user authentication",
+      "description": "implement user authentication",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-04-21T16:58:09.855Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-518",
+      "title": "New task",
+      "description": "New task",
+      "priority": "high",
+      "status": "completed",
+      "completed": true,
+      "createdAt": "2025-04-21T16:58:25.161Z",
+      "tags": [],
+      "completedAt": "2025-04-21T17:00:38.182Z"
+    }
+  ]
+}

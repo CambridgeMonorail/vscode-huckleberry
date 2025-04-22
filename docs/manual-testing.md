@@ -30,21 +30,21 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 ## Task Creation and Management
 
 - [x] `@Huckleberry Create a task to implement user authentication` creates new task
-- [x] `@Huckleberry Create a high priority task to fix security vulnerability` creates high priority task
+- [ ] `@Huckleberry Create a high priority task to fix security vulnerability` creates high priority task
 - [x] Created tasks have unique IDs
 - [x] Created tasks have appropriate metadata (priority, status, etc.)
 - [x] Tasks can be created with explicit priority levels (high, medium, low)
 - [x] Tasks are stored properly in task files
 - [x] `@Huckleberry List all tasks` shows all tasks correctly
-- [ ] `@Huckleberry What tasks are high priority?` filters tasks by priority
+- [x] `@Huckleberry What tasks are high priority?` filters tasks by priority
 
 ## Task Status Management
 
-- [ ] `@Huckleberry Mark task TASK-123 as complete` updates task status
-- [ ] `@Huckleberry Mark task TASK-123 as high priority` updates task priority
-- [ ] Status changes are reflected in tasks.json
-- [ ] Status changes are reflected in task files
-- [ ] Task status changes fail gracefully for invalid task IDs
+- [x] `@Huckleberry Mark task TASK-123 as complete` updates task status
+- [x] `@Huckleberry Mark task TASK-123 as high priority` updates task priority
+- [x] Status changes are reflected in tasks.json
+- [x] Status changes are reflected in task files
+- [x] Task status changes fail gracefully for invalid task IDs
 
 ## Task Decomposition
 

@@ -35,6 +35,27 @@ function manageTasks(): void {
 }
 
 /**
+ * Command handler for prioritizing tasks
+ */
+function prioritizeTasks(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and send the prioritize command
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Prioritize tasks by status and priority'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in prioritizeTasks command:', error);
+    vscode.window.showErrorMessage(`Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Command handler for checking Copilot agent mode
  */
 async function checkCopilotAgentMode(): Promise<void> {
@@ -268,6 +289,10 @@ export function activate(context: vscode.ExtensionContext): void {
       manageTasks();
     });
 
+    const prioritizeTasksDisposable = vscode.commands.registerCommand('vscode-copilot-huckleberry.prioritizeTasks', () => {
+      prioritizeTasks();
+    });
+
     const checkCopilotAgentModeDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.checkCopilotAgentMode', 
       checkCopilotAgentMode
@@ -380,6 +405,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
       helloWorldDisposable,
       manageTasksDisposable,
+      prioritizeTasksDisposable,
       checkCopilotAgentModeDisposable,
       testChatDisposable,
       forceRefreshDisposable,

@@ -7,6 +7,7 @@ import { logWithChannel, LogLevel } from '../utils/debugUtils';
 import { isWorkspaceAvailable, notifyNoWorkspace } from '../handlers/chatHandler';
 import { getWorkspacePaths } from '../handlers/tasks/taskUtils';
 import { getConfiguration } from '../config/index';
+import { readTasksJson, writeTasksJson } from '../handlers/tasks/taskUtils';
 
 // Import task handlers
 import {
@@ -697,6 +698,54 @@ export class LanguageModelToolsProvider {
         })
       );
 
+      // Prioritize Tasks tool
+      this.disposables.push(
+        vscode.lm.registerTool('prioritize_tasks', {
+          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+            return {
+              confirmationMessages: {
+                title: 'Prioritize Tasks',
+                message: new vscode.MarkdownString(
+                  `**Prioritize Tasks**\n\n` +
+                  `This will sort your tasks in the following order:\n\n` +
+                  `1. Open tasks before completed tasks\n` +
+                  `2. By priority: critical → high → medium → low\n\n` +
+                  `The sorting will be applied to your tasks.json file.`
+                )
+              },
+              invocationMessage: `Prioritizing tasks by status and priority...`
+            };
+          },
+          
+          async invoke(options, token) {
+            if (!isWorkspaceAvailable()) {
+              notifyNoWorkspace();
+              throw new Error("No workspace available. Please open a workspace to use this tool.");
+            }
+            
+            try {
+              // Create a stream for collecting output
+              const stream = new ToolResponseStream();
+              
+              // Import and call the handler dynamically to avoid circular dependencies
+              const { handlePrioritizeTasksRequest } = require('../handlers/tasks/taskPrioritizer');
+              await handlePrioritizeTasksRequest('Prioritize tasks', stream as any, toolManager);
+              
+              // Return the results
+              return new vscode.LanguageModelToolResult([
+                new vscode.LanguageModelTextPart(stream.getResult())
+              ]);
+            } catch (error) {
+              logWithChannel(LogLevel.ERROR, 'Error in prioritizeTasks tool:', error);
+              throw new Error(
+                `Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}. ` +
+                `Make sure task tracking has been initialized.`
+              );
+            }
+          }
+        })
+      );
+
       // Register all disposables with the extension context
       this.disposables.forEach(disposable => {
         context.subscriptions.push(disposable);
@@ -719,5 +768,76 @@ export class LanguageModelToolsProvider {
     this.disposables.forEach(disposable => disposable.dispose());
     this.disposables = [];
     this.initialized = false;
+  }
+
+  /**
+   * Tool implementation for prioritizing tasks
+   */
+  private async prioritizeTasks(): Promise<any> {
+    logWithChannel(LogLevel.INFO, '🔄 LM Tool: prioritize_tasks');
+    
+    // Ensure task tracking is initialized
+    if (!(await isTaskTrackingInitialized())) {
+      return {
+        error: 'Task tracking is not initialized. Please initialize task tracking first.'
+      };
+    }
+    
+    try {
+      // Read the current tasks collection
+      const { workspaceFolder, tasksDir, tasksJsonPath } = await getWorkspacePaths();
+      const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
+
+      // Check if we have tasks to prioritize
+      if (!tasksData.tasks || tasksData.tasks.length === 0) {
+        return {
+          message: 'No tasks found to prioritize.'
+        };
+      }
+      
+      // Count tasks before prioritizing
+      const totalTasks = tasksData.tasks.length;
+      const openTasks = tasksData.tasks.filter(task => !task.completed).length;
+      const completedTasks = totalTasks - openTasks;
+
+      // Sort tasks by status and then priority
+      tasksData.tasks.sort((a, b) => {
+        // First sort by completion status (incomplete tasks first)
+        if (a.completed !== b.completed) {
+          return a.completed ? 1 : -1;
+        }
+        
+        // For tasks with the same completion status, sort by priority
+        const priorityOrder: Record<string, number> = {
+          'critical': 0,
+          'high': 1,
+          'medium': 2,
+          'low': 3
+        };
+        const priorityA = priorityOrder[a.priority?.toLowerCase() || 'medium'] || 2;
+        const priorityB = priorityOrder[b.priority?.toLowerCase() || 'medium'] || 2;
+        
+        return priorityA - priorityB;
+      });
+      
+      // Write back the prioritized tasks
+      await writeTasksJson(this.toolManager, tasksJsonPath, tasksData);
+      
+      // Return success with task counts
+      return {
+        message: `Successfully prioritized ${totalTasks} tasks (${openTasks} open, ${completedTasks} completed)`,
+        sortedBy: ['status (open tasks before completed)', 'priority (critical → high → medium → low)'],
+        taskCount: {
+          total: totalTasks,
+          open: openTasks,
+          completed: completedTasks
+        }
+      };
+    } catch (error) {
+      logWithChannel(LogLevel.ERROR, 'Error prioritizing tasks:', error);
+      return {
+        error: `Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
   }
 }

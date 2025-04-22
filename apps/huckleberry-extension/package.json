@@ -84,6 +84,18 @@
         "description": "Scan workspace files for TODO comments and convert them to tasks"
       },
       {
+        "command": "vscode-copilot-huckleberry.scanTodos",
+        "title": "Huckleberry: Scan for TODOs",
+        "category": "Huckleberry",
+        "description": "Scan codebase for TODO comments and create tasks"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.prioritizeTasks",
+        "title": "Huckleberry: Prioritize Tasks",
+        "category": "Huckleberry",
+        "description": "Sort tasks by status and priority"
+      },
+      {
         "command": "vscode-copilot-huckleberry.parseRequirementsDocument",
         "title": "Huckleberry: Parse Requirements Document",
         "category": "Huckleberry",
@@ -311,6 +323,20 @@
             "taskId",
             "priority"
           ]
+        }
+      },
+      {
+        "name": "prioritize_tasks",
+        "displayName": "Prioritize Tasks",
+        "modelDescription": "Sorts and organizes tasks by status and priority. Use this tool to sort tasks in the tasks.json file with incomplete tasks first, then by priority (critical, high, medium, low).",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "prioritizeHuckleberryTasks",
+        "userDescription": "Sorts tasks by status and priority",
+        "icon": "resources/initialize-tasks-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": []
         }
       }
     ],

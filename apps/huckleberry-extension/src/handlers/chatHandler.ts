@@ -57,6 +57,25 @@ export interface Command {
 }
 
 /**
+ * Determines if the prompt is a prioritize tasks request
+ * @param prompt The user's prompt text
+ * @returns True if the prompt appears to be a prioritize tasks request
+ */
+function isPrioritizeTasksRequest(prompt: string): boolean {
+  const keywords = [
+    'prioritize tasks', 
+    'sort tasks', 
+    'organize tasks',
+    'reorder tasks',
+    'prioritise tasks'  // British English variant
+  ];
+  
+  const lowerPrompt = prompt.toLowerCase();
+  
+  return keywords.some(keyword => lowerPrompt.includes(keyword));
+}
+
+/**
  * Handle chat requests for Huckleberry
  * @param request The chat request
  * @param context The chat context
@@ -213,6 +232,12 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
     } else if (lowerPrompt.includes('read') || lowerPrompt.includes('show') || 
         lowerPrompt.includes('list') || lowerPrompt.includes('get')) {
       await handleReadTasksRequest(cleanedPrompt, stream, toolManager);
+      return;
+    } else if (isPrioritizeTasksRequest(cleanedPrompt)) {
+      logWithChannel(LogLevel.INFO, 'Detected prioritize tasks request');
+      // Import the handler here to avoid circular dependencies
+      const { handlePrioritizeTasksRequest } = require('./tasks/taskPrioritizer');
+      await handlePrioritizeTasksRequest(cleanedPrompt, stream, toolManager);
       return;
     }
     
