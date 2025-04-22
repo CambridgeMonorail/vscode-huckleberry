@@ -1,3 +1,22 @@
+## 0.1.12 (2025-04-22)
+
+### 🚀 Features
+
+- **commands:** register prioritiseTasks command for task management ([47b5780](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/47b5780))
+- **docs:** update documentation for Agent Mode features and task creation ([34c0283](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/34c0283))
+- **docs:** add new blog post on the importance of context for Copilot ([5bf5dc4](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/5bf5dc4))
+- **help:** add help command and handler for task management features ([ba3699a](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/ba3699a))
+- **tasks:** add prioritize tasks functionality and related commands ([af6be13](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/af6be13))
+- **tasks:** add next task recommendation feature and related commands ([1637c0b](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/1637c0b))
+
+### 🩹 Fixes
+
+- **copilot:** suppress notification for agent mode based on user feedback ([1418cb6](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/1418cb6))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.11 (2025-04-21)
 
 ### 🚀 Features
