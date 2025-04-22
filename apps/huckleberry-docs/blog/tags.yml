@@ -47,3 +47,18 @@ alpha-release:
   label: Alpha Release
   permalink: /alpha-release
   description: Information about alpha status releases and early development versions
+
+copilot:
+  label: GitHub Copilot
+  permalink: /copilot
+  description: Topics related to GitHub Copilot AI pair programming assistant
+
+context:
+  label: Context
+  permalink: /context
+  description: Content about managing and leveraging context in development environments
+
+productivity:
+  label: Productivity
+  permalink: /productivity
+  description: Tools, techniques and approaches for improving developer productivity
