@@ -1,3 +1,13 @@
+## 0.1.14 (2025-04-22)
+
+### 🩹 Fixes
+
+- **chat:** add additional keyword for next task request detection ([ef66551](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/ef66551))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.13 (2025-04-22)
 
 ### 🩹 Fixes
