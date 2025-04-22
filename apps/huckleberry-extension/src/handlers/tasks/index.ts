@@ -12,6 +12,7 @@ export { handlePriorityTaskQuery, handleReadTasksRequest } from './queryHandler'
 export { handleParseRequirementsRequest } from './requirementsHandler';
 export { handlePrioritizeTasksRequest } from './taskPrioritizer';
 export { handleNextTaskRequest } from './nextTaskHandler';
+export { handleHelpRequest } from './helpHandler';
 
 // Re-export utility functions that might be useful for other modules
 export { 

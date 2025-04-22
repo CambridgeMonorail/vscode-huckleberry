@@ -792,6 +792,80 @@ export class LanguageModelToolsProvider {
         })
       );
 
+      // Help tool
+      this.disposables.push(
+        vscode.lm.registerTool('help', {
+          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+            const input = options.input as { topic?: string };
+            const topic = input?.topic || 'general';
+            
+            let topicDisplay = 'General Help';
+            if (topic !== 'general') {
+              // Convert kebab-case to Title Case
+              topicDisplay = topic.split('-')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+            }
+            
+            return {
+              confirmationMessages: {
+                title: `Huckleberry Help: ${topicDisplay}`,
+                message: new vscode.MarkdownString(
+                  `**Get Huckleberry Task Manager Help**\n\n` +
+                  `This will show information about ${topic === 'general' ? 
+                    'all available features and commands' : 
+                    `how to use the ${topicDisplay} feature`}.`
+                )
+              },
+              invocationMessage: `Showing help for ${topicDisplay}...`
+            };
+          },
+          
+          async invoke(options, token) {
+            try {
+              // Get the optional topic
+              const input = options.input as { topic?: string };
+              const topic = input?.topic || null;
+              
+              // Create a stream for collecting output
+              const stream = new ToolResponseStream();
+              
+              // Import and call the handler dynamically to avoid circular dependencies
+              const { handleHelpRequest } = require('../handlers/tasks/helpHandler');
+              
+              // Construct a specific prompt based on the topic
+              let prompt = 'Help';
+              if (topic && topic !== 'general') {
+                // Map topic names to natural language prompts
+                const topicPrompts: Record<string, string> = {
+                  'task-creation': 'How do I create tasks?',
+                  'task-listing': 'How do I list tasks?',
+                  'task-completion': 'How do I mark tasks as complete?',
+                  'task-priority': 'How do I change task priorities?',
+                  'todo-scanning': 'Help with scanning TODOs',
+                  'requirements-parsing': 'How do I parse requirements?',
+                  'task-decomposition': 'How do I break down tasks into subtasks?',
+                  'next-task': 'How do I find my next task?',
+                  'task-initialization': 'How do I initialize task tracking?'
+                };
+                
+                prompt = topicPrompts[topic] || `Help with ${topic.replace(/-/g, ' ')}`;
+              }
+              
+              await handleHelpRequest(prompt, stream as any, toolManager);
+              
+              // Return the results
+              return new vscode.LanguageModelToolResult([
+                new vscode.LanguageModelTextPart(stream.getResult())
+              ]);
+            } catch (error) {
+              logWithChannel(LogLevel.ERROR, 'Error in help tool:', error);
+              throw new Error(`Failed to get help information: ${error instanceof Error ? error.message : String(error)}`);
+            }
+          }
+        })
+      );
+
       // Register all disposables with the extension context
       this.disposables.forEach(disposable => {
         context.subscriptions.push(disposable);

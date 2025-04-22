@@ -99,6 +99,34 @@ function isNextTaskRequest(prompt: string): boolean {
 }
 
 /**
+ * Determines if the prompt is a help request
+ * @param prompt The user's prompt text
+ * @returns True if the prompt appears to be a help request
+ */
+function isHelpRequest(prompt: string): boolean {
+  const keywords = [
+    'help',
+    'how do i',
+    'how to',
+    'what can you do',
+    'what features',
+    'show me commands',
+    'list commands',
+    'available commands',
+    'guide',
+    'tutorial',
+    'instructions',
+    'usage',
+    'how does this work',
+    'explain how to'
+  ];
+  
+  const lowerPrompt = prompt.toLowerCase();
+  
+  return keywords.some(keyword => lowerPrompt.includes(keyword));
+}
+
+/**
  * Handle chat requests for Huckleberry
  * @param request The chat request
  * @param context The chat context
@@ -267,6 +295,12 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       // Import the handler here to avoid circular dependencies
       const { handleNextTaskRequest } = require('./tasks/nextTaskHandler');
       await handleNextTaskRequest(cleanedPrompt, stream, toolManager);
+      return;
+    } else if (isHelpRequest(cleanedPrompt)) {
+      logWithChannel(LogLevel.INFO, 'Detected help request');
+      // Import the handler here to avoid circular dependencies
+      const { handleHelpRequest } = require('./tasks/helpHandler');
+      await handleHelpRequest(cleanedPrompt, stream, toolManager);
       return;
     }
     

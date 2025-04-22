@@ -211,6 +211,27 @@ function getNextTask(): void {
 }
 
 /**
+ * Command handler for showing help documentation
+ */
+function getHelp(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and send the help command
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry help'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in getHelp command:', error);
+    vscode.window.showErrorMessage(`Failed to show help: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Prompts the user to reload the window when a workspace is opened.
  */
 function promptReloadOnWorkspaceOpen(): void {
@@ -337,6 +358,12 @@ export function activate(context: vscode.ExtensionContext): void {
       getNextTask
     );
 
+    // Add the get help command
+    const getHelpDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.getHelp', 
+      getHelp
+    );
+
     // British spelling variant (command alias)
     const initialiseTaskTrackingDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.initialiseTaskTracking', 
@@ -437,6 +464,7 @@ export function activate(context: vscode.ExtensionContext): void {
       testChatDisposable,
       forceRefreshDisposable,
       getNextTaskDisposable,
+      getHelpDisposable,
       initialiseTaskTrackingDisposable,
       initializeTaskTrackingDisposable,
       workspaceFoldersChangeDisposable

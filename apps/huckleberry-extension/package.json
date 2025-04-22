@@ -102,6 +102,12 @@
         "description": "Suggest the next task to work on"
       },
       {
+        "command": "vscode-copilot-huckleberry.getHelp",
+        "title": "Huckleberry: Get Help",
+        "category": "Huckleberry",
+        "description": "Show help and available commands for task management"
+      },
+      {
         "command": "vscode-copilot-huckleberry.parseRequirementsDocument",
         "title": "Huckleberry: Parse Requirements Document",
         "category": "Huckleberry",
@@ -356,6 +362,37 @@
         "inputSchema": {
           "type": "object",
           "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "help",
+        "displayName": "Get Help",
+        "modelDescription": "Provides help and explanations about Huckleberry's task management features. Use this tool when the user asks for help, instructions, or information about available commands and features.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "getHuckleberryHelp",
+        "userDescription": "Shows help and available commands for task management",
+        "icon": "resources/initialize-tasks-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Optional specific feature or topic to get help about",
+              "enum": [
+                "task-creation",
+                "task-listing",
+                "task-completion",
+                "task-priority",
+                "todo-scanning",
+                "requirements-parsing",
+                "task-decomposition",
+                "next-task",
+                "task-initialization",
+                "general"
+              ]
+            }
+          },
           "required": []
         }
       }
