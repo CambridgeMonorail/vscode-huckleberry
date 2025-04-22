@@ -84,6 +84,7 @@ function isNextTaskRequest(prompt: string): boolean {
   const keywords = [
     'next task',
     'what should i work on',
+    'what task should i work on next',
     'what to work on',
     'suggest a task',
     'which task should i',

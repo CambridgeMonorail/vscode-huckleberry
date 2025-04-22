@@ -54,7 +54,7 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 
 ## Next Task Suggestions
 
-- [ ] `@Huckleberry What task should I work on next?` suggests appropriate next task
+- [x] `@Huckleberry What task should I work on next?` suggests appropriate next task
 - [ ] Next task suggestions consider priority and dependencies 
 - [ ] Next task suggestions provide rationale for the recommendation
 
