@@ -1,3 +1,13 @@
+## 0.1.13 (2025-04-22)
+
+### 🩹 Fixes
+
+- **extension:** suppress agent mode recommendations based on feedback ([4fc1617](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/4fc1617))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.12 (2025-04-22)
 
 ### 🚀 Features
