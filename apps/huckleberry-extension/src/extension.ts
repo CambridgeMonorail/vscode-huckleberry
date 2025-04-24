@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { ReadFileTool } from './tools/ReadFileTool';
 import { WriteFileTool } from './tools/WriteFileTool';
 import { MarkDoneTool } from './tools/MarkDoneTool';
+import { BreakTaskTool } from './tools/BreakTaskTool';
 import { ToolManager } from './services/toolManager';
 import { ChatService } from './services/chatService';
 import { LanguageModelToolsProvider } from './services/languageModelToolsProvider';
@@ -283,10 +284,12 @@ export function activate(context: vscode.ExtensionContext): void {
     const readFileTool = new ReadFileTool();
     const writeFileTool = new WriteFileTool();
     const markDoneTool = new MarkDoneTool();
+    const breakTaskTool = new BreakTaskTool();
     
     toolManager.registerTool(readFileTool);
     toolManager.registerTool(writeFileTool);
     toolManager.registerTool(markDoneTool);
+    toolManager.registerTool(breakTaskTool);
 
     // Initialize chat service
     const chatService = new ChatService(context, toolManager);

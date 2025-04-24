@@ -170,6 +170,23 @@ export function createTaskObject(
 }
 
 /**
+ * Finds a task by its ID in the task collection
+ * @param tasksData The task collection to search within
+ * @param taskId The task ID to look for
+ * @returns The found task, or undefined if not found
+ */
+export function getTaskById(
+  tasksData: TaskCollection,
+  taskId: string
+): Task | undefined {
+  // Normalize the task ID for comparison (uppercase)
+  const normalizedTaskId = taskId.toUpperCase();
+  
+  // Find the task with the matching ID
+  return tasksData.tasks.find(task => task.id.toUpperCase() === normalizedTaskId);
+}
+
+/**
  * Checks and recommends agent mode usage in chat responses if applicable
  * @param stream The chat response stream
  * @returns Promise resolving when recommendation is added (if needed)

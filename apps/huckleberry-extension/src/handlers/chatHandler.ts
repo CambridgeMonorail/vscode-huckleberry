@@ -207,6 +207,7 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
     const lowPriorityTaskPattern = /(create|add) (a )?(low) (priority )?task to (.+)/i;
     const genericTaskPattern = /(create|add) (a )?task to (.+)/i;
     const scanTodosPattern = /(scan|find|extract|create tasks from)(?:\s+for)?\s+todos(?:\s+in\s+(.+))?/i;
+    const breakTaskPattern = /break\s+(?:task\s+)?([A-Za-z]+-\d+)\s+into\s+subtasks/i;
     
     // For initialize pattern, make it more flexible
     const initializePattern = /initialize\s+task\s+tracking(?:\s+for\s+this\s+project)?/i;
@@ -261,6 +262,12 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       const matches = cleanedPrompt.match(scanTodosPattern);
       logWithChannel(LogLevel.INFO, 'Detected TODO scanning request');
       await handleScanTodosRequest(cleanedPrompt, stream, toolManager);
+      return;
+    } else if (breakTaskPattern.test(cleanedPrompt)) {
+      logWithChannel(LogLevel.INFO, 'Detected break task into subtasks request');
+      // Import the handler here to avoid circular dependencies
+      const { handleBreakTaskRequest } = require('./tasks/taskDecompositionHandler');
+      await handleBreakTaskRequest(cleanedPrompt, stream, toolManager);
       return;
     }
     

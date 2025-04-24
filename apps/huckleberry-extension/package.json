@@ -31,7 +31,8 @@
     "onLanguageModelTool:scan_todos",
     "onLanguageModelTool:list_tasks",
     "onLanguageModelTool:mark_task_done",
-    "onLanguageModelTool:update_task_priority"
+    "onLanguageModelTool:update_task_priority",
+    "onLanguageModelTool:break_task_into_subtasks"
   ],
   "contributes": {
     "commands": [
@@ -394,6 +395,27 @@
             }
           },
           "required": []
+        }
+      },
+      {
+        "name": "break_task_into_subtasks",
+        "displayName": "Break Task into Subtasks",
+        "modelDescription": "Breaks a task into multiple subtasks. Use this tool when a task is complex and should be divided into smaller, more manageable pieces.",
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "breakHuckleberryTask",
+        "userDescription": "Divides a complex task into multiple subtasks",
+        "icon": "resources/create-task-icon.svg",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "taskId": {
+              "type": "string",
+              "description": "ID of the task to break down into subtasks"
+            }
+          },
+          "required": [
+            "taskId"
+          ]
         }
       }
     ],

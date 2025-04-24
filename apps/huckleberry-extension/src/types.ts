@@ -72,6 +72,16 @@ export interface Task {
   completedAt?: string;
   
   /**
+   * Array of task IDs that are subtasks of this task
+   */
+  subtasks?: string[];
+  
+  /**
+   * ID of the parent task if this is a subtask
+   */
+  parentTaskId?: string;
+  
+  /**
    * Source information for tasks created from code (like TODOs)
    */
   source?: {
