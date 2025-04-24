@@ -13,7 +13,7 @@ In developing Huckleberry, we've committed to walking a careful line between det
 
 Deterministic code provides consistency and predictability. For parts of the system where the outcome must always be reliable, such as parsing structured data or enforcing workflow integrity, hard-coded logic is the right choice. It behaves the same way every time, no matter who's asking or when. You could say it keeps us from straying when things get unpredictable.
 
-Our task manager core relies on deterministic processes—creating unique task IDs, tracking completion status, maintaining data integrity in JSON files. These aren't places where we want creative interpretation.
+Our task manager core relies on deterministic processes, creating unique task IDs, tracking completion status, maintaining data integrity in JSON files. These aren't places where we want creative interpretation.
 
 ## Harnessing LLM Flexibility
 

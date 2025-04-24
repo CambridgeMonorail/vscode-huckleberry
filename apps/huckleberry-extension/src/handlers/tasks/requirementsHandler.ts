@@ -57,7 +57,13 @@ function parseRequirements(content: string): Array<{ description: string; priori
     { regex: /^[\s]*[\d.•*-]+\s+(.*\b(should|must|will|shall)\b.*)/i, priority: 'medium' as TaskPriority },
     
     // Headers with requirement-like language
-    { regex: /^#+\s+(.*\b(implement|create|add|build)\b.*)/i, priority: 'medium' as TaskPriority }
+    { regex: /^#+\s+(.*\b(implement|create|add|build)\b.*)/i, priority: 'medium' as TaskPriority },
+    
+    // Priority-tagged items like [HIGH] or [MEDIUM]
+    { regex: /^\[\s*high\s*\]\s*(.+)/i, priority: 'high' as TaskPriority },
+    { regex: /^\[\s*medium\s*\]\s*(.+)/i, priority: 'medium' as TaskPriority },
+    { regex: /^\[\s*low\s*\]\s*(.+)/i, priority: 'low' as TaskPriority },
+    { regex: /^\[\s*critical\s*\]\s*(.+)/i, priority: 'critical' as TaskPriority }
   ];
   
   // Process each line for potential requirements
@@ -79,6 +85,136 @@ function parseRequirements(content: string): Array<{ description: string; priori
   }
   
   return tasks;
+}
+
+/**
+ * Interface for requirement parsed from the language model
+ */
+interface ParsedRequirement {
+  description: string;
+  priority?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Uses VS Code Language Model API to extract requirements from document content 
+ * when deterministic parsing doesn't find any requirements
+ * @param content The document content to parse
+ * @param toolManager The tool manager to potentially access tools
+ * @returns Promise resolving to array of extracted requirements with descriptions and priorities
+ */
+async function parseRequirementsWithLanguageModel(
+  content: string,
+  toolManager?: ToolManager
+): Promise<Array<{ description: string; priority: TaskPriority }>> {
+  try {
+    // Check if VS Code Language Model API is available
+    if (!vscode.lm) {
+      console.log('Language Model API not available, skipping LLM-based parsing');
+      return [];
+    }
+
+    console.log('Using Language Model API to extract requirements');
+
+    // Define the system prompt for requirement extraction
+    const systemPrompt = `
+Extract requirements from the provided document. 
+For each requirement, identify:
+1. The requirement text
+2. Its priority (critical, high, medium, or low)
+
+Return the results as a JSON array with objects containing:
+{
+  "description": "The requirement text",
+  "priority": "high" | "medium" | "low" | "critical"
+}
+
+Guidelines for determining priority:
+- critical: Security issues, blocking features, essential functionality
+- high: Important features, significant improvements
+- medium: Standard features, enhancements
+- low: Nice-to-have features, minor improvements
+
+If priority isn't explicitly mentioned, infer it from the language and context.
+`;
+
+    try {
+      // Select a language model - using the correct selector structure
+      const [model] = await vscode.lm.selectChatModels();
+      
+      if (!model) {
+        console.log('No language model available');
+        return [];
+      }
+
+      // Create chat messages using the static methods instead of constructor with string roles
+      const messages = [
+        vscode.LanguageModelChatMessage.Assistant(systemPrompt),
+        vscode.LanguageModelChatMessage.User(content)
+      ];
+
+      // Send request to the language model with justification in the correct place
+      const result = await model.sendRequest(
+        messages, 
+        {
+          justification: 'Huckleberry needs to analyze requirements document to extract actionable tasks'
+        }, 
+        new vscode.CancellationTokenSource().token
+      );
+
+      // Parse the response as JSON
+      let resultText = '';
+      for await (const chunk of result.text) {
+        resultText += chunk;
+      }
+
+      // Extract JSON from the response (handling potential markdown code blocks)
+      const jsonMatch = resultText.match(/```(?:json)?\s*([\s\S]+?)\s*```/) || 
+                       resultText.match(/\[\s*\{\s*"description"/);
+      
+      let jsonContent = jsonMatch ? 
+        (jsonMatch[1] || resultText) : 
+        resultText;
+      
+      // Clean up the JSON content
+      if (!jsonContent.trim().startsWith('[')) {
+        jsonContent = `[${jsonContent}]`;
+      }
+      
+      // Parse the JSON
+      const parsedRequirements = JSON.parse(jsonContent);
+
+      // Validate and normalize the results
+      return parsedRequirements
+        .filter((req: any): boolean => {
+          return !!req && !!req.description && typeof req.description === 'string';
+        })
+        .map((req: any): { description: string; priority: TaskPriority } => {
+          return {
+            description: req.description.trim(),
+            priority: (req.priority && ['critical', 'high', 'medium', 'low'].includes(req.priority)) 
+              ? req.priority as TaskPriority 
+              : 'medium' as TaskPriority
+          };
+        })
+        .filter((req: { description: string; priority: TaskPriority }): boolean => {
+          return req.description.length > 5;
+        });
+    } catch (error) {
+      if (error instanceof vscode.LanguageModelError) {
+        console.error('Language Model Error:', error.message, error.code);
+        if (error.cause) {
+          console.error('Cause:', error.cause);
+        }
+      } else {
+        console.error('Error using Language Model API:', error);
+      }
+      return [];
+    }
+  } catch (error) {
+    console.error('Error in parseRequirementsWithLanguageModel:', error);
+    return [];
+  }
 }
 
 /**
@@ -142,8 +278,17 @@ You might want to check the path and file format. I work well with markdown, tex
       return;
     }
     
-    // Parse requirements from content
-    const extractedRequirements = parseRequirements(fileContent);
+    // Parse requirements from content using deterministic approach
+    let extractedRequirements = parseRequirements(fileContent);
+    
+    // If deterministic parsing didn't find anything, try the language model approach
+    if (extractedRequirements.length === 0) {
+      await streamMarkdown(stream, `
+Regular parsing didn't find standard requirement formats. Trying AI-powered extraction...
+      `);
+      
+      extractedRequirements = await parseRequirementsWithLanguageModel(fileContent, toolManager);
+    }
     
     if (extractedRequirements.length === 0) {
       await streamMarkdown(stream, `

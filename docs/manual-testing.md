@@ -85,9 +85,9 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 ## Help and Documentation
 
 - [x] `@Huckleberry help` shows general help information
-- [ ] `@Huckleberry help task-creation` shows topic-specific help
-- [ ] Help information is accurate and matches implemented functionality
-- [ ] Help includes examples of command usage
+- [x] `@Huckleberry help task-creation` shows topic-specific help
+- [x] Help information is accurate and matches implemented functionality
+- [x] Help includes examples of command usage
 
 ## Language Model Tools Integration
 
