@@ -56,7 +56,7 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 
 - [x] `@Huckleberry What task should I work on next?` suggests appropriate next task
 - [x] Next task suggestions consider priority and dependencies 
-- [ x Next task suggestions provide rationale for the recommendation
+- [x] Next task suggestions provide rationale for the recommendation
 
 ## Task Decomposition
 
@@ -84,7 +84,7 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 
 ## Help and Documentation
 
-- [ ] `@Huckleberry help` shows general help information
+- [x] `@Huckleberry help` shows general help information
 - [ ] `@Huckleberry help task-creation` shows topic-specific help
 - [ ] Help information is accurate and matches implemented functionality
 - [ ] Help includes examples of command usage

@@ -185,7 +185,7 @@ export class ChatService {
     this.updateLastActive();
     
     // Show notification to the user
-    vscode.window.showInformationMessage('Huckleberry chat participants have been refreshed.');
+    // vscode.window.showInformationMessage('Huckleberry chat participants have been refreshed.');
   }
 
   /**

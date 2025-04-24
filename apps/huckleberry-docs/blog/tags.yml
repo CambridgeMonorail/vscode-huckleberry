@@ -62,3 +62,13 @@ productivity:
   label: Productivity
   permalink: /productivity
   description: Tools, techniques and approaches for improving developer productivity
+
+architecture:
+  label: Architecture
+  permalink: /architecture
+  description: Software architecture, design patterns, and structural decisions in development
+
+llm:
+  label: LLM
+  permalink: /llm
+  description: Large Language Models and their applications in software development
