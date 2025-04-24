@@ -1,3 +1,13 @@
+## 0.1.16 (2025-04-24)
+
+### 🚀 Features
+
+- **docs): add new blog post on balancing deterministic logic and LLMs feat(docs): update tags with architecture and LLM categories fix(chat): comment out notification message for chat participant refresh docs(tests:** correct checklist items for task suggestions and help command ([7632d78](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/7632d78))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.15 (2025-04-22)
 
 ### 🚀 Features
