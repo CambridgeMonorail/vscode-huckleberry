@@ -1,3 +1,14 @@
+## 0.1.17 (2025-04-24)
+
+### 🚀 Features
+
+- **requirements:** add structured implementation requirements document ([4dfe740](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/4dfe740))
+- **tasks:** add functionality to break tasks into subtasks ([2f6b046](https://github.com/CambridgeMonorail/vscode-huckleberry/commit/2f6b046))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.16 (2025-04-24)
 
 ### 🚀 Features
