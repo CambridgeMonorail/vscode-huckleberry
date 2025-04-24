@@ -253,6 +253,8 @@ MIT
 
 ## Contributors
 
+Huckleberry ain't no one-horse outfit, partner. Whether you're a silver-tongued wordsmith spinnin' documentation that'd make a dictionary blush, a lawman of automated tests keepin' our code on the straight and narrow, the sheriff of CI workflows enforcin' order in these digital parts, a six-shooter coder with the fastest pull request in the West, or a greenhorn lookin' to earn your spurs in frontier UX design, there's a place for you 'round this campfire. In this posse, every rider's contribution counts, be it big as a mountain or small as a prairie dog. So saddle up and ride with us! Your name could be on this wall of fame faster than Doc Holliday can count cards.
+
 <div align="center">
   <img src="./assets/huckleberry-has-a-posse.png" alt="Huckleberry Team" width="600" />
 </div>
