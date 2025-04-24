@@ -251,6 +251,16 @@ Contributions are welcome! This project is in early development, so please file 
 
 MIT
 
+## Contributors
+
+<div align="center">
+  <img src="./assets/huckleberry-has-a-posse.png" alt="Huckleberry Team" width="600" />
+</div>
+
+<a href="https://github.com/CambridgeMonorail/vscode-huckleberry/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=CambridgeMonorail/vscode-huckleberry" />
+</a>
+
 ---
 
 <div align="center">
