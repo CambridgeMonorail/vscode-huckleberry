@@ -58,19 +58,44 @@ function prioritizeTasks(): void {
 
 /**
  * Command handler for changing a task's priority
+ * @param taskId Optional task ID to change priority for
+ * @param priority Optional priority to set
  */
-function changeTaskPriority(): void {
+function changeTaskPriority(taskId?: string, priority?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and prompt for task ID and priority
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry Mark task as high priority'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+    
+    // If taskId or priority is not provided, prompt the user
+    if (!taskId || !priority) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForTaskAndPriority }) => {
+        const result = await promptForTaskAndPriority(extensionState!.toolManager);
+        if (result.taskId && result.priority) {
+          // Execute the command with the selected values
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open', 
+            `@huckleberry Mark task ${result.taskId} as ${result.priority} priority`
+          );
+        }
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load task selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided values
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open', 
+        `@huckleberry Mark task ${taskId} as ${priority} priority`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in changeTaskPriority command:', error);
     vscode.window.showErrorMessage(`Failed to change task priority: ${error instanceof Error ? error.message : String(error)}`);
@@ -239,19 +264,44 @@ function getNextTask(): void {
 
 /**
  * Command handler for showing help documentation
+ * @param topic Optional help topic to display
  */
-function getHelp(): void {
+function getHelp(topic?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and send the help command
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry help'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage("Extension not properly initialized");
+      return;
+    }
+    
+    // If no topic is provided, prompt the user to select one
+    if (!topic) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForHelpTopic }) => {
+        const selectedTopic = await promptForHelpTopic();
+        
+        // Construct the appropriate command
+        const commandText = selectedTopic 
+          ? `@huckleberry help ${selectedTopic}`
+          : '@huckleberry help';
+          
+        // Execute the command
+        vscode.commands.executeCommand('workbench.action.chat.open', commandText);
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load help topic selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided topic
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open', 
+        `@huckleberry help ${topic}`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in getHelp command:', error);
     vscode.window.showErrorMessage(`Failed to show help: ${error instanceof Error ? error.message : String(error)}`);
@@ -281,19 +331,102 @@ function createTask(): void {
 
 /**
  * Command handler for listing tasks
+ * @param priority Optional priority filter (e.g. 'high', 'low', etc.)
+ * @param status Optional status filter (e.g. 'open', 'done', etc.)
  */
-function listTasks(): void {
+function listTasks(priority?: string, status?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and ask to list tasks
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry List all tasks'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+    
+    // If no filters are provided, ask if they want to filter
+    if (!priority && !status) {
+      const filterOptions = [
+        { label: 'Show All Tasks', description: 'List all tasks without filters' },
+        { label: 'Filter by Priority', description: 'Show tasks with specific priority' },
+        { label: 'Filter by Status', description: 'Show tasks with specific status' }
+      ];
+      
+      vscode.window.showQuickPick(filterOptions, {
+        placeHolder: 'Select a filtering option',
+        title: 'Huckleberry: List Tasks'
+      }).then(selected => {
+        if (!selected) {
+          return;
+        }
+        
+        if (selected.label === 'Filter by Priority') {
+          // Import dynamically to prevent circular dependencies
+          import('./utils/parameterUtils').then(async ({ promptForPrioritySelection }) => {
+            const selectedPriority = await promptForPrioritySelection();
+            if (selectedPriority) {
+              vscode.commands.executeCommand(
+                'workbench.action.chat.open',
+                `@huckleberry What tasks are ${selectedPriority} priority?`
+              );
+            } else {
+              // Fall back to showing all tasks if no priority selected
+              vscode.commands.executeCommand(
+                'workbench.action.chat.open',
+                '@huckleberry List all tasks'
+              );
+            }
+          }).catch(error => {
+            logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+            vscode.window.showErrorMessage(`Failed to load priority selection UI: ${error instanceof Error ? error.message : String(error)}`);
+          });
+        } else if (selected.label === 'Filter by Status') {
+          const statusOptions = [
+            { label: 'Open Tasks', value: 'open' },
+            { label: 'In Progress Tasks', value: 'in_progress' },
+            { label: 'Completed Tasks', value: 'done' }
+          ];
+          
+          vscode.window.showQuickPick(statusOptions, {
+            placeHolder: 'Select a status to filter by',
+            title: 'Huckleberry: Filter by Status'
+          }).then(statusSelected => {
+            if (statusSelected) {
+              vscode.commands.executeCommand(
+                'workbench.action.chat.open',
+                `@huckleberry List ${statusSelected.label.toLowerCase()}`
+              );
+            } else {
+              // Fall back to showing all tasks if no status selected
+              vscode.commands.executeCommand(
+                'workbench.action.chat.open',
+                '@huckleberry List all tasks'
+              );
+            }
+          });
+        } else {
+          // Show all tasks (default)
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open',
+            '@huckleberry List all tasks'
+          );
+        }
+      });
+    } else if (priority) {
+      // Use provided priority filter
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open',
+        `@huckleberry What tasks are ${priority} priority?`
+      );
+    } else if (status) {
+      // Use provided status filter
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open',
+        `@huckleberry List ${status} tasks`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in listTasks command:', error);
     vscode.window.showErrorMessage(`Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`);
@@ -302,19 +435,43 @@ function listTasks(): void {
 
 /**
  * Command handler for marking a task as complete
+ * @param taskId Optional task ID to mark as complete
  */
-function markTaskComplete(): void {
+function markTaskComplete(taskId?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and prompt for task completion
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry Mark task as complete'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+    
+    // If no taskId is provided, prompt the user to select one
+    if (!taskId) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForTaskSelection }) => {
+        const selectedTaskId = await promptForTaskSelection(extensionState!.toolManager);
+        if (selectedTaskId) {
+          // Execute the command with the selected task ID
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open', 
+            `@huckleberry Mark task ${selectedTaskId} as complete`
+          );
+        }
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load task selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided task ID
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open', 
+        `@huckleberry Mark task ${taskId} as complete`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in markTaskComplete command:', error);
     vscode.window.showErrorMessage(`Failed to mark task as complete: ${error instanceof Error ? error.message : String(error)}`);
@@ -323,19 +480,44 @@ function markTaskComplete(): void {
 
 /**
  * Command handler for scanning TODOs in the codebase
+ * @param pattern Optional file pattern to limit the scan
  */
-function scanTodos(): void {
+function scanTodos(pattern?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and ask to scan for TODOs
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry Scan for TODOs in the codebase'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+    
+    // If no pattern is provided, prompt the user if they want to specify one
+    if (!pattern) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForFilePattern }) => {
+        const selectedPattern = await promptForFilePattern();
+        
+        // Construct the appropriate command
+        const commandText = selectedPattern 
+          ? `@huckleberry Scan for TODOs in ${selectedPattern}`
+          : '@huckleberry Scan for TODOs in the codebase';
+          
+        // Execute the command
+        vscode.commands.executeCommand('workbench.action.chat.open', commandText);
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load file pattern selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided pattern
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open', 
+        `@huckleberry Scan for TODOs in ${pattern}`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in scanTodos command:', error);
     vscode.window.showErrorMessage(`Failed to scan for TODOs: ${error instanceof Error ? error.message : String(error)}`);
@@ -344,19 +526,51 @@ function scanTodos(): void {
 
 /**
  * Command handler for parsing requirements document
+ * @param filePath Optional file path to parse
  */
-function parseRequirementsDocument(): void {
+function parseRequirementsDocument(filePath?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and ask to parse requirements
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry Parse requirements document and create tasks'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+    
+    // If no filePath is provided, prompt the user to select a document
+    if (!filePath) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForDocumentSelection }) => {
+        const selectedFilePath = await promptForDocumentSelection();
+        if (selectedFilePath) {
+          // Get the relative path from the workspace root
+          const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+          let relativePath = selectedFilePath;
+          
+          if (workspaceFolder && selectedFilePath.startsWith(workspaceFolder)) {
+            relativePath = selectedFilePath.substring(workspaceFolder.length + 1); // +1 for the slash
+          }
+          
+          // Execute the command with the selected file path
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open', 
+            `@huckleberry Parse ${relativePath} and create tasks`
+          );
+        }
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load document selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided file path
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open', 
+        `@huckleberry Parse ${filePath} and create tasks`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in parseRequirementsDocument command:', error);
     vscode.window.showErrorMessage(`Failed to parse requirements: ${error instanceof Error ? error.message : String(error)}`);
@@ -384,19 +598,43 @@ function openTaskExplorer(): void {
 
 /**
  * Command handler for creating subtasks
+ * @param taskId Optional task ID to break down into subtasks
  */
-function createSubtasks(): void {
+function createSubtasks(taskId?: string): void {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
       return;
     }
     
-    // Open chat with Huckleberry and prompt for task breakdown
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open', 
-      '@huckleberry Break task into subtasks'
-    );
+    if (!extensionState) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+    
+    // If no taskId is provided, prompt the user to select one
+    if (!taskId) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForTaskSelection }) => {
+        const selectedTaskId = await promptForTaskSelection(extensionState!.toolManager);
+        if (selectedTaskId) {
+          // Execute the command with the selected task ID
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open', 
+            `@huckleberry Break task ${selectedTaskId} into subtasks`
+          );
+        }
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load task selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided task ID
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open', 
+        `@huckleberry Break task ${taskId} into subtasks`
+      );
+    }
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in createSubtasks command:', error);
     vscode.window.showErrorMessage(`Failed to create subtasks: ${error instanceof Error ? error.message : String(error)}`);
@@ -535,9 +773,10 @@ export function activate(context: vscode.ExtensionContext): void {
       prioritizeTasks();
     });
 
-    const changeTaskPriorityDisposable = vscode.commands.registerCommand('vscode-copilot-huckleberry.changeTaskPriority', () => {
-      changeTaskPriority();
-    });
+    const changeTaskPriorityDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.changeTaskPriority', 
+      (taskId?: string, priority?: string) => changeTaskPriority(taskId, priority)
+    );
 
     const checkCopilotAgentModeDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.checkCopilotAgentMode', 
@@ -625,22 +864,22 @@ export function activate(context: vscode.ExtensionContext): void {
 
     const listTasksDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.listTasks', 
-      listTasks
+      (priority?: string, status?: string) => listTasks(priority, status)
     );
 
     const markTaskCompleteDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.markTaskComplete', 
-      markTaskComplete
+      (taskId?: string) => markTaskComplete(taskId)
     );
 
     const scanTodosDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.scanTodos', 
-      scanTodos
+      (pattern?: string) => scanTodos(pattern)
     );
 
     const parseRequirementsDocumentDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.parseRequirementsDocument', 
-      parseRequirementsDocument
+      (filePath?: string) => parseRequirementsDocument(filePath)
     );
 
     const openTaskExplorerDisposable = vscode.commands.registerCommand(
