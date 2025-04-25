@@ -92,3 +92,13 @@ recognition:
   label: Recognition
   permalink: /recognition
   description: Acknowledging and appreciating contributions in software projects
+
+workflow:
+  label: Workflow
+  permalink: /workflow
+  description: Development workflows and processes that enhance coding experience
+
+agent-mode:
+  label: Agent Mode
+  permalink: /agent-mode
+  description: Topics related to using Agent Mode in VS Code and other development environments
