@@ -72,3 +72,23 @@ llm:
   label: LLM
   permalink: /llm
   description: Large Language Models and their applications in software development
+
+open-source:
+  label: Open Source
+  permalink: /open-source
+  description: Topics related to open source software development, communities, and practices
+
+contributors:
+  label: Contributors
+  permalink: /contributors
+  description: Content about project contributors and contribution processes
+
+community:
+  label: Community
+  permalink: /community
+  description: Building, growing, and maintaining software development communities
+
+recognition:
+  label: Recognition
+  permalink: /recognition
+  description: Acknowledging and appreciating contributions in software projects
