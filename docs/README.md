@@ -34,5 +34,5 @@ These documents provide high-level overviews, architecture decisions, and proces
 ---
 
 <div align="center">
-  <p>© 2025 Huckleberry Project Contributors</p>
+  <p>© 2025 CambridgeMonorail - Huckleberry Project</p>
 </div>

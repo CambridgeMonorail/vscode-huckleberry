@@ -24,6 +24,9 @@
 
 [![Release](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/release.yml/badge.svg)](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/release.yml)
 [![Deploy Docusaurus to Pages](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/static.yml/badge.svg)](https://github.com/CambridgeMonorail/vscode-huckleberry/actions/workflows/static.yml)
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## Overview
 
@@ -251,9 +254,41 @@ Contributions are welcome! This project is in early development, so please file 
 
 MIT
 
+## Contributors
+
+<div align="center">
+  <img src="./assets/huckleberry-has-a-posse.png" alt="Huckleberry Team" width="600" />
+</div>
+
+Huckleberry ain't no one-horse outfit, partner. Whether you're a silver-tongued wordsmith spinnin' documentation that'd make a dictionary blush, a lawman of automated tests keepin' our code on the straight and narrow, the sheriff of CI workflows enforcin' order in these digital parts, a six-shooter coder with the fastest pull request in the West, or a greenhorn lookin' to earn your spurs in frontier UX design, there's a place for you 'round this campfire. In this posse, every rider's contribution counts, be it big as a mountain or small as a prairie dog. So saddle up and ride with us! Your name could be on this wall of fame faster than Doc Holliday can count cards.
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/CastleW"><img src="https://avatars.githubusercontent.com/u/22619438?v=4?s=100" width="100px;" alt="CastleW"/><br /><sub><b>CastleW</b></sub></a><br /><a href="https://github.com/CambridgeMonorail/vscode-huckleberry/issues?q=author%3ACastleW" title="Bug reports">🐛</a></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td align="center" size="13px" colspan="7">
+        <img src="https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg">
+          <a href="https://all-contributors.js.org/docs/en/bot/usage">Add your contributions</a>
+        </img>
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 ---
 
 <div align="center">
   <p>Built with <a href="https://nx.dev">Nx</a> • Powered by VS Code's Language Model API</p>
-  <p>© 2025 Huckleberry Project Contributors</p>
+  <p>© 2025 CambridgeMonorail - Huckleberry Project</p>
 </div>

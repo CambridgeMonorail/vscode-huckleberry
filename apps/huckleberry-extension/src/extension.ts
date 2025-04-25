@@ -57,6 +57,27 @@ function prioritizeTasks(): void {
 }
 
 /**
+ * Command handler for changing a task's priority
+ */
+function changeTaskPriority(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and prompt for task ID and priority
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Mark task as high priority'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in changeTaskPriority command:', error);
+    vscode.window.showErrorMessage(`Failed to change task priority: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Command handler for checking Copilot agent mode
  */
 async function checkCopilotAgentMode(): Promise<void> {
@@ -238,6 +259,170 @@ function getHelp(): void {
 }
 
 /**
+ * Command handler for creating a new task
+ */
+function createTask(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and prompt for task creation
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Create a task'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in createTask command:', error);
+    vscode.window.showErrorMessage(`Failed to create task: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for listing tasks
+ */
+function listTasks(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and ask to list tasks
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry List all tasks'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in listTasks command:', error);
+    vscode.window.showErrorMessage(`Failed to list tasks: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for marking a task as complete
+ */
+function markTaskComplete(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and prompt for task completion
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Mark task as complete'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in markTaskComplete command:', error);
+    vscode.window.showErrorMessage(`Failed to mark task as complete: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for scanning TODOs in the codebase
+ */
+function scanTodos(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and ask to scan for TODOs
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Scan for TODOs in the codebase'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in scanTodos command:', error);
+    vscode.window.showErrorMessage(`Failed to scan for TODOs: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for parsing requirements document
+ */
+function parseRequirementsDocument(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and ask to parse requirements
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Parse requirements document and create tasks'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in parseRequirementsDocument command:', error);
+    vscode.window.showErrorMessage(`Failed to parse requirements: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for opening task explorer
+ */
+function openTaskExplorer(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // This feature might be implemented in the future
+    showInfo('Task Explorer view will be implemented in a future version.');
+    logWithChannel(LogLevel.INFO, '🔍 Task Explorer requested (feature not yet implemented)');
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in openTaskExplorer command:', error);
+    vscode.window.showErrorMessage(`Failed to open task explorer: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for creating subtasks
+ */
+function createSubtasks(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // Open chat with Huckleberry and prompt for task breakdown
+    vscode.commands.executeCommand(
+      'workbench.action.chat.open', 
+      '@huckleberry Break task into subtasks'
+    );
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in createSubtasks command:', error);
+    vscode.window.showErrorMessage(`Failed to create subtasks: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Command handler for exporting tasks
+ */
+function exportTasks(): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+    
+    // This feature might be implemented in the future
+    showInfo('Task exporting functionality will be implemented in a future version.');
+    logWithChannel(LogLevel.INFO, '📤 Task export requested (feature not yet implemented)');
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in exportTasks command:', error);
+    vscode.window.showErrorMessage(`Failed to export tasks: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Prompts the user to reload the window when a workspace is opened.
  */
 function promptReloadOnWorkspaceOpen(): void {
@@ -350,6 +535,10 @@ export function activate(context: vscode.ExtensionContext): void {
       prioritizeTasks();
     });
 
+    const changeTaskPriorityDisposable = vscode.commands.registerCommand('vscode-copilot-huckleberry.changeTaskPriority', () => {
+      changeTaskPriority();
+    });
+
     const checkCopilotAgentModeDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.checkCopilotAgentMode', 
       checkCopilotAgentMode
@@ -429,6 +618,46 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     );
 
+    const createTaskDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.createTask', 
+      createTask
+    );
+
+    const listTasksDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.listTasks', 
+      listTasks
+    );
+
+    const markTaskCompleteDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.markTaskComplete', 
+      markTaskComplete
+    );
+
+    const scanTodosDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.scanTodos', 
+      scanTodos
+    );
+
+    const parseRequirementsDocumentDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.parseRequirementsDocument', 
+      parseRequirementsDocument
+    );
+
+    const openTaskExplorerDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.openTaskExplorer', 
+      openTaskExplorer
+    );
+
+    const createSubtasksDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.createSubtasks', 
+      createSubtasks
+    );
+
+    const exportTasksDisposable = vscode.commands.registerCommand(
+      'vscode-copilot-huckleberry.exportTasks', 
+      exportTasks
+    );
+
     // Register workspace change listener to detect when workspace folders are added/removed
     const workspaceFoldersChangeDisposable = vscode.workspace.onDidChangeWorkspaceFolders(async e => {
       const foldersAdded = e.added.length > 0;
@@ -476,6 +705,7 @@ export function activate(context: vscode.ExtensionContext): void {
       manageTasksDisposable,
       prioritizeTasksDisposable,
       prioritiseTasksDisposable,
+      changeTaskPriorityDisposable,
       checkCopilotAgentModeDisposable,
       testChatDisposable,
       forceRefreshDisposable,
@@ -483,6 +713,14 @@ export function activate(context: vscode.ExtensionContext): void {
       getHelpDisposable,
       initialiseTaskTrackingDisposable,
       initializeTaskTrackingDisposable,
+      createTaskDisposable,
+      listTasksDisposable,
+      markTaskCompleteDisposable,
+      scanTodosDisposable,
+      parseRequirementsDocumentDisposable,
+      openTaskExplorerDisposable,
+      createSubtasksDisposable,
+      exportTasksDisposable,
       workspaceFoldersChangeDisposable
     );
 
