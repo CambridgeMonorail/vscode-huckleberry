@@ -1,6 +1,6 @@
 {
   "name": "@vscode-huckleberry/source",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "license": "MIT",
   "scripts": {
     "build:all": "nx run-many --target=build --all",
