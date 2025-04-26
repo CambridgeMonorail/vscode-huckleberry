@@ -316,8 +316,8 @@ Found ${extractedRequirements.length} potential requirements. Creating tasks for
     const createdTasks: Task[] = [];
     
     for (const req of extractedRequirements) {
-      // Generate task ID
-      const taskId = generateTaskId();
+      // Generate task ID sequentially from existing tasks
+      const taskId = generateTaskId(tasksData);
       
       // Create new task - using the correct function signature
       const newTask = createTaskObject(

@@ -232,8 +232,8 @@ If you'd still like to create subtasks, try providing more details about the tas
     }
 
     for (const subtask of suggestedSubtasks) {
-      // Generate subtask ID
-      const subtaskId = generateTaskId();
+      // Generate subtask ID based on existing tasks
+      const subtaskId = generateTaskId(tasksData);
 
       // Create new subtask
       const newSubtask = createTaskObject(
