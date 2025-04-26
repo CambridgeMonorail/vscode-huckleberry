@@ -1,3 +1,14 @@
+## 0.1.20 (2025-04-26)
+
+### 🚀 Features
+
+- add blog post on GitHub Copilot web fetching capabilities ([#9](https://github.com/CambridgeMonorail/vscode-huckleberry/pull/9))
+- **docusaurus:** add Google site verification meta tag ([#11](https://github.com/CambridgeMonorail/vscode-huckleberry/pull/11))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.19 (2025-04-25)
 
 This was a version bump only, there were no code changes.
