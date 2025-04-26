@@ -107,3 +107,23 @@ web-fetching:
   label: Web Fetching
   permalink: /web-fetching
   description: Features and techniques for fetching and using web content directly within development tools
+
+task-management:
+  label: Task Management
+  permalink: /task-management
+  description: Tools, systems, and practices for managing development tasks and workflows
+
+ai:
+  label: AI
+  permalink: /ai
+  description: Artificial Intelligence and its applications in software development tools
+
+claude:
+  label: Claude
+  permalink: /claude
+  description: Topics related to Anthropic's Claude AI model and its integrations
+
+tools-comparison:
+  label: Tools Comparison
+  permalink: /tools-comparison
+  description: Comparative analyses of different development tools and their use cases
