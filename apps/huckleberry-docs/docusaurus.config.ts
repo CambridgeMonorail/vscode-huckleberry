@@ -35,6 +35,17 @@ const config: Config = {
     locales: ['en'],
   },
 
+  // Add Google site verification meta tag
+  headTags: [
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'google-site-verification',
+        content: 'vcXVoRYtK7tLGjvik4u-4h1xuwyYS77_uI4tjW8Xk1A',
+      },
+    },
+  ],
+
   presets: [
     [
       'classic',
