@@ -27,10 +27,18 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Create installation token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id:       ${{ secrets.APP_ID }}
+          private-key:  ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout with app token
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Ensures full git history is available
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -92,6 +100,32 @@ jobs:
           git commit -m "chore(release): sync root package version to $VERSION" || echo "No changes to commit"
           git push origin HEAD:${GITHUB_REF#refs/heads/}
 
+      - name: Extract Changes From Changelog
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        id: extract_changes
+        run: |
+          VERSION=${{ steps.package_version.outputs.version }}
+          # Use awk to extract the content between the current version header and the next version header
+          # This accounts for the date format in the CHANGELOG.md headers: "## x.y.z (date)"
+          CHANGES=$(awk -v version="## $VERSION \\(" '
+            BEGIN { found=0; content=""; }
+            $0 ~ "^## " { 
+              if (found == 1) { exit }
+              if ($0 ~ version) { found=1; next }
+            }
+            found == 1 { content = content $0 "\n"; }
+            END { print content; }
+          ' CHANGELOG.md)
+          
+          # Escape newlines and special characters for GitHub Actions
+          CHANGES="${CHANGES//'%'/'%25'}"
+          CHANGES="${CHANGES//$'\n'/'%0A'}"
+          CHANGES="${CHANGES//$'\r'/'%0D'}"
+          
+          echo "changes<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
@@ -116,6 +150,10 @@ jobs:
           generate_release_notes: true
           body: |
             ## Huckleberry Extension v${{ steps.package_version.outputs.version }}
+            
+            ### What's Changed
+            
+            ${{ steps.extract_changes.outputs.changes }}
             
             ### Installation
             Download the VSIX file and install it manually in VS Code:

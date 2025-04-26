@@ -48,9 +48,9 @@ alpha-release:
   permalink: /alpha-release
   description: Information about alpha status releases and early development versions
 
-copilot:
+github-copilot:
   label: GitHub Copilot
-  permalink: /copilot
+  permalink: /github-copilot
   description: Topics related to GitHub Copilot AI pair programming assistant
 
 context:
@@ -102,3 +102,8 @@ agent-mode:
   label: Agent Mode
   permalink: /agent-mode
   description: Topics related to using Agent Mode in VS Code and other development environments
+
+web-fetching:
+  label: Web Fetching
+  permalink: /web-fetching
+  description: Features and techniques for fetching and using web content directly within development tools
