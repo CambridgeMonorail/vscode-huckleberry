@@ -297,8 +297,8 @@ Found ${todos.length} TODO comments in ${totalFiles} files. Creating tasks for e
     const createdTasks: string[] = [];
     
     for (const todo of todos) {
-      // Generate task ID
-      const taskId = generateTaskId();
+      // Generate task ID sequentially from existing tasks
+      const taskId = generateTaskId(tasksData);
       
       // Determine task priority based on TODO comment or default
       const taskPriority = mapTodoPriorityToTaskPriority(

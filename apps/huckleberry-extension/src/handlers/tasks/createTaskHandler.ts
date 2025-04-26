@@ -60,9 +60,6 @@ export async function handleCreateTaskRequest(
   const taskPriority = priority || config.defaultTaskPriority;
   console.log('🔖 Task priority:', taskPriority);
   
-  const taskId = generateTaskId();
-  console.log('🏷️ Generated task ID:', taskId);
-  
   await streamMarkdown(stream, `✏️ **Creating new ${taskPriority} priority task**`);
   
   try {
@@ -76,6 +73,10 @@ export async function handleCreateTaskRequest(
 
     // Read existing tasks.json or create new one
     const tasksData = await readTasksJson(toolManager, tasksJsonPath);
+    
+    // Generate sequential task ID based on existing tasks
+    const taskId = generateTaskId(tasksData);
+    console.log('🏷️ Generated sequential task ID:', taskId);
 
     // Create new task
     const newTask: Task = createTaskObject(

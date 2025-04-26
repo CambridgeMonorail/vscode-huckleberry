@@ -2,7 +2,7 @@
 slug: context-is-king
 title: Context Is King - How Huckleberry Helps Copilot Do Its Job
 authors: [tim]
-tags: [huckleberry, copilot, context, ai-agents, productivity]
+tags: [huckleberry, github-copilot, context, ai-agents, productivity]
 ---
 
 If you've ever used GitHub Copilot in agent mode, you'll know it can do a lot, but only if it knows what you're actually trying to do.

@@ -1,8 +1,8 @@
 ---
 slug: vibe-coding
-title: Ride the Code Range, Skip the Stampede : Gunslinging with Huckleberry in VS Code Agent Mode
+title: "Ride the Code Range, Skip the Stampede : Gunslinging with Huckleberry in VS Code Agent Mode"
 authors: [tim]
-tags: [huckleberry, vs-code, copilot, ai-agents, productivity, workflow, agent-mode]
+tags: [huckleberry, vs-code, github-copilot, ai-agents, productivity, workflow, agent-mode]
 ---
 
 Punching out rough ideas feels grand until your backlog looks like a saloon bar top after last orders.  

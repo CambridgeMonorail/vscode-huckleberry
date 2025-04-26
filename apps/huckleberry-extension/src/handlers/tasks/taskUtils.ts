@@ -135,11 +135,59 @@ export async function writeTasksJson(
 }
 
 /**
- * Creates a new task ID
- * @returns A unique task ID in the format TASK-XXX
+ * Extracts the numeric part of a task ID and returns it as a number
+ * @param taskId The task ID string (e.g., "TASK-042")
+ * @returns The numeric part as a number (e.g., 42), or 0 if parsing fails
  */
-export function generateTaskId(): string {
-  return `TASK-${Math.floor(Math.random() * 900) + 100}`;
+function extractTaskNumber(taskId: string): number {
+  try {
+    const match = taskId.match(/TASK-(\d+)/i);
+    if (match && match[1]) {
+      return parseInt(match[1], 10);
+    }
+  } catch (error) {
+    logWithChannel(LogLevel.WARN, `Failed to parse task ID number from ${taskId}:`, error);
+  }
+  return 0;
+}
+
+/**
+ * Finds the highest task ID number from the existing tasks
+ * @param tasks Array of tasks to search through
+ * @returns The highest task number found, or 0 if no valid task IDs exist
+ */
+function findHighestTaskNumber(tasks: Task[]): number {
+  if (!tasks || tasks.length === 0) {
+    return 0;
+  }
+
+  let highest = 0;
+  for (const task of tasks) {
+    const taskNumber = extractTaskNumber(task.id);
+    if (taskNumber > highest) {
+      highest = taskNumber;
+    }
+  }
+  
+  return highest;
+}
+
+/**
+ * Creates a new task ID by incrementing the highest existing ID
+ * @param tasksData Optional task collection to find the highest existing ID
+ * @returns A sequential task ID in the format TASK-XXX
+ */
+export function generateTaskId(tasksData?: TaskCollection): string {
+  let nextNumber = 1; // Default start
+
+  if (tasksData && tasksData.tasks) {
+    // Find the highest existing task number and increment
+    const highestNumber = findHighestTaskNumber(tasksData.tasks);
+    nextNumber = highestNumber + 1;
+  }
+
+  // Format with leading zeros to ensure consistent 3-digit format
+  return `TASK-${String(nextNumber).padStart(3, '0')}`;
 }
 
 /**
