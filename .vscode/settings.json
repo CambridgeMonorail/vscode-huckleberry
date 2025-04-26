@@ -1,7 +1,6 @@
 {
   "github.copilot.chat.commitMessageGeneration.useInstructionFiles": true,
   "github.copilot.chat.commitMessageGeneration.instructions": [
-    
     {
       "text": "Always follow the conventional commits specification exactly."
     },
@@ -20,7 +19,11 @@
     {
       "text": "Indicate breaking changes with ! after the type/scope or by including BREAKING CHANGE: in the footer."
     }
-],
-"github.copilot.chat.codesearch.enabled": true,
-"github.copilot.chat.agent.thinkingTool": true
+  ],
+  "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.chat.agent.thinkingTool": true,
+  
+  // ESLint configuration for flat config support
+  "eslint.enable": true,
+  "eslint.experimental.useFlatConfig": true
 }

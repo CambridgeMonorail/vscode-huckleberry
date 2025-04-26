@@ -8,8 +8,16 @@ export default [
   {
     ignores: [
       '**/dist',
+      '**/tmp',
+      '**/out-tsc',
+      '**/apps/huckleberry-docs/build',
+      '**/node_modules',
+      '**/.nx/cache',
+      '**/.nx/workspace-data',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
+      '**/coverage',
+      '**/*.vsix',
     ],
   },
   {

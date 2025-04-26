@@ -1,109 +1,123 @@
 ---
 slug: vibe-coding
-title: Keep the Groove, Skip the Chaos - Vibe-Coding with Huckleberry in VS Code Agent Mode
+title: Ride the Code Range, Skip the Stampede : Gunslinging with Huckleberry in VS Code Agent Mode
 authors: [tim]
 tags: [huckleberry, vs-code, copilot, ai-agents, productivity, workflow, agent-mode]
 ---
 
-Releasing raw ideas at speed feels brilliant until your to-do list looks like a pub-table napkin at closing time. Huckleberry turns that late-night jam into a studio session that actually ships. Here's how to stay in the flow, keep the structure and leave the sticky notes in the recycling.
+Punching out rough ideas feels grand until your backlog looks like a saloon bar top after last orders.  
+Huckleberry rides in, swaps your whisky-stained scribbles for a proper trail map and helps you ship before the dust settles. Here is how to stay in the saddle, keep your herd together and leave the stray notes for the tumbleweed.
 
 <!-- truncate -->
 
-## 1. Switch on Agent Mode  
+## 1  Saddle Up Agent Mode
 
 1. **Enable Agent Mode**  
-   Open **Settings**, search for *Copilot: Agent*, tick *Enable Agent Mode*, then reload VS Code.  
+   Open **Settings**, search for *Copilot : Agent*, tick *Enable Agent Mode*, then reload VS Code.  
 
-2. **Pick Huckleberry**  
-   In the Chat panel (Ctrl + Shift + C), swap *Chat* for *Agent* and select **@Huckleberry**.  
+2. **Choose Your Deputy**  
+   In the Chat panel (Ctrl + Shift + C), swap *Chat* for *Agent* and pick **@Huckleberry**.  
 
-Result: your co-pilot grows opposable thumbs and a toolkit.
+Result : your co-pilot now sports a tin star and a full toolbelt.
 
-## 2. Let Huckleberry Wire Up the Decks  
+## 2  Let Huckleberry Hitch the Horses
 
-Agent Mode chats to VS Code's Language Model Tools and MCP servers, so it can:
+Agent Mode chats to VS Code’s Language Model Tools and MCP corrals, which lets it :
 
 - read or write `tasks.json`  
-- create `tasks/*.txt` files  
-- parse specs, break down epics, estimate complexity  
-- run tests, install packages, fire-off builds  
+- create fresh `tasks/*.txt` files  
+- parse specs, break epics, gauge difficulty  
+- run tests, install packages, kick off builds  
 
-You describe intent, it handles the knobs and sliders.
+You speak the intent, it twirls the spanners.
 
-## 3. Spin Up the First Task  
+## 3  Draw Your First Task
 
-Type in the Agent pane:  
+In the Agent pane, type :
 
 ```
+
 Parse docs/requirements.md into tasks
+
 ```
 
-Huckleberry will:
+Huckleberry will :
 
 1. call **parseRequirements**  
-2. update `tasks.json` and create `tasks/TASK-###.txt`  
-3. stream a tidy recap of open work  
+2. update `tasks.json` and forge `tasks/TASK-###.txt`  
+3. stream a neat round-up of open work  
 
-You never leave your editor. "And your bird can sing," as a certain quartet once hinted.
+No need to holster your editor.
 
-## 4. The Vibe Loop: Ask → Do → Done  
+## 4  Quick-Draw Loop : Ask → Do → Done
 
 - **Ask**  
 
-  ```  
-  What should I work on next?  
+  ```
+
+  What should I work on next?
+
   ```  
 
 - **Do**  
-  Huckleberry suggests *TASK-007: implement auth API* and opens the relevant file.  
+  Huckleberry picks *TASK-007 : implement auth API* and opens the right file.  
+
 - **Done**  
 
-  ```  
-  Mark TASK-007 complete  
-  ```  
+  ```
 
-Context switches: nil. Progress bar: moving.
+  Mark TASK-007 complete
 
-## 5. Stretch Moves  
+  ```
 
-**Break a task into steps**  
+Context switches : nil. Progress bar : heading west.
+
+## 5  Fancy Footwork
+
+**Split a task**  
 
 ```
+
 Expand TASK-010 into three subtasks
+
 ```  
 
-**Change stack direction mid-flight**  
+**Change tack mid-trail**  
 
 ```
+
 Update every open task to use Vite instead of Webpack
+
 ```  
 
-**Run tests and skim the failures**  
+**Run tests and skim the casualties**  
 
 ```
+
 Run npm test and summarise any errors
+
 ```  
 
-Huckleberry orchestrates each hop so you stay in flow.
+Huckleberry orchestrates each hop so you keep your rhythm.
 
-## 6. You Still Hold the Faders  
+## 6  You Keep Your Hand on the Reins
 
-- Every command appears in the chat log; review or veto at will.  
-- Keep auto-approve off if you like a confirmation break.  
-- Undo last edit with a click if the riff goes flat.
+- Every command lands in the chat log ; review or veto as you please.  
+- Keep auto-approve switched off if you fancy a breather.  
+- Undo the last edit with one click if the riff goes sour.
 
-## 7. Lock in the Groove  
+## 7  Secure the Homestead
 
-- Speak in clear intents; the agent knows the tooling.  
-- Trust it with the plumbing, keep your brain for the composition.  
-- Flip back to Edit Mode for microscopic tweaks, return to Agent Mode for the big brush strokes.  
+- Speak clear intents ; the deputy knows the kit.  
+- Trust it with the plumbing, save your grey matter for the melody.  
+- Flick back to Edit Mode for fine chiselling, ride Agent Mode for big brush strokes.  
 
-Add a `.github/copilot-instructions.md` with team conventions and Huckleberry will sound like the band, not the session musician.
+Drop a `.github/copilot-instructions.md` with team lore and Huckleberry will sound like part of the posse rather than a hired gun.
 
-## Ready to Roll?  
+## Ready to Ride ?
 
-Fire up the Agent pane, voice your next high-level ask and watch Huckleberry keep time while you solo. As another Manchester outfit advised: *You gotta roll with it*.
+Open the Agent pane, voice your next high-level order and watch Huckleberry keep the beat while you solo. As the folk in Tombstone might put it : *I’m your Huckleberry*.
 
 ---
 
-*Keep your code flowing with Huckleberry. When you're in the zone, the last thing you need is a to-do list breaking your rhythm. Check out our [Language Model Tools documentation](https://cambridgemonorail.github.io/vscode-huckleberry/language-model-tools) for more ideas and examples of how you can get more done more productively with Huckleberry.*
+*Keep the code flowing with Huckleberry. When you are in the zone, a to-do list should not buck you off. Explore our [Language Model Tools documentation](https://cambridgemonorail.github.io/vscode-huckleberry/language-model-tools) for more ways to get things done with a steady hand on the reins.*
