@@ -175,7 +175,7 @@ function findHighestTaskNumber(tasks: Task[]): number {
 /**
  * Creates a new task ID by incrementing the highest existing ID
  * @param tasksData Optional task collection to find the highest existing ID
- * @returns A sequential task ID in the format TASK-XXX
+ * @returns A sequential task ID in the format TASK-XXX with consistent digit formatting
  */
 export function generateTaskId(tasksData?: TaskCollection): string {
   let nextNumber = 1; // Default start
@@ -186,8 +186,9 @@ export function generateTaskId(tasksData?: TaskCollection): string {
     nextNumber = highestNumber + 1;
   }
 
-  // Format with leading zeros to ensure consistent 3-digit format
-  return `TASK-${String(nextNumber).padStart(3, '0')}`;
+  // Determine the number of digits required for consistent formatting
+  const digitCount = Math.max(3, String(nextNumber).length);
+  return `TASK-${String(nextNumber).padStart(digitCount, '0')}`;
 }
 
 /**
