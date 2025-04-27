@@ -32,7 +32,7 @@ For example, managing task state in Huckleberry is deterministic. We want to kno
 Consider how Huckleberry handles task creation:
 
 1. **LLM Flexibility**: When a user types "I need to implement authentication for my API", the LLM interprets this intent and decides a task should be created
-2. **Deterministic Logic**: Once the decision is made, our code handles the creation process—generating an ID, timestamping, formatting the JSON, updating indexes
+2. **Deterministic Logic**: Once the decision is made, our code handles the creation process, generating an ID, timestamping, formatting the JSON, updating indexes
 3. **LLM Flexibility**: When suggesting related tasks or next steps, the LLM can consider the broader context of the project
 4. **Deterministic Logic**: The actual state changes and storage of these relationships follow strict rules
 
