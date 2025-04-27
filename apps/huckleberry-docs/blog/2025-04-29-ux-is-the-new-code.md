@@ -110,7 +110,7 @@ Applying these patterns produces more reliable, target-specific outputs.
 
 ## Finding the Balance
 
-While AI tools like Huckleberry can help manage your development tasks and GitHub Copilot can generate functional code, the human touch remains essential for creating truly exceptional user experiences. The partnership between AI assistance and thoughtful UX design represents the future of software development—technically robust applications that also delight users.
+While AI tools like Huckleberry can help manage your development tasks and GitHub Copilot can generate functional code, the human touch remains essential for creating truly exceptional user experiences. The partnership between AI assistance and thoughtful UX design represents the future of software development, technically robust applications that also delight users.
 
 ## Further Reading
 
