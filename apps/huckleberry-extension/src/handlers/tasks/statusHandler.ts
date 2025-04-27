@@ -30,14 +30,14 @@ function extractTaskId(prompt: string): string | null {
  * @returns The extracted priority or null if not found
  */
 function extractPriority(prompt: string): TaskPriority | null {
-  if (prompt.toLowerCase().includes("high priority")) {
-    return "high";
-  } else if (prompt.toLowerCase().includes("medium priority")) {
-    return "medium";
-  } else if (prompt.toLowerCase().includes("low priority")) {
-    return "low";
-  } else if (prompt.toLowerCase().includes("critical priority")) {
-    return "critical";
+  if (prompt.toLowerCase().includes('high priority')) {
+    return 'high';
+  } else if (prompt.toLowerCase().includes('medium priority')) {
+    return 'medium';
+  } else if (prompt.toLowerCase().includes('low priority')) {
+    return 'low';
+  } else if (prompt.toLowerCase().includes('critical priority')) {
+    return 'critical';
   }
   return null;
 }
@@ -51,7 +51,7 @@ function extractPriority(prompt: string): TaskPriority | null {
 export async function handleMarkTaskDoneRequest(
   prompt: string, 
   stream: vscode.ChatResponseStream, 
-  toolManager: ToolManager
+  toolManager: ToolManager,
 ): Promise<void> {
   console.log('✅ Processing mark task done request:', prompt);
   await showProgress(stream);
@@ -92,7 +92,7 @@ export async function handleMarkTaskDoneRequest(
       const taskFilePath = path.join(
         (await getWorkspacePaths()).workspaceFolder, 
         config.defaultTasksLocation, 
-        `${taskId}.md`
+        `${taskId}.md`,
       );
       
       try {
@@ -109,26 +109,26 @@ export async function handleMarkTaskDoneRequest(
         // Replace status in markdown file
         taskContent = taskContent.replace(
           /- \*\*Status\*\*: .+/i,
-          `- **Status**: Completed ✅`
+          `- **Status**: Completed ✅`,
         );
         
         // Add completed date
-        if (!taskContent.includes("Completed Date")) {
+        if (!taskContent.includes('Completed Date')) {
           taskContent = taskContent.replace(
             /- \*\*Created\*\*: .+/i,
-            `$&\n- **Completed Date**: ${new Date().toLocaleDateString()}`
+            `$&\n- **Completed Date**: ${new Date().toLocaleDateString()}`,
           );
         } else {
           taskContent = taskContent.replace(
             /- \*\*Completed Date\*\*: .+/i,
-            `- **Completed Date**: ${new Date().toLocaleDateString()}`
+            `- **Completed Date**: ${new Date().toLocaleDateString()}`,
           );
         }
         
         // Write updated content back
         await writeFileTool.execute({
           path: taskFilePath,
-          content: taskContent
+          content: taskContent,
         });
       } catch (error) {
         console.warn(`Warning: Could not update markdown file for task ${taskId}: ${error}`);
@@ -165,7 +165,7 @@ It appears Mr. Task's an educated man. Now I really hate him.
 export async function handleChangeTaskPriorityRequest(
   prompt: string, 
   stream: vscode.ChatResponseStream, 
-  toolManager: ToolManager
+  toolManager: ToolManager,
 ): Promise<void> {
   console.log('🔄 Processing change task priority request:', prompt);
   await showProgress(stream);
@@ -226,7 +226,7 @@ export async function handleChangeTaskPriorityRequest(
       const taskFilePath = path.join(
         (await getWorkspacePaths()).workspaceFolder, 
         config.defaultTasksLocation, 
-        `${taskId}.md`
+        `${taskId}.md`,
       );
       
       try {
@@ -236,13 +236,13 @@ export async function handleChangeTaskPriorityRequest(
         // Replace priority in markdown file
         taskContent = taskContent.replace(
           /- \*\*Priority\*\*: \w+/i,
-          `- **Priority**: ${newPriority}`
+          `- **Priority**: ${newPriority}`,
         );
         
         // Write updated content back
         await writeFileTool.execute({
           path: taskFilePath,
-          content: taskContent
+          content: taskContent,
         });
       } catch (error) {
         console.warn(`Warning: Could not update markdown file for task ${taskId}: ${error}`);

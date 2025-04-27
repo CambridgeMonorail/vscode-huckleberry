@@ -28,7 +28,7 @@ export async function detectCopilotMode(): Promise<CopilotModeInfo> {
   const result: CopilotModeInfo = {
     isAvailable: false,
     isAgentModeEnabled: false,
-    isChatAvailable: false
+    isChatAvailable: false,
   };
 
   try {
@@ -64,7 +64,7 @@ export async function detectCopilotMode(): Promise<CopilotModeInfo> {
  * @param showAnyway Force showing the notification even if agent mode is enabled
  * @returns Promise resolving to true if the notification was shown
  */
-export async function recommendAgentMode(showAnyway: boolean = false): Promise<boolean> {
+export async function recommendAgentMode(showAnyway = false): Promise<boolean> {
   try {
     const modeInfo = await detectCopilotMode();
     
@@ -77,20 +77,20 @@ export async function recommendAgentMode(showAnyway: boolean = false): Promise<b
         message,
         'Enable Agent Mode',
         'Learn More',
-        'Dismiss'
+        'Dismiss',
       );
       
       if (result === 'Enable Agent Mode') {
         // Open settings to the relevant Copilot configuration
         await vscode.commands.executeCommand(
           'workbench.action.openSettings',
-          'github.copilot.chat.agentMode'
+          'github.copilot.chat.agentMode',
         );
         return true;
       } else if (result === 'Learn More') {
         // Open documentation about agent mode
         await vscode.env.openExternal(
-          vscode.Uri.parse('https://code.visualstudio.com/docs/editor/github-copilot#_agent-mode')
+          vscode.Uri.parse('https://code.visualstudio.com/docs/editor/github-copilot#_agent-mode'),
         );
         return true;
       }

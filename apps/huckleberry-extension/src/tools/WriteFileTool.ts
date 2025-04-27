@@ -20,7 +20,7 @@ export class WriteFileTool extends BaseTool<WriteFileParams> {
     this.debug('Writing file', { 
       path: params.path,
       contentLength: params.content.length,
-      createDirs: params.createParentDirectories
+      createDirs: params.createParentDirectories,
     });
 
     try {
@@ -40,7 +40,7 @@ export class WriteFileTool extends BaseTool<WriteFileParams> {
 
       this.debug('File written successfully', {
         path: params.path,
-        bytesWritten: data.byteLength
+        bytesWritten: data.byteLength,
       });
     } catch (error) {
       this.logError(error, `Failed to write file: ${params.path}`);

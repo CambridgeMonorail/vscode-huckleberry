@@ -26,7 +26,7 @@ export class ReadFileTool extends BaseTool<ReadFileParams> {
       this.debug('File read successfully', { 
         path: params.path,
         sizeBytes: content.byteLength,
-        lines: text.split('\n').length 
+        lines: text.split('\n').length,
       });
       
       return text;

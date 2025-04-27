@@ -17,7 +17,7 @@ export async function streamMarkdown(stream: vscode.ChatResponseStream, content:
  * @returns A promise that resolves when the progress message is shown
  */
 export async function showProgress(stream: vscode.ChatResponseStream): Promise<void> {
-  await stream.progress("I'll be your huckleberry");
+  await stream.progress('I\'ll be your huckleberry');
 }
 
 /**
@@ -54,7 +54,7 @@ export async function confirm(message: string): Promise<boolean> {
     message,
     { modal: true },
     'Yes',
-    'No'
+    'No',
   );
   return result === 'Yes';
 }
