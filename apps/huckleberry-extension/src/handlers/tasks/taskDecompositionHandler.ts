@@ -2,6 +2,7 @@
  * Handler for breaking tasks into subtasks
  */
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { Task, TaskPriority } from '../../types';
 import { ToolManager } from '../../services/toolManager';
 import { streamMarkdown, showProgress } from '../../utils/uiHelpers';
@@ -181,8 +182,8 @@ export async function handleBreakTaskRequest(
   await streamMarkdown(stream, `I'm your huckleberry. I'll break that task down faster than a gunslinger's draw.`);
 
   try {
-    const { workspaceFolder: _workspaceFolder, tasksJsonPath } = await getWorkspacePaths();
-    const _config = getConfiguration();
+    const { workspaceFolder, tasksJsonPath } = await getWorkspacePaths();
+    const config = getConfiguration();
 
     // Extract task ID from prompt
     const taskId = extractTaskId(prompt);
@@ -231,6 +232,10 @@ If you'd still like to create subtasks, try providing more details about the tas
       parentTask.subtasks = [];
     }
 
+    // Get the write file tool if markdown template is used
+    const writeFileTool = config.taskFileTemplate === 'markdown' ? 
+      toolManager.getTool('writeFile') : null;
+
     for (const subtask of suggestedSubtasks) {
       // Generate subtask ID based on existing tasks
       const subtaskId = generateTaskId(tasksData);
@@ -254,6 +259,37 @@ If you'd still like to create subtasks, try providing more details about the tas
       parentTask.subtasks.push(subtaskId);
 
       createdSubtasks.push(newSubtask);
+      
+      // Create markdown file for the subtask if using markdown template
+      if (config.taskFileTemplate === 'markdown' && writeFileTool) {
+        const taskFilePath = path.join(workspaceFolder, config.defaultTasksLocation, `${subtaskId}.md`);
+        const taskContent = `# ${subtaskId}: ${subtask.description}
+
+## Details
+- **Priority**: ${subtask.priority}
+- **Status**: To Do
+- **Created**: ${new Date().toLocaleDateString()}
+- **Parent Task**: ${parentTask.id}
+
+## Description
+${subtask.description}
+
+## Notes
+- Created as subtask of ${parentTask.id}: ${parentTask.title}
+- Created via Huckleberry Task Manager
+`;
+
+        try {
+          await writeFileTool.execute({
+            path: taskFilePath,
+            content: taskContent,
+            createParentDirectories: true
+          });
+        } catch (error) {
+          console.warn(`Warning: Could not create markdown file for subtask ${subtaskId}: ${error}`);
+          // Continue execution even if markdown creation fails for one subtask
+        }
+      }
     }
 
     // Write back to tasks.json

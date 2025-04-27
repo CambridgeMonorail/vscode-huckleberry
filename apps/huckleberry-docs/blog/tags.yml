@@ -127,3 +127,24 @@ tools-comparison:
   label: Tools Comparison
   permalink: /tools-comparison
   description: Comparative analyses of different development tools and their use cases
+
+# New tags for UX blog post
+ux-design:
+  label: UX Design
+  permalink: /ux-design
+  description: User Experience design principles, methodologies, and best practices
+
+vibe-coding:
+  label: Vibe Coding
+  permalink: /vibe-coding
+  description: Rapid application development leveraging AI-generated code and design templates
+
+accessibility:
+  label: Accessibility
+  permalink: /accessibility
+  description: Guidelines, tools, and practices for creating accessible software applications
+
+user-experience:
+  label: User Experience
+  permalink: /user-experience
+  description: Creating meaningful, intuitive, and delightful user experiences in software applications
