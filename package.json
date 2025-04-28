@@ -16,7 +16,8 @@
     "start:docs": "cd apps/huckleberry-docs && npx docusaurus start",
     "test:extension": "nx test vscode-copilot-huckleberry",
     "typecheck:all": "nx run-many --target=typecheck --all",
-    "watch:extension": "nx build vscode-copilot-huckleberry --watch"
+    "watch:extension": "nx build vscode-copilot-huckleberry --watch",
+    "validate": "pnpm run lint:all && pnpm run typecheck:all && pnpm run build:all"
   },
   "private": true,
   "dependencies": {

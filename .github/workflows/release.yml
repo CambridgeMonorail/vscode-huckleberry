@@ -49,6 +49,8 @@ jobs:
         run: |
           git config --global user.name "Monorail Updater"
           git config --global user.email "monorail-updater@users.noreply.github.com"
+          echo "### 🔧 Git Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Git configured with Monorail Updater identity" >> $GITHUB_STEP_SUMMARY
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -63,14 +65,26 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies
-        # Using --shamefully-hoist to ensure dependencies are available at top level
-        # Using --no-strict-peer-dependencies to handle peer dependencies
-        run: pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
+        run: |
+          pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
+          echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Run Nx Release (version bump and git tag only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }}
+        run: |
+          echo "### 🏷️ Release Process" >> $GITHUB_STEP_SUMMARY
+          echo "- Type: ${{ github.event.inputs.releaseType }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dry Run: ${{ github.event.inputs.dryRun }}" >> $GITHUB_STEP_SUMMARY
+          echo "- First Release: ${{ github.event.inputs.firstRelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }}; then
+            echo "✅ Version bump and git tag created successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Version bump failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
       - name: Get Package Version
         if: ${{ github.event.inputs.dryRun != 'true' }}
@@ -78,15 +92,14 @@ jobs:
         run: |
           VERSION=$(node -p "require('./apps/huckleberry-extension/package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Package version: $VERSION"
+          echo "### 📎 Package Version" >> $GITHUB_STEP_SUMMARY
+          echo "Version: v$VERSION" >> $GITHUB_STEP_SUMMARY
           
       - name: Update Root Package.json Version
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
-          # Get the version from extension's package.json
           VERSION=$(node -p "require('./apps/huckleberry-extension/package.json').version")
           
-          # Update root package.json version
           node -e "
             const fs = require('fs');
             const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
@@ -95,18 +108,17 @@ jobs:
             console.log('Updated root package.json to version $VERSION');
           "
           
-          # Commit the updated package.json
           git add package.json
           git commit -m "chore(release): sync root package version to $VERSION" || echo "No changes to commit"
           git push origin HEAD:${GITHUB_REF#refs/heads/}
+          echo "### 📝 Root Package.json Update" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Root package.json version synced to v$VERSION" >> $GITHUB_STEP_SUMMARY
 
       - name: Extract Changes From Changelog
         if: ${{ github.event.inputs.dryRun != 'true' }}
         id: extract_changes
         run: |
           VERSION=${{ steps.package_version.outputs.version }}
-          # Use awk to extract the content between the current version header and the next version header
-          # This accounts for the date format in the CHANGELOG.md headers: "## x.y.z (date)"
           CHANGES=$(awk -v version="## $VERSION \\([0-9]{4}-[0-9]{2}-[0-9]{2}\\)" '
             BEGIN { found=0; content=""; }
             $0 ~ "^## " { 
@@ -117,7 +129,6 @@ jobs:
             END { print content; }
           ' CHANGELOG.md)
           
-          # Escape newlines and special characters for GitHub Actions
           CHANGES="${CHANGES//'%'/'%25'}"
           CHANGES="${CHANGES//$'\n'/'%0A'}"
           CHANGES="${CHANGES//$'\r'/'%0D'}"
@@ -125,18 +136,29 @@ jobs:
           echo "changes<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "### 📜 Changelog" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`markdown" >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGES" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Package VS Code Extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
-          # Use the package:extension script that works locally
           pnpm package:extension
+          echo "### 📦 Extension Packaging" >> $GITHUB_STEP_SUMMARY
+          echo "✅ VSIX package created successfully" >> $GITHUB_STEP_SUMMARY
           
       - name: List Generated VSIX
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
           echo "Looking for generated VSIX file:"
-          find apps/huckleberry-extension -name "*.vsix" -type f
+          VSIX_FILES=$(find apps/huckleberry-extension -name "*.vsix" -type f)
+          echo "$VSIX_FILES"
+          echo "### 📋 Generated VSIX Files" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "$VSIX_FILES" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Create GitHub Release
         if: ${{ github.event.inputs.dryRun != 'true' }}
@@ -162,3 +184,20 @@ jobs:
             - Select the downloaded VSIX file
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release Summary
+        if: always()
+        run: |
+          echo "## 📊 Release Process Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Git Configuration | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependencies | ✅ Installed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version Bump | ${{ job.steps['Run Nx Release (version bump and git tag only)'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ github.event.inputs.dryRun }}" != "true" ]]; then
+            echo "| Root Package.json Update | ${{ job.steps['Update Root Package.json Version'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Extension Packaging | ${{ job.steps['Package VS Code Extension'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| GitHub Release | ${{ job.steps['Create GitHub Release'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Release Steps | ⏭️ Skipped (Dry Run) |" >> $GITHUB_STEP_SUMMARY
+          fi
