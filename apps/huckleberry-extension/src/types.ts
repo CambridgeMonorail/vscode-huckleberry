@@ -140,6 +140,31 @@ export interface Task {
    * Additional metadata about the task
    */
   metadata?: TaskMetadata;
+
+  /**
+   * Additional enriched content from context analysis
+   */
+  enrichedContent?: {
+    /**
+     * Enhanced description with broader context
+     */
+    enhancedDescription?: string;
+
+    /**
+     * Related code snippets or document sections
+     */
+    contextualContent?: string;
+
+    /**
+     * When the content was last enriched
+     */
+    enrichedAt?: string;
+
+    /**
+     * What type of enrichment was performed (code-context, requirements-context, etc)
+     */
+    enrichmentType?: string;
+  };
 }
 
 /**

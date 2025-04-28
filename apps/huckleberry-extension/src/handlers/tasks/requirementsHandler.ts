@@ -15,6 +15,7 @@ import {
   priorityEmoji,
   createTaskObject,
 } from './taskUtils';
+import { handleEnrichTaskRequest } from './taskEnrichmentHandler';
 
 /**
  * Extracts file path from user prompt
@@ -378,6 +379,29 @@ Extracted from requirements document: ${filePath}
 
     // Write back to tasks.json
     await writeTasksJson(toolManager, tasksJsonPath, tasksData);
+
+    // Offer to enrich tasks with additional context
+    if (createdTasks.length > 0) {
+      await streamMarkdown(stream, `\nWould you like me to enrich these tasks with additional context from the requirements? (y/n)`);
+
+      const response = await vscode.window.showInputBox({
+        prompt: 'Enrich tasks with additional context?',
+        placeHolder: 'Type y/n',
+      });
+
+      if (response?.toLowerCase() === 'y') {
+        await streamMarkdown(stream, `\nEnriching tasks with additional context...`);
+
+        for (const task of createdTasks) {
+          try {
+            await handleEnrichTaskRequest(`enrich task ${task.id}`, stream, toolManager);
+          } catch (error) {
+            console.warn(`Warning: Could not enrich task ${task.id}: ${error}`);
+            // Continue with other tasks even if one fails
+          }
+        }
+      }
+    }
 
     // Group tasks by priority for reporting
     const tasksByPriority: Record<string, Task[]> = {

@@ -15,6 +15,7 @@ import {
   generateTaskId,
   priorityEmoji as _priorityEmoji,
 } from './taskUtils';
+import { handleEnrichTaskRequest } from './taskEnrichmentHandler';
 
 /**
  * Interface for representing a TODO comment found in code
@@ -355,6 +356,32 @@ ${todo.comment}
           content: taskContent,
           createParentDirectories: true,
         });
+      }
+    }
+
+    // Add option to enrich tasks immediately
+    if (todos.length > 0) {
+      await streamMarkdown(stream, `\nWould you like me to enrich these tasks with additional context? (y/n)`);
+
+      const response = await vscode.window.showInputBox({
+        prompt: 'Enrich tasks with additional context?',
+        placeHolder: 'Type y/n',
+      });
+
+      if (response?.toLowerCase() === 'y') {
+        await streamMarkdown(stream, `\nEnriching tasks with additional context...`);
+
+        for (const taskId of createdTasks) {
+          const task = tasksData.tasks.find(t => t.id === taskId);
+          if (task) {
+            try {
+              await handleEnrichTaskRequest(`enrich task ${taskId}`, stream, toolManager);
+            } catch (error) {
+              console.warn(`Warning: Could not enrich task ${taskId}: ${error}`);
+              // Continue with other tasks even if one fails
+            }
+          }
+        }
       }
     }
 

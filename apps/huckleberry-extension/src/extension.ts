@@ -654,6 +654,55 @@ function createSubtasks(taskId?: string): void {
 }
 
 /**
+ * Command handler for enriching a task with additional context
+ * @param taskId Optional task ID to enrich
+ */
+function enrichTask(taskId?: string): void {
+  try {
+    if (!isWorkspaceAvailable()) {
+      notifyNoWorkspace();
+      return;
+    }
+
+    if (!extensionState?.toolManager) {
+      vscode.window.showErrorMessage('Extension not properly initialized');
+      return;
+    }
+
+    // If no taskId is provided, prompt the user to select one
+    if (!taskId) {
+      // Import dynamically to prevent circular dependencies
+      import('./utils/parameterUtils').then(async ({ promptForTaskSelection }) => {
+        if (!extensionState?.toolManager) {
+          vscode.window.showErrorMessage('Extension not properly initialized');
+          return;
+        }
+        const selectedTaskId = await promptForTaskSelection(extensionState.toolManager);
+        if (selectedTaskId) {
+          // Execute the command with the selected task ID
+          vscode.commands.executeCommand(
+            'workbench.action.chat.open',
+            `@huckleberry Enrich task ${selectedTaskId} with context`,
+          );
+        }
+      }).catch(error => {
+        logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+        vscode.window.showErrorMessage(`Failed to load task selection UI: ${error instanceof Error ? error.message : String(error)}`);
+      });
+    } else {
+      // Execute the command with the provided task ID
+      vscode.commands.executeCommand(
+        'workbench.action.chat.open',
+        `@huckleberry Enrich task ${taskId} with context`,
+      );
+    }
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error in enrichTask command:', error);
+    vscode.window.showErrorMessage(`Failed to enrich task: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
  * Command handler for exporting tasks
  */
 function exportTasks(): void {
@@ -901,6 +950,11 @@ export function activate(context: vscode.ExtensionContext): void {
       createSubtasks,
     );
 
+    const enrichTaskDisposable = vscode.commands.registerCommand(
+      'huckleberry.enrichTask',
+      enrichTask,
+    );
+
     const exportTasksDisposable = vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.exportTasks',
       exportTasks,
@@ -968,6 +1022,7 @@ export function activate(context: vscode.ExtensionContext): void {
       parseRequirementsDocumentDisposable,
       openTaskExplorerDisposable,
       createSubtasksDisposable,
+      enrichTaskDisposable,
       exportTasksDisposable,
       workspaceFoldersChangeDisposable,
     );
