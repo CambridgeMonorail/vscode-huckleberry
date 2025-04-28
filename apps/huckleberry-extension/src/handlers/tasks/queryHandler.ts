@@ -2,13 +2,21 @@
  * Handler for task query operations (listing, filtering tasks)
  */
 import * as vscode from 'vscode';
+import { Task } from '../../types';
 import { ToolManager } from '../../services/toolManager';
 import { streamMarkdown, showProgress } from '../../utils/uiHelpers';
 import {
   getWorkspacePaths,
   readTasksJson,
-  priorityEmoji,
 } from './taskUtils';
+
+function formatTaskListItem(task: Task): string {
+  const sourceInfo = task.source && task.source.uri ?
+    ` _([source](${task.source.uri}))_` :
+    '';
+
+  return `- **${task.id}**: ${task.title}${sourceInfo}`;
+}
 
 /**
  * Handles requests to query tasks by priority
@@ -52,13 +60,8 @@ export async function handlePriorityTaskQuery(
       return;
     }
 
-    // Format and display tasks with proper null/undefined handling
-    const taskList = priorityTasks
-      .map((task, index) => {
-        const priorityIcon = task.priority ? priorityEmoji[task.priority] || '⚪' : '⚪';
-        return `${index + 1}. ${priorityIcon} **${task.id}**: ${task.title}`;
-      })
-      .join('\n');
+    // Create output string with clickable source links where available
+    const taskList = priorityTasks.map(formatTaskListItem).join('\n');
 
     await streamMarkdown(stream, `\n${taskList}`);
 
@@ -124,10 +127,7 @@ No tasks found. Create a task with: \`@Huckleberry Create a task to...\`
       await streamMarkdown(stream, `\n### Open Tasks (${openTasks.length})`);
 
       const openTasksList = openTasks
-        .map(task => {
-          const priorityIcon = task.priority ? priorityEmoji[task.priority] || '⚪' : '⚪';
-          return `- ${priorityIcon} **${task.id}**: ${task.title}`;
-        })
+        .map(formatTaskListItem)
         .join('\n');
 
       await streamMarkdown(stream, openTasksList);
@@ -141,7 +141,7 @@ No tasks found. Create a task with: \`@Huckleberry Create a task to...\`
       // Show only the last 5 completed tasks to avoid clutter
       const recentCompletedTasks = completedTasks.slice(0, 5);
       const completedTasksList = recentCompletedTasks
-        .map(task => `- ✓ **${task.id}**: ${task.title}`)
+        .map(formatTaskListItem)
         .join('\n');
 
       await streamMarkdown(stream, completedTasksList);

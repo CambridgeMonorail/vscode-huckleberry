@@ -2,6 +2,7 @@
  * Handler for parsing requirements and creating tasks
  */
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { Task, TaskPriority } from '../../types';
 import { ToolManager } from '../../services/toolManager';
 import { streamMarkdown, showProgress } from '../../utils/uiHelpers';
@@ -226,11 +227,12 @@ export async function handleParseRequirementsRequest(
 
   try {
     const { workspaceFolder, tasksJsonPath } = await getWorkspacePaths();
-    const _config = getConfiguration();
+    const config = getConfiguration();
 
     // Get the tools we need
     const readFileTool = toolManager.getTool('readFile');
-    if (!readFileTool) {
+    const writeFileTool = toolManager.getTool('writeFile');
+    if (!readFileTool || !writeFileTool) {
       throw new Error('Required tools not found');
     }
 
@@ -311,7 +313,7 @@ Found ${extractedRequirements.length} potential requirements. Creating tasks for
       // Generate task ID sequentially from existing tasks
       const taskId = generateTaskId(tasksData);
 
-      // Create new task - using the correct function signature
+      // Create new task with enhanced source tracking
       const newTask = createTaskObject(
         taskId,
         req.description,
@@ -321,14 +323,57 @@ Found ${extractedRequirements.length} potential requirements. Creating tasks for
           source: {
             file: filePath,
             line: 1, // Default to line 1 since we don't track specific line numbers during parsing
+            context: 'requirements', // Add context to indicate this is from requirements
+            uri: vscode.Uri.file(absoluteFilePath).toString(), // Store the full URI for linking
+            section: 'Requirements', // Default section name
           },
           tags: ['requirement'],
+          metadata: {
+            sourceDocument: filePath,
+            extractedAt: new Date().toISOString(),
+          },
         },
       );
 
       // Add to tasks collection
       tasksData.tasks.push(newTask);
       createdTasks.push(newTask);
+
+      // If using markdown template, create individual task file with source link
+      if (config.taskFileTemplate === 'markdown') {
+        const tasksDir = path.join(workspaceFolder, 'tasks');
+        const taskFilePath = path.join(tasksDir, `${taskId}.md`);
+        const taskContent = `# ${taskId}: ${req.description}
+
+## Details
+- **Priority**: ${req.priority}
+- **Status**: To Do
+- **Created**: ${new Date().toLocaleDateString()}
+- **Source**: [${filePath}](file:///${absoluteFilePath})
+- **Type**: Requirement
+
+## Description
+${req.description}
+
+## Source Context
+Extracted from requirements document: ${filePath}
+
+## Notes
+- Created via Huckleberry Task Manager's requirements parser
+- Created on ${new Date().toLocaleDateString()}
+`;
+
+        try {
+          await writeFileTool.execute({
+            path: taskFilePath,
+            content: taskContent,
+            createParentDirectories: true,
+          });
+        } catch (error) {
+          console.warn(`Warning: Could not create markdown file for task ${taskId}: ${error}`);
+          // Continue execution even if markdown creation fails for one task
+        }
+      }
     }
 
     // Write back to tasks.json
