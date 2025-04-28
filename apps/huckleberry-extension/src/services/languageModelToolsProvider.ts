@@ -7,6 +7,7 @@ import { logWithChannel, LogLevel } from '../utils/debugUtils';
 import { isWorkspaceAvailable, notifyNoWorkspace } from '../handlers/chatHandler';
 import { getConfiguration } from '../config/index';
 import { getWorkspacePaths, readTasksJson, writeTasksJson } from '../handlers/tasks/taskUtils';
+import { streamMarkdown } from '../utils/uiHelpers';
 
 // Import task handlers
 import {
@@ -405,8 +406,9 @@ export class LanguageModelToolsProvider {
               // Create a custom stream to collect output from the handler
               const stream = new ToolResponseStream();
 
-              // Process the task initialization
-              await handleInitializeTaskTracking(stream as ChatResponseStreamLike, toolManager);
+              // Execute the task initialization
+              const prompt = 'Initialize task tracking';
+              await handleInitializeTaskTracking(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Get the workspace folder and task directory for the result message
               const { tasksDir } = await getWorkspacePaths();
@@ -482,8 +484,9 @@ export class LanguageModelToolsProvider {
               // Create a custom stream to collect output from the handler
               const stream = new ToolResponseStream();
 
-              // Process the task initialization
-              await handleInitializeTaskTracking(stream as ChatResponseStreamLike, toolManager);
+              // Execute the task initialization
+              const prompt = 'Initialize task tracking';
+              await handleInitializeTaskTracking(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Get the workspace folder and task directory for the result message
               const { tasksDir } = await getWorkspacePaths();
@@ -675,6 +678,8 @@ export class LanguageModelToolsProvider {
 
               await handleMarkTaskDoneRequest(prompt, stream as ChatResponseStreamLike, toolManager);
 
+              await streamMarkdown(stream, `We noticed that task ${taskId} appears to be complex. I'll help you break it down into smaller, more manageable pieces.`);
+
               // Use VS Code's recommended LanguageModelToolResult format
               return new vscode.LanguageModelToolResult([
                 new vscode.LanguageModelTextPart(stream.getResult()),
@@ -827,9 +832,12 @@ export class LanguageModelToolsProvider {
               const { handleNextTaskRequest } = require('../handlers/tasks/nextTaskHandler');
               await handleNextTaskRequest('What task should I work on next?', stream as ChatResponseStreamLike, toolManager);
 
+              const nextTaskText = stream.getResult();
+              await streamMarkdown(stream, `### Next Task Suggestion\n\n${nextTaskText}`);
+
               // Return the results
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult()),
+                new vscode.LanguageModelTextPart(nextTaskText),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in nextTask tool:', error);

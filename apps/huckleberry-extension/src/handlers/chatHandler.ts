@@ -218,7 +218,7 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
     // Check for initialize pattern first (most likely first command)
     if (initializePattern.test(lowerPrompt)) {
       logWithChannel(LogLevel.INFO, '🎯 Detected initialize task tracking command');
-      await handleInitializeTaskTracking(stream, toolManager);
+      await handleInitializeTaskTracking(cleanedPrompt, stream, toolManager);
       return;
     }
 
@@ -273,7 +273,7 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
 
     // Handle other request patterns directly without using the language model
     if (lowerPrompt.includes('initialize task tracking')) {
-      await handleInitializeTaskTracking(stream, toolManager);
+      await handleInitializeTaskTracking(cleanedPrompt, stream, toolManager);
       return;
     } else if (lowerPrompt.match(/what tasks are (\w+) priority/)) {
       await handlePriorityTaskQuery(cleanedPrompt, stream, toolManager);
