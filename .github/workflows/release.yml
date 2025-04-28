@@ -193,11 +193,11 @@ jobs:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Git Configuration | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
           echo "| Dependencies | ✅ Installed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Version Bump | ${{ job.steps['Run Nx Release (version bump and git tag only)'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version Bump | ${{ steps['Run Nx Release (version bump and git tag only)'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ github.event.inputs.dryRun }}" != "true" ]]; then
-            echo "| Root Package.json Update | ${{ job.steps['Update Root Package.json Version'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| Extension Packaging | ${{ job.steps['Package VS Code Extension'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| GitHub Release | ${{ job.steps['Create GitHub Release'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Root Package.json Update | ${{ steps['Update Root Package.json Version'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Extension Packaging | ${{ steps['Package VS Code Extension'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| GitHub Release | ${{ steps['Create GitHub Release'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| Release Steps | ⏭️ Skipped (Dry Run) |" >> $GITHUB_STEP_SUMMARY
           fi
