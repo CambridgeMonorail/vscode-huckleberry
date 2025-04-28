@@ -43,7 +43,7 @@ Turn on the preview setting `github.copilot.chat.codesearch.enabled` and Copilot
 * **Sharper judgement:** Responses match the version you actually run.  
 * **Less wandering:** Stay in your editor; keep the coffee pot simmering on the stove.
 
-As the campfire tune goes, *get along little dogies, get along* – momentum keeps the herd together.
+As the campfire tune goes, *get along little dogies, get along*,  momentum keeps the herd together.
 
 ## Shoot‑out example
 

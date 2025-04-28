@@ -14,7 +14,7 @@ import {
   generateTaskId,
   createTaskObject,
   priorityEmoji,
-  recommendAgentModeInChat
+  recommendAgentModeInChat,
 } from './taskUtils';
 
 /**
@@ -28,10 +28,10 @@ function extractTaskDescription(prompt: string): string {
   if (priorityMatch) {
     return priorityMatch[3].trim();
   }
-  
+
   // Handle standard patterns
   const descriptionMatch = prompt.match(/create a task( to)?:?\s+(.+)/i);
-  return descriptionMatch ? descriptionMatch[2].trim() : "New task";
+  return descriptionMatch ? descriptionMatch[2].trim() : 'New task';
 }
 
 /**
@@ -42,26 +42,26 @@ function extractTaskDescription(prompt: string): string {
  * @param priority Optional task priority override
  */
 export async function handleCreateTaskRequest(
-  prompt: string, 
-  stream: vscode.ChatResponseStream, 
+  prompt: string,
+  stream: vscode.ChatResponseStream,
   toolManager: ToolManager,
-  priority?: string | null
+  priority?: string | null,
 ): Promise<void> {
   console.log('✏️ Processing create task request:', prompt);
   await showProgress(stream);
-  
+
   // Extract task description from the prompt
   const description = extractTaskDescription(prompt);
   console.log('📝 Task description:', description);
-  
+
   const config = getConfiguration();
-  
+
   // Use provided priority or default from config
   const taskPriority = priority || config.defaultTaskPriority;
   console.log('🔖 Task priority:', taskPriority);
-  
+
   await streamMarkdown(stream, `✏️ **Creating new ${taskPriority} priority task**`);
-  
+
   try {
     const { tasksDir, tasksJsonPath } = await getWorkspacePaths();
 
@@ -73,19 +73,19 @@ export async function handleCreateTaskRequest(
 
     // Read existing tasks.json or create new one
     const tasksData = await readTasksJson(toolManager, tasksJsonPath);
-    
+
     // Generate sequential task ID based on existing tasks
     const taskId = generateTaskId(tasksData);
     console.log('🏷️ Generated sequential task ID:', taskId);
 
     // Create new task
     const newTask: Task = createTaskObject(
-      taskId, 
-      description, 
+      taskId,
+      description,
       taskPriority as TaskPriority,
       {
-        createdAt: new Date().toISOString()
-      }
+        createdAt: new Date().toISOString(),
+      },
     );
 
     // Add to tasks collection
@@ -114,7 +114,7 @@ ${description}
       await writeFileTool.execute({
         path: taskFilePath,
         content: taskContent,
-        createParentDirectories: true
+        createParentDirectories: true,
       });
     }
 
@@ -129,7 +129,7 @@ ${priorityEmoji[taskPriority as keyof typeof priorityEmoji]} **${taskId}**: ${de
 
 You can mark this task as complete with: \`@Huckleberry Mark task ${taskId} as complete\`
     `);
-    
+
     // Check and recommend agent mode if applicable
     await recommendAgentModeInChat(stream);
   } catch (error) {

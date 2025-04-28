@@ -4,11 +4,11 @@
 import * as vscode from 'vscode';
 import { ToolManager } from '../../services/toolManager';
 import { streamMarkdown, showProgress } from '../../utils/uiHelpers';
-import { Task, TaskPriority } from '../../types';
+import { Task } from '../../types';
 import {
   getWorkspacePaths,
   readTasksJson,
-  writeTasksJson
+  writeTasksJson,
 } from './taskUtils';
 import { logWithChannel, LogLevel } from '../../utils/debugUtils';
 
@@ -19,7 +19,7 @@ const PRIORITY_ORDER: Record<string, number> = {
   'critical': 0,
   'high': 1,
   'medium': 2,
-  'low': 3
+  'low': 3,
 };
 
 /**
@@ -51,7 +51,7 @@ function sortTasksByStatusAndPriority(tasks: Task[]): Task[] {
 export async function handlePrioritizeTasksRequest(
   prompt: string, 
   stream: vscode.ChatResponseStream, 
-  toolManager: ToolManager
+  toolManager: ToolManager,
 ): Promise<void> {
   console.log('🔄 Processing prioritize tasks request:', prompt);
   await showProgress(stream);
@@ -87,7 +87,7 @@ No tasks found. Create a task with: \`@Huckleberry Create a task to...\`
     logWithChannel(LogLevel.INFO, '✅ Tasks prioritized', {
       taskCount: totalTasks,
       openTasks,
-      completedTasks
+      completedTasks,
     });
     
     // Send success message

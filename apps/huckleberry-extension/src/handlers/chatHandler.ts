@@ -15,7 +15,7 @@ import {
   handleParseRequirementsRequest,
   handleReadTasksRequest,
   handleChangeTaskPriorityRequest,
-  handleScanTodosRequest
+  handleScanTodosRequest,
 } from './taskHandlers';
 
 /**
@@ -23,13 +23,13 @@ import {
  * @returns boolean indicating if a workspace is available
  */
 export function isWorkspaceAvailable(): boolean {
-  const hasWorkspaceFolders = vscode.workspace.workspaceFolders !== undefined && 
-                              vscode.workspace.workspaceFolders.length > 0;
-                              
+  const hasWorkspaceFolders = vscode.workspace.workspaceFolders !== undefined &&
+    vscode.workspace.workspaceFolders.length > 0;
+
   logWithChannel(LogLevel.DEBUG, `Workspace availability check: ${hasWorkspaceFolders ? 'Available' : 'Not available'}`, {
-    workspaceFolders: vscode.workspace.workspaceFolders?.length || 0
+    workspaceFolders: vscode.workspace.workspaceFolders?.length || 0,
   });
-  
+
   return hasWorkspaceFolders;
 }
 
@@ -40,7 +40,7 @@ export function notifyNoWorkspace(): void {
   logWithChannel(LogLevel.WARN, 'No workspace is currently open');
   vscode.window.showInformationMessage(
     'Huckleberry Task Manager requires an open workspace. Please open a folder or workspace to use all features.',
-    'Open Folder'
+    'Open Folder',
   ).then(selection => {
     if (selection === 'Open Folder') {
       vscode.commands.executeCommand('workbench.action.files.openFolder');
@@ -53,7 +53,7 @@ export function notifyNoWorkspace(): void {
  */
 export interface Command {
   name: string;
-  args?: Record<string, any>;
+  args?: Record<string, unknown>;
 }
 
 /**
@@ -63,15 +63,15 @@ export interface Command {
  */
 function isPrioritizeTasksRequest(prompt: string): boolean {
   const keywords = [
-    'prioritize tasks', 
-    'sort tasks', 
+    'prioritize tasks',
+    'sort tasks',
     'organize tasks',
     'reorder tasks',
-    'prioritise tasks'  // British English variant
+    'prioritise tasks',  // British English variant
   ];
-  
+
   const lowerPrompt = prompt.toLowerCase();
-  
+
   return keywords.some(keyword => lowerPrompt.includes(keyword));
 }
 
@@ -91,11 +91,11 @@ function isNextTaskRequest(prompt: string): boolean {
     'recommend a task',
     'suggest next task',
     'what task should i do next',
-    'what\'s my next task'
+    'what\'s my next task',
   ];
-  
+
   const lowerPrompt = prompt.toLowerCase();
-  
+
   return keywords.some(keyword => lowerPrompt.includes(keyword));
 }
 
@@ -119,11 +119,11 @@ function isHelpRequest(prompt: string): boolean {
     'instructions',
     'usage',
     'how does this work',
-    'explain how to'
+    'explain how to',
   ];
-  
+
   const lowerPrompt = prompt.toLowerCase();
-  
+
   return keywords.some(keyword => lowerPrompt.includes(keyword));
 }
 
@@ -136,36 +136,36 @@ function isHelpRequest(prompt: string): boolean {
  * @param toolManager The tool manager
  */
 export async function handleChatRequest(
-  request: vscode.ChatRequest, 
-  context: vscode.ChatContext, 
+  request: vscode.ChatRequest,
+  context: vscode.ChatContext,
   stream: vscode.ChatResponseStream,
   token: vscode.CancellationToken,
-  toolManager: ToolManager
+  toolManager: ToolManager,
 ): Promise<void> {
   try {
     // Original prompt might contain @Huckleberry or have it stripped out
     // Log both the original and cleaned versions
     const originalPrompt = request.prompt;
-    logWithChannel(LogLevel.INFO, `Received chat request with prompt: "${originalPrompt}"`);
-    
+    logWithChannel(LogLevel.INFO, `Received chat request with prompt: '${originalPrompt}'`);
+
     // Clean the prompt - remove any @Huckleberry prefix that might still be included
     // This makes pattern matching more consistent
     const cleanedPrompt = originalPrompt
       .replace(/^@huckleberry\s+/i, '')
       .trim();
-    
-    logWithChannel(LogLevel.DEBUG, `Cleaned prompt: "${cleanedPrompt}"`);
-    
+
+    logWithChannel(LogLevel.DEBUG, `Cleaned prompt: '${cleanedPrompt}'`);
+
     // Verbose debugging for the current workspace state
     const workspaceState = {
       hasWorkspace: isWorkspaceAvailable(),
       folders: vscode.workspace.workspaceFolders?.map(f => ({
         name: f.name,
-        path: f.uri.fsPath
+        path: f.uri.fsPath,
       })) || [],
-      name: vscode.workspace.name
+      name: vscode.workspace.name,
     };
-    
+
     logWithChannel(LogLevel.DEBUG, 'Current workspace state during chat request:', workspaceState);
 
     // Check if workspace is available before processing any workspace-dependent commands
@@ -181,26 +181,26 @@ I notice you don't have a workspace open. To use Huckleberry Task Manager featur
 
 You can open a folder via File > Open Folder or use the 'Open Folder' button below.
       `);
-      
+
       // Show notification with action button
       vscode.window.showInformationMessage(
         'Huckleberry Task Manager requires an open workspace to manage tasks.',
-        'Open Folder'
+        'Open Folder',
       ).then(selection => {
         if (selection === 'Open Folder') {
           vscode.commands.executeCommand('workbench.action.files.openFolder');
         }
       });
-      
+
       return;
     }
 
     // Debug: Log context.history before mapping
     logWithChannel(LogLevel.DEBUG, `Chat context history length: ${context?.history?.length || 0}`);
-    
+
     // Early pattern detection to avoid unnecessary model calls
     const lowerPrompt = cleanedPrompt.toLowerCase();
-    
+
     // More comprehensive pattern detection for task creation with priority modifiers
     const highPriorityTaskPattern = /(create|add) (a )?(high|critical) (priority )?task to (.+)/i;
     const mediumPriorityTaskPattern = /(create|add) (a )?(medium) (priority )?task to (.+)/i;
@@ -208,26 +208,26 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
     const genericTaskPattern = /(create|add) (a )?task to (.+)/i;
     const scanTodosPattern = /(scan|find|extract|create tasks from)(?:\s+for)?\s+todos(?:\s+in\s+(.+))?/i;
     const breakTaskPattern = /break\s+(?:task\s+)?([A-Za-z]+-\d+)\s+into\s+subtasks/i;
-    
+
     // For initialize pattern, make it more flexible
     const initializePattern = /initialize\s+task\s+tracking(?:\s+for\s+this\s+project)?/i;
-    
+
     let taskPriority: string | null = null;
-    let descriptionMatch: RegExpMatchArray | null = null;
-    
+    let _descriptionMatch: RegExpMatchArray | null = null;
+
     // Check for initialize pattern first (most likely first command)
     if (initializePattern.test(lowerPrompt)) {
       logWithChannel(LogLevel.INFO, '🎯 Detected initialize task tracking command');
-      await handleInitializeTaskTracking(stream, toolManager);
+      await handleInitializeTaskTracking(cleanedPrompt, stream, toolManager);
       return;
     }
-    
+
     // Try to match all patterns in order of specificity
     if (highPriorityTaskPattern.test(cleanedPrompt)) {
       const matches = cleanedPrompt.match(highPriorityTaskPattern);
       if (matches && matches.length >= 6) {
         taskPriority = matches[3] === 'critical' ? 'critical' : 'high';
-        descriptionMatch = matches;
+        _descriptionMatch = matches;
         logWithChannel(LogLevel.INFO, `Detected ${taskPriority} priority task creation request`);
         await handleCreateTaskRequest(cleanedPrompt, stream, toolManager, taskPriority);
         return;
@@ -236,7 +236,7 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       const matches = cleanedPrompt.match(mediumPriorityTaskPattern);
       if (matches && matches.length >= 6) {
         taskPriority = 'medium';
-        descriptionMatch = matches;
+        _descriptionMatch = matches;
         logWithChannel(LogLevel.INFO, `Detected ${taskPriority} priority task creation request`);
         await handleCreateTaskRequest(cleanedPrompt, stream, toolManager, taskPriority);
         return;
@@ -245,21 +245,21 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       const matches = cleanedPrompt.match(lowPriorityTaskPattern);
       if (matches && matches.length >= 6) {
         taskPriority = 'low';
-        descriptionMatch = matches;
+        _descriptionMatch = matches;
         logWithChannel(LogLevel.INFO, `Detected ${taskPriority} priority task creation request`);
         await handleCreateTaskRequest(cleanedPrompt, stream, toolManager, taskPriority);
         return;
       }
     } else if (genericTaskPattern.test(cleanedPrompt)) {
-      const matches = cleanedPrompt.match(genericTaskPattern);
-      if (matches && matches.length >= 4) {
+      const _matches = cleanedPrompt.match(genericTaskPattern);
+      if (_matches && _matches.length >= 4) {
         // Use default priority
         logWithChannel(LogLevel.INFO, 'Detected generic task creation request');
         await handleCreateTaskRequest(cleanedPrompt, stream, toolManager, null);
         return;
       }
     } else if (scanTodosPattern.test(cleanedPrompt)) {
-      const matches = cleanedPrompt.match(scanTodosPattern);
+      const _matches = cleanedPrompt.match(scanTodosPattern);
       logWithChannel(LogLevel.INFO, 'Detected TODO scanning request');
       await handleScanTodosRequest(cleanedPrompt, stream, toolManager);
       return;
@@ -270,10 +270,10 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       await handleBreakTaskRequest(cleanedPrompt, stream, toolManager);
       return;
     }
-    
+
     // Handle other request patterns directly without using the language model
     if (lowerPrompt.includes('initialize task tracking')) {
-      await handleInitializeTaskTracking(stream, toolManager);
+      await handleInitializeTaskTracking(cleanedPrompt, stream, toolManager);
       return;
     } else if (lowerPrompt.match(/what tasks are (\w+) priority/)) {
       await handlePriorityTaskQuery(cleanedPrompt, stream, toolManager);
@@ -281,15 +281,15 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
     } else if (lowerPrompt.match(/mark task .+ as complete/)) {
       await handleMarkTaskDoneRequest(cleanedPrompt, stream, toolManager);
       return;
-    } else if (lowerPrompt.match(/mark task .+ as (high|medium|low|critical) priority/) || 
-        lowerPrompt.match(/change .+ priority .+ to (high|medium|low|critical)/)) {
+    } else if (lowerPrompt.match(/mark task .+ as (high|medium|low|critical) priority/) ||
+      lowerPrompt.match(/change .+ priority .+ to (high|medium|low|critical)/)) {
       await handleChangeTaskPriorityRequest(cleanedPrompt, stream, toolManager);
       return;
     } else if (lowerPrompt.match(/parse .+ and create tasks/)) {
       await handleParseRequirementsRequest(cleanedPrompt, stream, toolManager);
       return;
-    } else if (lowerPrompt.includes('read') || lowerPrompt.includes('show') || 
-        lowerPrompt.includes('list') || lowerPrompt.includes('get')) {
+    } else if (lowerPrompt.includes('read') || lowerPrompt.includes('show') ||
+      lowerPrompt.includes('list') || lowerPrompt.includes('get')) {
       await handleReadTasksRequest(cleanedPrompt, stream, toolManager);
       return;
     } else if (isPrioritizeTasksRequest(cleanedPrompt)) {
@@ -311,50 +311,50 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
       await handleHelpRequest(cleanedPrompt, stream, toolManager);
       return;
     }
-    
+
     // If we get here, no specific command pattern was matched
     logWithChannel(LogLevel.DEBUG, '❓ No specific command pattern matched, falling back to language model');
-    
+
     // Only prepare history and call the language model for unknown request patterns
     try {
       // Safely initialize history array with proper type checking
       const historyTurns = Array.isArray(context?.history) ? context.history : [];
       logWithChannel(LogLevel.DEBUG, `Processing ${historyTurns.length} history turns`);
-      
+
       // Process history turns with proper type checking for each property
       const history = historyTurns
         .filter((turn): turn is vscode.ChatResponseTurn => {
           // Only include turns that have a valid response array
-          const hasResponse = turn && 
-            typeof turn === 'object' && 
-            'response' in turn && 
+          const hasResponse = turn &&
+            typeof turn === 'object' &&
+            'response' in turn &&
             Array.isArray(turn.response);
-            
+
           if (!hasResponse && turn && 'participant' in turn) {
             // Log turns that were filtered out but are recognized as chat turns
             logWithChannel(LogLevel.DEBUG, `Skipping turn with participant '${turn.participant}' - missing valid response array`);
           }
-          
+
           return hasResponse;
         })
         .map(turn => {
           // Safe extraction of response text with proper error handling
           const text = turn.response
             .map(part => typeof part.toString === 'function' ? part.toString() : String(part))
-            .join("");
-            
+            .join('');
+
           return new vscode.LanguageModelChatMessage(
             turn.participant === 'user' ? vscode.LanguageModelChatMessageRole.User : vscode.LanguageModelChatMessageRole.Assistant,
-            text
+            text,
           );
         });
-      
+
       logWithChannel(LogLevel.DEBUG, `Processed ${history.length} valid history turns`);
 
       // Create message sequence - inject system prompt as first assistant message
       const userMessage = new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.User, cleanedPrompt);
       const systemContextMessage = new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.Assistant, SYSTEM_PROMPT);
-      
+
       // Only include a reasonable number of history messages to avoid model context limitations
       const limitedHistory = history.slice(-5); // Only use the most recent 5 exchanges
       const messages = [systemContextMessage, ...limitedHistory, userMessage];
@@ -372,7 +372,7 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
         logWithChannel(LogLevel.INFO, 'Successfully streamed model response');
       } catch (modelError) {
         logWithChannel(LogLevel.ERROR, 'Error using language model:', modelError);
-        
+
         // Provide helpful response even when model fails, with Doc Holliday flair
         await stream.markdown(`
 I'm your huckleberry. Seems my memory's a bit foggy. Let's get back to business.
@@ -393,7 +393,7 @@ In vino veritas. In tasks, productivity.
       }
     } catch (historyError) {
       logWithChannel(LogLevel.ERROR, 'Error processing chat history:', historyError);
-      
+
       // Fall back to direct handling without history context
       await handleFallbackResponse(stream);
     }

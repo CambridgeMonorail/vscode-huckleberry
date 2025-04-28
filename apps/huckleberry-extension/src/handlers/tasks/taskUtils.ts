@@ -7,7 +7,7 @@ import * as fs from 'fs/promises';
 import { Task, TaskCollection, TaskPriority, TaskStatus } from '../../types';
 import { getConfiguration } from '../../config/index';
 import { ToolManager } from '../../services/toolManager';
-import { streamMarkdown } from '../../utils/uiHelpers';
+import { streamMarkdown as _streamMarkdown } from '../../utils/uiHelpers';
 import { logWithChannel, LogLevel } from '../../utils/debugUtils';
 
 /**
@@ -28,7 +28,7 @@ export const priorityEmoji: PriorityEmojiMap = {
   high: '🔴',
   medium: '🟠',
   low: '🟢',
-  critical: '⚠️'
+  critical: '⚠️',
 };
 
 /**
@@ -42,7 +42,7 @@ export async function getWorkspacePaths(): Promise<{
   tasksJsonPath: string;
 }> {
   const folders = vscode.workspace.workspaceFolders;
-  
+
   if (!folders || folders.length === 0) {
     throw new Error('No workspace folder is open');
   }
@@ -51,7 +51,7 @@ export async function getWorkspacePaths(): Promise<{
   const workspaceFolder = folders[0].uri.fsPath;
   const tasksDir = path.join(workspaceFolder, config.defaultTasksLocation);
   const tasksJsonPath = path.join(tasksDir, 'tasks.json');
-  
+
   return { workspaceFolder, tasksDir, tasksJsonPath };
 }
 
@@ -63,7 +63,7 @@ export async function getWorkspacePaths(): Promise<{
  */
 export async function readTasksJson(
   toolManager: ToolManager,
-  tasksJsonPath: string
+  tasksJsonPath: string,
 ): Promise<TaskCollection> {
   const readFileTool = toolManager.getTool('readFile');
 
@@ -83,12 +83,12 @@ export async function readTasksJson(
   } catch (error) {
     // Log the error but don't fail - we'll create a new structure
     logWithChannel(LogLevel.DEBUG, `Could not read tasks.json (${tasksJsonPath}), will create new structure:`, error);
-    
+
     // If file doesn't exist or is invalid, create new structure
     return {
       name: 'Project Tasks',
       description: 'Task collection for the project',
-      tasks: []
+      tasks: [],
     };
   }
 }
@@ -102,28 +102,28 @@ export async function readTasksJson(
 export async function writeTasksJson(
   toolManager: ToolManager,
   tasksJsonPath: string,
-  tasksData: TaskCollection
+  tasksData: TaskCollection,
 ): Promise<void> {
   const writeFileTool = toolManager.getTool('writeFile');
   const content = JSON.stringify(tasksData, null, 2);
-  
+
   try {
     if (writeFileTool) {
       // Use the tool if available
       await writeFileTool.execute({
         path: tasksJsonPath,
         content,
-        createParentDirectories: true
+        createParentDirectories: true,
       });
       logWithChannel(LogLevel.DEBUG, `Tasks JSON written to ${tasksJsonPath} using WriteFileTool`);
     } else {
       // Fallback to direct file system API
       logWithChannel(LogLevel.WARN, 'WriteFileTool not found, using fs API directly');
-      
+
       // Ensure directory exists
       const dirPath = path.dirname(tasksJsonPath);
       await vscode.workspace.fs.createDirectory(vscode.Uri.file(dirPath));
-      
+
       // Write the file
       await fs.writeFile(tasksJsonPath, content, 'utf8');
       logWithChannel(LogLevel.DEBUG, `Tasks JSON written to ${tasksJsonPath} using fs API`);
@@ -168,7 +168,7 @@ function findHighestTaskNumber(tasks: Task[]): number {
       highest = taskNumber;
     }
   }
-  
+
   return highest;
 }
 
@@ -203,7 +203,7 @@ export function createTaskObject(
   id: string,
   title: string,
   priority: TaskPriority,
-  additionalProps: Partial<Task> = {}
+  additionalProps: Partial<Task> = {},
 ): Task {
   return {
     id,
@@ -214,7 +214,7 @@ export function createTaskObject(
     completed: false,
     createdAt: new Date().toISOString(),
     tags: [],
-    ...additionalProps
+    ...additionalProps,
   };
 }
 
@@ -226,21 +226,21 @@ export function createTaskObject(
  */
 export function getTaskById(
   tasksData: TaskCollection,
-  taskId: string
+  taskId: string,
 ): Task | undefined {
   // Normalize the task ID for comparison (uppercase)
   const normalizedTaskId = taskId.toUpperCase();
-  
+
   // Find the task with the matching ID
   return tasksData.tasks.find(task => task.id.toUpperCase() === normalizedTaskId);
 }
 
 /**
  * Checks and recommends agent mode usage in chat responses if applicable
- * @param stream The chat response stream
+ * @param _stream The chat response stream
  * @returns Promise resolving when recommendation is added (if needed)
  */
-export async function recommendAgentModeInChat(stream: vscode.ChatResponseStream): Promise<void> {
+export async function recommendAgentModeInChat(_stream: vscode.ChatResponseStream): Promise<void> {
   try {
     // Temporarily disabled based on user feedback that these notifications are annoying
     // Keep implementation for potential future re-enablement
@@ -257,7 +257,7 @@ export async function recommendAgentModeInChat(stream: vscode.ChatResponseStream
       `);
     }
     */
-    
+
     // Just log that the recommendation was suppressed
     console.debug('Agent mode chat recommendation suppressed based on user feedback');
   } catch (error) {

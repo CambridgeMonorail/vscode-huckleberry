@@ -88,7 +88,7 @@ export class BreakTaskTool extends BaseTool<BreakTaskInput> {
           // Just log button info in messages
           messages.push(`[Button: ${command.title}]`);
         },
-        reference: (value: vscode.Uri | vscode.Location, iconPath?: vscode.IconPath) => {
+        reference: (value: vscode.Uri | vscode.Location, _iconPath?: vscode.IconPath) => {
           // Just capture the reference in our messages
           const location = value instanceof vscode.Uri ? 
             value.toString() : 
@@ -102,7 +102,7 @@ export class BreakTaskTool extends BaseTool<BreakTaskInput> {
         push: (part: vscode.ChatResponsePart) => {
           // Capture the generic part in our messages
           messages.push(`[Response part: ${part.constructor.name}]`);
-        }
+        },
       };
       
       // Run the handler with our fake prompt and stream
@@ -120,11 +120,11 @@ export class BreakTaskTool extends BaseTool<BreakTaskInput> {
   /**
    * Handles the break task request from a language model
    * @param options The invocation options containing input parameters
-   * @param token Cancellation token
+   * @param _token Cancellation token
    */
   async invoke(
     options: vscode.LanguageModelToolInvocationOptions<BreakTaskInput>,
-    token: vscode.CancellationToken
+    _token: vscode.CancellationToken,
   ): Promise<string> {
     const input = options.input;
     
@@ -153,7 +153,7 @@ export class BreakTaskTool extends BaseTool<BreakTaskInput> {
           // Just log button info in messages
           messages.push(`[Button: ${command.title}]`);
         },
-        reference: (value: vscode.Uri | vscode.Location, iconPath?: vscode.IconPath) => {
+        reference: (value: vscode.Uri | vscode.Location, _iconPath?: vscode.IconPath) => {
           // Just capture the reference in our messages
           const location = value instanceof vscode.Uri ? 
             value.toString() : 
@@ -167,7 +167,7 @@ export class BreakTaskTool extends BaseTool<BreakTaskInput> {
         push: (part: vscode.ChatResponsePart) => {
           // Capture the generic part in our messages
           messages.push(`[Response part: ${part.constructor.name}]`);
-        }
+        },
       };
       
       // Run the handler with our fake prompt and stream

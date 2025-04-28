@@ -52,10 +52,28 @@ jobs:
           cache: 'pnpm'
           
       - name: Install dependencies
-        run: pnpm install
+        run: |
+          pnpm install
+          echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
         
       - name: Build Docusaurus site
-        run: pnpm exec nx build huckleberry-docs
+        run: |
+          echo "### 🏗️ Building Documentation Site" >> $GITHUB_STEP_SUMMARY
+          echo "Branch: ${{ github.event.inputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if pnpm exec nx build huckleberry-docs; then
+            echo "✅ Documentation site built successfully" >> $GITHUB_STEP_SUMMARY
+            
+            # Get build statistics
+            PAGES_COUNT=$(find apps/huckleberry-docs/build -type f -name "*.html" | wc -l)
+            echo "📊 Build Statistics:" >> $GITHUB_STEP_SUMMARY
+            echo "- Total Pages: $PAGES_COUNT" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Documentation build failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
         env:
           GITHUB_ACTIONS: 'true'
         
@@ -70,3 +88,20 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "## 📘 Documentation Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependencies Installation | ${{ job.steps['Install dependencies'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation Build | ${{ job.steps['Build Docusaurus site'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pages Configuration | ${{ job.steps['Setup Pages'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact Upload | ${{ job.steps['Upload artifact'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployment | ${{ job.steps['Deploy to GitHub Pages'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ job.steps['Deploy to GitHub Pages'].outcome }}" == "success" ]]; then
+            echo "🌐 **Site URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          fi

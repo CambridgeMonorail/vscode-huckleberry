@@ -22,8 +22,18 @@
   ],
   "github.copilot.chat.codesearch.enabled": true,
   "github.copilot.chat.agent.thinkingTool": true,
-  
-  // ESLint configuration for flat config support
   "eslint.enable": true,
-  "eslint.experimental.useFlatConfig": true
+  "eslint.experimental.useFlatConfig": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.format.enable": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint"
 }

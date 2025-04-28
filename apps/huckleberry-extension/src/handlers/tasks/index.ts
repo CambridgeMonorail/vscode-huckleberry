@@ -15,12 +15,12 @@ export { handleNextTaskRequest } from './nextTaskHandler';
 export { handleHelpRequest } from './helpHandler';
 
 // Re-export utility functions that might be useful for other modules
-export { 
+export {
   priorityEmoji,
   recommendAgentModeInChat,
   getWorkspacePaths,
   readTasksJson,
   writeTasksJson,
   generateTaskId,
-  createTaskObject
+  createTaskObject,
 } from './taskUtils';

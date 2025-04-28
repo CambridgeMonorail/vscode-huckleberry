@@ -233,7 +233,7 @@ If you'd still like to create subtasks, try providing more details about the tas
     }
 
     // Get the write file tool if markdown template is used
-    const writeFileTool = config.taskFileTemplate === 'markdown' ? 
+    const writeFileTool = config.taskFileTemplate === 'markdown' ?
       toolManager.getTool('writeFile') : null;
 
     for (const subtask of suggestedSubtasks) {
@@ -259,7 +259,7 @@ If you'd still like to create subtasks, try providing more details about the tas
       parentTask.subtasks.push(subtaskId);
 
       createdSubtasks.push(newSubtask);
-      
+
       // Create markdown file for the subtask if using markdown template
       if (config.taskFileTemplate === 'markdown' && writeFileTool) {
         const taskFilePath = path.join(workspaceFolder, config.defaultTasksLocation, `${subtaskId}.md`);
@@ -283,7 +283,7 @@ ${subtask.description}
           await writeFileTool.execute({
             path: taskFilePath,
             content: taskContent,
-            createParentDirectories: true
+            createParentDirectories: true,
           });
         } catch (error) {
           console.warn(`Warning: Could not create markdown file for subtask ${subtaskId}: ${error}`);

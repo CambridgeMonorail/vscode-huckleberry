@@ -4,15 +4,15 @@
  */
 
 // Re-export all handlers from the tasks module
-export { 
+export {
   handleInitializeTaskTracking,
   handleCreateTaskRequest,
   handleScanTodosRequest,
-  handleMarkTaskDoneRequest, 
+  handleMarkTaskDoneRequest,
   handleChangeTaskPriorityRequest,
-  handlePriorityTaskQuery, 
+  handlePriorityTaskQuery,
   handleReadTasksRequest,
   handleParseRequirementsRequest,
   handlePrioritizeTasksRequest,
-  handleNextTaskRequest
+  handleNextTaskRequest,
 } from './tasks';

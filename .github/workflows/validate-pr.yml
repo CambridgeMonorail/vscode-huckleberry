@@ -1,0 +1,82 @@
+name: Validate PR
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
+          
+      - name: Setup pnpm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: |
+          pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
+          echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
+        
+      - name: Lint
+        run: |
+          echo "### 🔍 Linting Results" >> $GITHUB_STEP_SUMMARY
+          if pnpm run lint:all; then
+            echo "✅ No linting issues found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Linting issues detected" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        
+      - name: Type check
+        run: |
+          echo "### 📘 TypeScript Type Checking" >> $GITHUB_STEP_SUMMARY
+          if pnpm run typecheck:all; then
+            echo "✅ No type errors found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Type errors detected" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        
+      - name: Build
+        run: |
+          echo "### 🏗️ Build Process" >> $GITHUB_STEP_SUMMARY
+          if pnpm run build:all; then
+            echo "✅ Build completed successfully" >> $GITHUB_STEP_SUMMARY
+            echo "Built projects:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            pnpm exec nx show projects >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Validation Summary
+        if: always()
+        run: |
+          echo "## 📊 Validation Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependencies | ✅ Installed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ job.steps.Lint.outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Check | ${{ job.steps.Type check.outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ job.steps.Build.outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY

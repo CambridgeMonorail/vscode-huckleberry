@@ -14,29 +14,29 @@ import { logWithChannel, LogLevel } from '../../utils/debugUtils';
  * @param toolManager The tool manager instance
  */
 export async function handleHelpRequest(
-  prompt: string, 
-  stream: vscode.ChatResponseStream, 
-  toolManager: ToolManager
+  prompt: string,
+  stream: vscode.ChatResponseStream,
+  _toolManager: ToolManager,
 ): Promise<void> {
   console.log('❓ Processing help request:', prompt);
   await showProgress(stream);
-  
+
   // Log the help request
   logWithChannel(LogLevel.INFO, 'Help request received', {
-    prompt
+    prompt,
   });
-  
+
   // Extract any specific feature inquiries from the prompt
   const lowerPrompt = prompt.toLowerCase();
   const isSpecificFeatureRequest = checkForSpecificFeatureRequest(lowerPrompt);
-  
+
   // Response with feature explanation based on the prompt
   if (isSpecificFeatureRequest.isSpecific) {
     await respondWithSpecificFeatureHelp(stream, isSpecificFeatureRequest.feature);
   } else {
     await respondWithGeneralHelp(stream);
   }
-  
+
   // Recommend agent mode if applicable
   await recommendAgentModeInChat(stream);
 }
@@ -46,8 +46,8 @@ export async function handleHelpRequest(
  * @param prompt The lowercase prompt to check
  * @returns Object indicating if a specific feature was requested and which one
  */
-function checkForSpecificFeatureRequest(prompt: string): { 
-  isSpecific: boolean; 
+function checkForSpecificFeatureRequest(prompt: string): {
+  isSpecific: boolean;
   feature: string | null;
 } {
   // Define feature keywords to look for
@@ -60,16 +60,16 @@ function checkForSpecificFeatureRequest(prompt: string): {
     'requirements-parsing': ['parse requirement', 'requirement document', 'parse doc', 'extract task'],
     'task-decomposition': ['subtask', 'break down', 'decompose task', 'split task'],
     'next-task': ['next task', 'what to work on', 'suggest task', 'recommend task'],
-    'task-initialization': ['initialize', 'initialise', 'setup', 'set up', 'start tracking']
+    'task-initialization': ['initialize', 'initialise', 'setup', 'set up', 'start tracking'],
   };
-  
+
   // Check if the prompt matches any feature keywords
   for (const [feature, keywords] of Object.entries(featureKeywords)) {
     if (keywords.some(keyword => prompt.includes(keyword))) {
       return { isSpecific: true, feature };
     }
   }
-  
+
   return { isSpecific: false, feature: null };
 }
 
@@ -80,7 +80,7 @@ function checkForSpecificFeatureRequest(prompt: string): {
  */
 async function respondWithSpecificFeatureHelp(
   stream: vscode.ChatResponseStream,
-  feature: string | null
+  feature: string | null,
 ): Promise<void> {
   if (feature === null) {
     // If feature is null, fall back to general help
@@ -104,7 +104,7 @@ Tasks are stored in your workspace's \`tasks\` directory and tracked in \`tasks.
 **Agent Mode Tool**: \`create_task\` - Create tasks directly via GitHub Copilot.
       `);
       break;
-      
+
     case 'task-listing':
       await streamMarkdown(stream, `
 ## Task Listing
@@ -121,7 +121,7 @@ Tasks will be displayed with their ID, description, priority, and status.
 **Agent Mode Tool**: \`list_tasks\` - List tasks with optional priority and status filters.
       `);
       break;
-      
+
     case 'task-completion':
       await streamMarkdown(stream, `
 ## Task Completion
@@ -135,7 +135,7 @@ I can mark tasks as completed:
 **Agent Mode Tool**: \`mark_task_done\` - Mark tasks as complete.
       `);
       break;
-      
+
     case 'task-priority':
       await streamMarkdown(stream, `
 ## Task Priority Management
@@ -149,7 +149,7 @@ I can set and update task priorities:
 **Agent Mode Tool**: \`update_task_priority\` - Update the priority of a task.
       `);
       break;
-      
+
     case 'todo-scanning':
       await streamMarkdown(stream, `
 ## TODO Comment Scanning
@@ -164,7 +164,7 @@ I can scan your codebase for TODO comments and convert them to tasks:
 **Agent Mode Tool**: \`scan_todos\` - Scan codebase for TODO comments.
       `);
       break;
-      
+
     case 'requirements-parsing':
       await streamMarkdown(stream, `
 ## Requirements Document Parsing
@@ -177,7 +177,7 @@ I can parse requirements documents and create tasks:
 - **Task conversion**: Converts bullet points, numbered lists, and sections to tasks
       `);
       break;
-      
+
     case 'task-decomposition':
       await streamMarkdown(stream, `
 ## Task Decomposition
@@ -189,7 +189,7 @@ I can break down complex tasks into smaller subtasks:
 - **Hierarchy**: Task hierarchy is reflected in tasks.json
       `);
       break;
-      
+
     case 'next-task':
       await streamMarkdown(stream, `
 ## Next Task Recommendation
@@ -204,7 +204,7 @@ I can recommend the next task for you to work on:
 **Agent Mode Tool**: \`next_task\` - Get a recommendation for which task to work on next.
       `);
       break;
-      
+
     case 'task-initialization':
       await streamMarkdown(stream, `
 ## Task Tracking Initialization
@@ -218,7 +218,7 @@ I can set up task tracking in your workspace:
 **Agent Mode Tool**: \`initialize_tracking\` or \`initialise_tracking\` - Set up task tracking.
       `);
       break;
-      
+
     default:
       // Fallback to general help
       await respondWithGeneralHelp(stream);
@@ -230,7 +230,7 @@ I can set up task tracking in your workspace:
  * @param stream The chat response stream
  */
 async function respondWithGeneralHelp(
-  stream: vscode.ChatResponseStream
+  stream: vscode.ChatResponseStream,
 ): Promise<void> {
   await streamMarkdown(stream, `
 # Huckleberry Task Manager Help

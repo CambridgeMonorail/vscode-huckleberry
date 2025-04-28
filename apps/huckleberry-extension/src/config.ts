@@ -5,7 +5,7 @@ import { taskmanagerConfig, TaskPriority } from './types';
 export const DEFAULT_CONFIG: taskmanagerConfig = {
   defaultTasksLocation: 'tasks',
   taskFileTemplate: 'markdown',
-  defaultTaskPriority: 'medium'
+  defaultTaskPriority: 'medium',
 };
 
 /**
@@ -15,18 +15,18 @@ export const DEFAULT_CONFIG: taskmanagerConfig = {
 export function getConfiguration(): taskmanagerConfig {
   console.log('⚙️ Loading Huckleberry configuration...');
   const config = vscode.workspace.getConfiguration('huckleberry.taskmanager');
-  
+
   const defaultPriority = (config.get('defaultTaskPriority') || DEFAULT_CONFIG.defaultTaskPriority) as string;
   const taskPriority = defaultPriority as TaskPriority;
-  
+
   const finalConfig: taskmanagerConfig = {
     defaultTasksLocation: config.get('defaultTasksLocation') as string || DEFAULT_CONFIG.defaultTasksLocation,
     taskFileTemplate: (config.get('taskFileTemplate') || DEFAULT_CONFIG.taskFileTemplate) as 'markdown' | 'json',
     defaultTaskPriority: taskPriority,
     defaultDueDate: config.get('defaultDueDate') || 'none',
-    customDueDateDays: config.get('customDueDateDays') || 0
+    customDueDateDays: config.get('customDueDateDays') || 0,
   };
-  
+
   console.log('📋 Loaded configuration:', finalConfig);
   return finalConfig;
 }
@@ -36,6 +36,8 @@ export const SYSTEM_PROMPT = `You are Huckleberry, a specialized assistant that 
 Your responsibilities include:
 - Helping users track their tasks and project status
 - Creating, updating, and organizing tasks
+- Assisting with task prioritization and due dates
+- Helping users enrich their tasks with additional information
 - Providing summaries and reports on project progress
 - Offering suggestions for task prioritization
 

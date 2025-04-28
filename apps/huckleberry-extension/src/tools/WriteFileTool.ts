@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { BaseTool } from './BaseTool';
+import { BaseTool, BaseToolParams } from './BaseTool';
 
-interface WriteFileParams {
+interface WriteFileParams extends BaseToolParams {
   path: string;
   content: string;
   createParentDirectories?: boolean;
@@ -17,10 +17,10 @@ export class WriteFileTool extends BaseTool<WriteFileParams> {
   }
 
   public async execute(params: WriteFileParams): Promise<void> {
-    this.debug('Writing file', { 
+    this.debug('Writing file', {
       path: params.path,
       contentLength: params.content.length,
-      createDirs: params.createParentDirectories
+      createDirs: params.createParentDirectories,
     });
 
     try {
@@ -40,7 +40,7 @@ export class WriteFileTool extends BaseTool<WriteFileParams> {
 
       this.debug('File written successfully', {
         path: params.path,
-        bytesWritten: data.byteLength
+        bytesWritten: data.byteLength,
       });
     } catch (error) {
       this.logError(error, `Failed to write file: ${params.path}`);

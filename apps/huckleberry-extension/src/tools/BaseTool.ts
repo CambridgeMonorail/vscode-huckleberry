@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 
 /**
- * Base interface for tool parameters
+ * Base interface for tool parameters that all tools must extend
  */
 export interface BaseToolParams {
-  // Common parameters can be defined here
+  [key: string]: unknown;
 }
 
 /**
  * Base class for language model tools that can be used by the Task Manager
  */
-export abstract class BaseTool<T extends BaseToolParams> {
+export abstract class BaseTool<T extends BaseToolParams = BaseToolParams> {
   /**
    * The unique identifier for this tool
    */
@@ -58,7 +58,7 @@ export abstract class BaseTool<T extends BaseToolParams> {
       message,
       { modal: true },
       'Yes',
-      'No'
+      'No',
     );
     return result === 'Yes';
   }

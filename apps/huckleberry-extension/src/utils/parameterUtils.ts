@@ -2,7 +2,6 @@
  * Utilities for handling command parameters and user input
  */
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { TaskPriority } from '../types';
 import { getWorkspacePaths, readTasksJson, priorityEmoji } from '../handlers/tasks/taskUtils';
 import { ToolManager } from '../services/toolManager';
@@ -12,18 +11,18 @@ import { logWithChannel, LogLevel } from './debugUtils';
  * Represents a task quick pick item with additional metadata
  */
 interface TaskQuickPickItem extends vscode.QuickPickItem {
-  taskId: string;
+  taskId: string,
 }
 
 /**
  * Represents the result of task selection with parameter collection
  */
 interface TaskSelectionResult {
-  taskId?: string;
-  priority?: TaskPriority;
-  pattern?: string;
-  filePath?: string;
-  topic?: string;
+  taskId?: string,
+  priority?: TaskPriority,
+  pattern?: string,
+  filePath?: string,
+  topic?: string,
 }
 
 /**
@@ -52,14 +51,14 @@ export async function promptForTaskSelection(toolManager: ToolManager): Promise<
         label: `${task.id}`,
         description: task.title,
         detail: `${priorityIcon} ${task.priority || 'medium'} priority${task.completed ? ' (completed)' : ''}`,
-        taskId: task.id
+        taskId: task.id,
       };
     });
     
     // Show quick pick to select a task
     const selected = await vscode.window.showQuickPick(items, {
       placeHolder: 'Select a task',
-      title: 'Huckleberry: Select Task'
+      title: 'Huckleberry: Select Task',
     });
     
     return selected?.taskId;
@@ -79,12 +78,12 @@ export async function promptForPrioritySelection(): Promise<TaskPriority | undef
     { label: `${priorityEmoji.critical} Critical`, description: 'Urgent issues that need immediate attention' },
     { label: `${priorityEmoji.high} High`, description: 'Important tasks that should be done soon' },
     { label: `${priorityEmoji.medium} Medium`, description: 'Standard priority tasks' },
-    { label: `${priorityEmoji.low} Low`, description: 'Tasks that can wait' }
+    { label: `${priorityEmoji.low} Low`, description: 'Tasks that can wait' },
   ];
   
   const selected = await vscode.window.showQuickPick(items, {
     placeHolder: 'Select a priority level',
-    title: 'Huckleberry: Select Priority'
+    title: 'Huckleberry: Select Priority',
   });
   
   if (!selected) {
@@ -96,7 +95,7 @@ export async function promptForPrioritySelection(): Promise<TaskPriority | undef
     '⚠️ Critical': 'critical',
     '🔴 High': 'high',
     '🟠 Medium': 'medium',
-    '🟢 Low': 'low'
+    '🟢 Low': 'low',
   };
   
   return priorityMap[selected.label] as TaskPriority;
@@ -128,12 +127,12 @@ export async function promptForFilePattern(): Promise<string | undefined> {
     { label: 'JavaScript Files', description: '**/*.js', detail: 'Scan all JavaScript files' },
     { label: 'React Files', description: '**/*.{jsx,tsx}', detail: 'Scan all React component files' },
     { label: 'Python Files', description: '**/*.py', detail: 'Scan all Python files' },
-    { label: 'Custom Pattern', description: 'Enter a custom file pattern' }
+    { label: 'Custom Pattern', description: 'Enter a custom file pattern' },
   ];
   
   const selected = await vscode.window.showQuickPick(options, {
     placeHolder: 'Select files to scan',
-    title: 'Huckleberry: Scan Files'
+    title: 'Huckleberry: Scan Files',
   });
   
   if (!selected) {
@@ -144,7 +143,7 @@ export async function promptForFilePattern(): Promise<string | undefined> {
     return await vscode.window.showInputBox({
       prompt: 'Enter a glob pattern for files to scan (e.g., src/**/*.ts)',
       placeHolder: '**/*.{ts,js}',
-      title: 'Huckleberry: Enter File Pattern'
+      title: 'Huckleberry: Enter File Pattern',
     });
   } else if (selected.label === 'All Files') {
     return undefined;  // No pattern means scan all files
@@ -164,14 +163,14 @@ export async function promptForDocumentSelection(): Promise<string | undefined> 
       'Markdown': ['md', 'markdown'], 
       'Text': ['txt'], 
       'HTML': ['html', 'htm'],
-      'All Files': ['*']
+      'All Files': ['*'],
     };
     
     // Show open dialog to select a file
     const fileUri = await vscode.window.showOpenDialog({
       canSelectMany: false,
       openLabel: 'Select Requirements Document',
-      filters
+      filters,
     });
     
     if (fileUri && fileUri.length > 0) {
@@ -201,12 +200,12 @@ export async function promptForHelpTopic(): Promise<string | undefined> {
     { label: 'Task Decomposition', value: 'task-decomposition', description: 'Breaking tasks into subtasks' },
     { label: 'Next Task', value: 'next-task', description: 'Getting task recommendations' },
     { label: 'Task Initialization', value: 'task-initialization', description: 'Setting up task tracking' },
-    { label: 'General Help', value: 'general', description: 'Overview of all features' }
+    { label: 'General Help', value: 'general', description: 'Overview of all features' },
   ];
   
   const selected = await vscode.window.showQuickPick(topics, {
     placeHolder: 'Select a help topic',
-    title: 'Huckleberry: Help Topics'
+    title: 'Huckleberry: Help Topics',
   });
   
   return selected ? selected.value : undefined;

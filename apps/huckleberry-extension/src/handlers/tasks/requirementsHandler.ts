@@ -12,7 +12,7 @@ import {
   writeTasksJson,
   generateTaskId,
   priorityEmoji,
-  createTaskObject
+  createTaskObject,
 } from './taskUtils';
 
 /**
@@ -23,11 +23,11 @@ import {
 function extractFilePath(prompt: string): string | null {
   // Try to match file path format
   const filePathMatch = prompt.match(/parse\s+['"]?([^'"]+?)['"]?\s+and\s+create\s+tasks/i);
-  
+
   if (filePathMatch && filePathMatch[1]) {
     return filePathMatch[1].trim();
   }
-  
+
   return null;
 }
 
@@ -39,33 +39,22 @@ function extractFilePath(prompt: string): string | null {
 function parseRequirements(content: string): Array<{ description: string; priority: TaskPriority }> {
   const tasks: Array<{ description: string; priority: TaskPriority }> = [];
   const lines = content.split('\n');
-  
+
   // Pattern matching for common requirement formats
   const requirementPatterns = [
-    // "- [ ]" or "* [ ]" checkbox format
     { regex: /^[\s-*]*\[\s?\]\s+(.+)/i, priority: 'medium' as TaskPriority },
-    
-    // "REQ-XXX:" format
     { regex: /^REQ-\d+:\s*(.+)/i, priority: 'high' as TaskPriority },
-    
-    // "MUST:" or "SHOULD:" or "MAY:" format (RFC style)
     { regex: /^MUST:\s*(.+)/i, priority: 'critical' as TaskPriority },
     { regex: /^SHOULD:\s*(.+)/i, priority: 'medium' as TaskPriority },
     { regex: /^MAY:\s*(.+)/i, priority: 'low' as TaskPriority },
-    
-    // Numbered or bulleted list items that look like requirements
     { regex: /^[\s]*[\d.•*-]+\s+(.*\b(should|must|will|shall)\b.*)/i, priority: 'medium' as TaskPriority },
-    
-    // Headers with requirement-like language
     { regex: /^#+\s+(.*\b(implement|create|add|build)\b.*)/i, priority: 'medium' as TaskPriority },
-    
-    // Priority-tagged items like [HIGH] or [MEDIUM]
     { regex: /^\[\s*high\s*\]\s*(.+)/i, priority: 'high' as TaskPriority },
     { regex: /^\[\s*medium\s*\]\s*(.+)/i, priority: 'medium' as TaskPriority },
     { regex: /^\[\s*low\s*\]\s*(.+)/i, priority: 'low' as TaskPriority },
-    { regex: /^\[\s*critical\s*\]\s*(.+)/i, priority: 'critical' as TaskPriority }
+    { regex: /^\[\s*critical\s*\]\s*(.+)/i, priority: 'critical' as TaskPriority },
   ];
-  
+
   // Process each line for potential requirements
   for (const line of lines) {
     for (const pattern of requirementPatterns) {
@@ -76,21 +65,21 @@ function parseRequirements(content: string): Array<{ description: string; priori
         if (description && description.length > 5) {
           tasks.push({
             description,
-            priority: pattern.priority
+            priority: pattern.priority,
           });
         }
         break; // Stop after first match for this line
       }
     }
   }
-  
+
   return tasks;
 }
 
 /**
  * Interface for requirement parsed from the language model
  */
-interface ParsedRequirement {
+interface _ParsedRequirement {
   description: string;
   priority?: string;
   [key: string]: unknown;
@@ -100,12 +89,12 @@ interface ParsedRequirement {
  * Uses VS Code Language Model API to extract requirements from document content 
  * when deterministic parsing doesn't find any requirements
  * @param content The document content to parse
- * @param toolManager The tool manager to potentially access tools
+ * @param _toolManager The tool manager to potentially access tools
  * @returns Promise resolving to array of extracted requirements with descriptions and priorities
  */
 async function parseRequirementsWithLanguageModel(
   content: string,
-  toolManager?: ToolManager
+  _toolManager?: ToolManager,
 ): Promise<Array<{ description: string; priority: TaskPriority }>> {
   try {
     // Check if VS Code Language Model API is available
@@ -141,7 +130,7 @@ If priority isn't explicitly mentioned, infer it from the language and context.
     try {
       // Select a language model - using the correct selector structure
       const [model] = await vscode.lm.selectChatModels();
-      
+
       if (!model) {
         console.log('No language model available');
         return [];
@@ -150,16 +139,16 @@ If priority isn't explicitly mentioned, infer it from the language and context.
       // Create chat messages using the static methods instead of constructor with string roles
       const messages = [
         vscode.LanguageModelChatMessage.Assistant(systemPrompt),
-        vscode.LanguageModelChatMessage.User(content)
+        vscode.LanguageModelChatMessage.User(content),
       ];
 
       // Send request to the language model with justification in the correct place
       const result = await model.sendRequest(
-        messages, 
+        messages,
         {
-          justification: 'Huckleberry needs to analyze requirements document to extract actionable tasks'
-        }, 
-        new vscode.CancellationTokenSource().token
+          justification: 'Huckleberry needs to analyze requirements document to extract actionable tasks',
+        },
+        new vscode.CancellationTokenSource().token,
       );
 
       // Parse the response as JSON
@@ -169,32 +158,35 @@ If priority isn't explicitly mentioned, infer it from the language and context.
       }
 
       // Extract JSON from the response (handling potential markdown code blocks)
-      const jsonMatch = resultText.match(/```(?:json)?\s*([\s\S]+?)\s*```/) || 
-                       resultText.match(/\[\s*\{\s*"description"/);
-      
-      let jsonContent = jsonMatch ? 
-        (jsonMatch[1] || resultText) : 
+      const jsonMatch = resultText.match(/```(?:json)?\s*([\s\S]+?)\s*```/) ||
+        resultText.match(/\[\s*\{\s*"description"/);
+
+      let jsonContent = jsonMatch ?
+        (jsonMatch[1] || resultText) :
         resultText;
-      
+
       // Clean up the JSON content
       if (!jsonContent.trim().startsWith('[')) {
         jsonContent = `[${jsonContent}]`;
       }
-      
+
       // Parse the JSON
       const parsedRequirements = JSON.parse(jsonContent);
 
       // Validate and normalize the results
       return parsedRequirements
-        .filter((req: any): boolean => {
-          return !!req && !!req.description && typeof req.description === 'string';
+        .filter((req: Record<string, unknown>): boolean => {
+          return !!req && !!req['description'] && typeof req['description'] === 'string';
         })
-        .map((req: any): { description: string; priority: TaskPriority } => {
+        .map((req: Record<string, unknown>): { description: string; priority: TaskPriority } => {
+          const description = req['description'] as string;
+          const priority = req['priority'] as string | undefined;
+
           return {
-            description: req.description.trim(),
-            priority: (req.priority && ['critical', 'high', 'medium', 'low'].includes(req.priority)) 
-              ? req.priority as TaskPriority 
-              : 'medium' as TaskPriority
+            description: description.trim(),
+            priority: (priority && typeof priority === 'string' && ['critical', 'high', 'medium', 'low'].includes(priority))
+              ? priority as TaskPriority
+              : 'medium' as TaskPriority,
           };
         })
         .filter((req: { description: string; priority: TaskPriority }): boolean => {
@@ -226,22 +218,22 @@ If priority isn't explicitly mentioned, infer it from the language and context.
 export async function handleParseRequirementsRequest(
   prompt: string,
   stream: vscode.ChatResponseStream,
-  toolManager: ToolManager
+  toolManager: ToolManager,
 ): Promise<void> {
   console.log('📝 Parsing requirements document...');
   await showProgress(stream);
   await streamMarkdown(stream, `I'm your huckleberry. I'll parse those requirements faster than Doc can count cards.`);
-  
+
   try {
     const { workspaceFolder, tasksJsonPath } = await getWorkspacePaths();
-    const config = getConfiguration();
-    
+    const _config = getConfiguration();
+
     // Get the tools we need
     const readFileTool = toolManager.getTool('readFile');
     if (!readFileTool) {
       throw new Error('Required tools not found');
     }
-    
+
     // Extract file path from prompt
     const filePath = extractFilePath(prompt);
     if (!filePath) {
@@ -252,24 +244,24 @@ I need to know which file to parse, darlin'. Try asking like this:
       `);
       return;
     }
-    
+
     // Resolve file path (absolute or workspace-relative)
-    const absoluteFilePath = filePath.startsWith('/') || filePath.includes(':') 
-      ? filePath 
+    const absoluteFilePath = filePath.startsWith('/') || filePath.includes(':')
+      ? filePath
       : vscode.Uri.joinPath(vscode.Uri.file(workspaceFolder), filePath).fsPath;
-    
+
     await streamMarkdown(stream, `Parsing requirements from: \`${filePath}\``);
-    
+
     // Read file content
     let fileContent: string;
     try {
       // Check if file exists first
       await vscode.workspace.fs.stat(vscode.Uri.file(absoluteFilePath));
-      
+
       // Read file using vscode API
       const content = await vscode.workspace.fs.readFile(vscode.Uri.file(absoluteFilePath));
       fileContent = new TextDecoder().decode(content);
-    } catch (error) {
+    } catch {
       await streamMarkdown(stream, `
 I couldn't find or read the file \`${filePath}\`. Make sure the file exists and try again.
       
@@ -277,19 +269,19 @@ You might want to check the path and file format. I work well with markdown, tex
       `);
       return;
     }
-    
+
     // Parse requirements from content using deterministic approach
     let extractedRequirements = parseRequirements(fileContent);
-    
+
     // If deterministic parsing didn't find anything, try the language model approach
     if (extractedRequirements.length === 0) {
       await streamMarkdown(stream, `
 Regular parsing didn't find standard requirement formats. Trying AI-powered extraction...
       `);
-      
+
       extractedRequirements = await parseRequirementsWithLanguageModel(fileContent, toolManager);
     }
-    
+
     if (extractedRequirements.length === 0) {
       await streamMarkdown(stream, `
 I've read through \`${filePath}\`, but I couldn't identify any requirements to convert to tasks.
@@ -304,58 +296,58 @@ You might need to format your requirements more explicitly or create tasks manua
       `);
       return;
     }
-    
+
     await streamMarkdown(stream, `
 Found ${extractedRequirements.length} potential requirements. Creating tasks for each one...
     `);
-    
+
     // Read existing tasks.json or create new one
     const tasksData = await readTasksJson(toolManager, tasksJsonPath);
-    
+
     // Map extracted requirements to tasks
     const createdTasks: Task[] = [];
-    
+
     for (const req of extractedRequirements) {
       // Generate task ID sequentially from existing tasks
       const taskId = generateTaskId(tasksData);
-      
+
       // Create new task - using the correct function signature
       const newTask = createTaskObject(
-        taskId, 
-        req.description, 
+        taskId,
+        req.description,
         req.priority,
         {
           description: `Task created from requirements in ${filePath}`,
           source: {
             file: filePath,
-            line: 1 // Default to line 1 since we don't track specific line numbers during parsing
+            line: 1, // Default to line 1 since we don't track specific line numbers during parsing
           },
-          tags: ['requirement']
-        }
+          tags: ['requirement'],
+        },
       );
-      
+
       // Add to tasks collection
       tasksData.tasks.push(newTask);
       createdTasks.push(newTask);
     }
-    
+
     // Write back to tasks.json
     await writeTasksJson(toolManager, tasksJsonPath, tasksData);
-    
+
     // Group tasks by priority for reporting
     const tasksByPriority: Record<string, Task[]> = {
       critical: [],
       high: [],
       medium: [],
-      low: []
+      low: [],
     };
-    
+
     createdTasks.forEach(task => {
       if (task.priority) {
         tasksByPriority[task.priority].push(task);
       }
     });
-    
+
     // Send success message with Doc Holliday flair
     await streamMarkdown(stream, `
 I'm your huckleberry. I've found ${extractedRequirements.length} requirements and created tasks for each one.

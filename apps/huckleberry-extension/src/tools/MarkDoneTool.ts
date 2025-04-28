@@ -4,6 +4,17 @@ import * as path from 'path';
 import { BaseTool, BaseToolParams } from './BaseTool';
 
 /**
+ * Represents a task item in JSON format
+ */
+interface TaskItem {
+  id?: string | number;
+  title?: string;
+  description?: string;
+  completed?: boolean;
+  [key: string]: unknown;
+}
+
+/**
  * Parameters for the MarkDoneTool
  */
 export interface MarkDoneToolParams extends BaseToolParams {
@@ -49,7 +60,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
     this.debug('Executing mark task operation', { 
       filePath: params.filePath,
       taskIdentifier: params.taskIdentifier,
-      isDone: params.isDone
+      isDone: params.isDone,
     });
 
     try {
@@ -65,11 +76,11 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       }
       
       // Read the file content
-      let content = await fs.promises.readFile(resolvedPath, 'utf-8');
+      const content = await fs.promises.readFile(resolvedPath, 'utf-8');
       
       this.debug('Read file content', {
         filePath: resolvedPath,
-        contentLength: content.length
+        contentLength: content.length,
       });
 
       // Determine file type based on extension
@@ -93,7 +104,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
           success: false, 
           filePath, 
           taskIdentifier, 
-          isDone 
+          isDone, 
         };
       }
       
@@ -106,7 +117,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
           success: false, 
           filePath, 
           taskIdentifier, 
-          isDone 
+          isDone, 
         };
       }
       
@@ -116,7 +127,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       this.debug('Task marked successfully', {
         filePath: resolvedPath,
         taskIdentifier,
-        isDone
+        isDone,
       });
 
       this.showInfo(`Successfully ${isDone ? 'marked task as done' : 'marked task as undone'}: ${taskIdentifier}`);
@@ -124,7 +135,7 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
         success: true, 
         filePath, 
         taskIdentifier, 
-        isDone 
+        isDone, 
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -176,11 +187,11 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       if (Array.isArray(tasksData)) {
         // Process each task in the array
         let found = false;
-        const updatedTasks = tasksData.map((task: Record<string, any>) => {
+        const updatedTasks = tasksData.map((task: TaskItem) => {
           // Look for the task with matching identifier (could be in title, description, or id)
-          const matchesId = task['id'] && task['id'].toString().includes(taskIdentifier);
-          const matchesTitle = task['title'] && task['title'].includes(taskIdentifier);
-          const matchesDescription = task['description'] && task['description'].includes(taskIdentifier);
+          const matchesId = task.id && task.id.toString().includes(taskIdentifier);
+          const matchesTitle = task.title && task.title.includes(taskIdentifier);
+          const matchesDescription = task.description && task.description.includes(taskIdentifier);
           
           if (matchesId || matchesTitle || matchesDescription) {
             found = true;
@@ -200,10 +211,10 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
         // Handle object with tasks property
         if (Array.isArray(tasksData.tasks)) {
           let found = false;
-          const updatedTasks = tasksData.tasks.map((task: Record<string, any>) => {
-            const matchesId = task['id'] && task['id'].toString().includes(taskIdentifier);
-            const matchesTitle = task['title'] && task['title'].includes(taskIdentifier);
-            const matchesDescription = task['description'] && task['description'].includes(taskIdentifier);
+          const updatedTasks = tasksData.tasks.map((task: TaskItem) => {
+            const matchesId = task.id && task.id.toString().includes(taskIdentifier);
+            const matchesTitle = task.title && task.title.includes(taskIdentifier);
+            const matchesDescription = task.description && task.description.includes(taskIdentifier);
             
             if (matchesId || matchesTitle || matchesDescription) {
               found = true;

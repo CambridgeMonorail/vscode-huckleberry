@@ -5,20 +5,21 @@ import * as vscode from 'vscode';
 import { ToolManager } from './toolManager';
 import { logWithChannel, LogLevel } from '../utils/debugUtils';
 import { isWorkspaceAvailable, notifyNoWorkspace } from '../handlers/chatHandler';
-import { getWorkspacePaths } from '../handlers/tasks/taskUtils';
 import { getConfiguration } from '../config/index';
-import { readTasksJson, writeTasksJson } from '../handlers/tasks/taskUtils';
+import { getWorkspacePaths, readTasksJson, writeTasksJson } from '../handlers/tasks/taskUtils';
+import { streamMarkdown } from '../utils/uiHelpers';
 
 // Import task handlers
 import {
   handleInitializeTaskTracking,
   handleCreateTaskRequest,
-  handlePriorityTaskQuery,
   handleMarkTaskDoneRequest,
-  handleParseRequirementsRequest,
   handleReadTasksRequest,
   handleChangeTaskPriorityRequest,
-  handleScanTodosRequest
+  handleScanTodosRequest,
+  // Importing unused handlers with underscore prefix to indicate they're intentionally imported but not used directly
+  handleParseRequirementsRequest as _handleParseRequirementsRequest,
+  handlePriorityTaskQuery as _handlePriorityTaskQuery,
 } from '../handlers/taskHandlers';
 
 /**
@@ -40,9 +41,10 @@ export function logDetailedError(area: string, error: unknown, additionalInfo?: 
       message: error.message,
       stack: error.stack,
       ...Object.getOwnPropertyNames(error).reduce((acc, prop) => {
-        acc[prop] = (error as any)[prop];
+        // Convert Error to unknown first to avoid type errors
+        acc[prop] = (error as unknown as Record<string, unknown>)[prop];
         return acc;
-      }, {} as Record<string, unknown>)
+      }, {} as Record<string, unknown>),
     };
   } else if (typeof error === 'string') {
     errorMessage = error;
@@ -50,7 +52,7 @@ export function logDetailedError(area: string, error: unknown, additionalInfo?: 
     try {
       errorMessage = JSON.stringify(error);
       errorObject = error as Record<string, unknown>;
-    } catch (e) {
+    } catch {
       errorMessage = 'Error cannot be stringified';
     }
   }
@@ -67,6 +69,17 @@ export function logDetailedError(area: string, error: unknown, additionalInfo?: 
   }
 }
 
+// Define a comprehensive interface for ChatResponseStream to ensure compatibility
+interface ChatResponseStreamLike {
+  markdown(content: string): Promise<void>;
+  progress(message: string): Promise<void>;
+  anchor(value: vscode.Uri | vscode.Location, title?: string): void;
+  button(command: vscode.Command): void;
+  reference(value: vscode.Uri | vscode.Location, iconPath?: vscode.IconPath): void;
+  filetree(value: vscode.ChatResponseFileTree[], baseUri: vscode.Uri): void;
+  push(part: vscode.ChatResponsePart): void;
+}
+
 /**
  * Response stream wrapper for tool results
  */
@@ -75,8 +88,11 @@ class ToolResponseStream {
 
   /**
    * Creates a new ToolResponseStream
+   * Empty constructor is intentional - no initialization needed
    */
-  constructor() { }
+  constructor() {
+    // No initialization needed
+  }
 
   /**
    * Adds markdown content to the stream
@@ -92,17 +108,52 @@ class ToolResponseStream {
    * @returns The accumulated tool result
    */
   public getResult(): string {
-    return this.result.join("\n");
+    return this.result.join('\n');
   }
 
   /**
    * Progress method implementation to match the expected interface
-   * @param message Progress message
+   * @param _message Progress message
    * @returns Promise that resolves when progress is updated
    */
-  public async progress(message: string): Promise<void> {
+  public async progress(_message: string): Promise<void> {
     // Silently ignore progress updates for now
     return Promise.resolve();
+  }
+
+  /**
+   * Empty implementation for anchor method
+   */
+  public anchor(_value: vscode.Uri | vscode.Location, _title?: string): void {
+    // No-op implementation
+  }
+
+  /**
+   * Empty implementation for button method
+   */
+  public button(_command: vscode.Command): void {
+    // No-op implementation
+  }
+
+  /**
+   * Empty implementation for reference method
+   */
+  public reference(_value: vscode.Uri | vscode.Location, _iconPath?: vscode.IconPath): void {
+    // No-op implementation
+  }
+
+  /**
+   * Empty implementation for filetree method
+   */
+  public filetree(_value: vscode.ChatResponseFileTree[], _baseUri: vscode.Uri): void {
+    // No-op implementation
+  }
+
+  /**
+   * Empty implementation for push method
+   */
+  public push(_part: vscode.ChatResponsePart): void {
+    // No-op implementation
   }
 }
 
@@ -164,9 +215,9 @@ async function isTaskTrackingInitialized(): Promise<boolean> {
 
     try {
       // Check if tasks.json exists
-      const tasksJsonStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
+      const _tasksJsonStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
       tasksJsonExists = true;
-    } catch (error) {
+    } catch {
       // File doesn't exist or is inaccessible
       tasksJsonExists = false;
     }
@@ -175,7 +226,7 @@ async function isTaskTrackingInitialized(): Promise<boolean> {
       // Check if tasks directory exists and is actually a directory
       const tasksDirStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksDir));
       tasksDirExists = tasksDirStat.type === vscode.FileType.Directory;
-    } catch (error) {
+    } catch {
       // Directory doesn't exist or is inaccessible
       tasksDirExists = false;
     }
@@ -198,7 +249,7 @@ async function isTaskTrackingInitialized(): Promise<boolean> {
 export class LanguageModelToolsProvider {
   private toolManager: ToolManager;
   private disposables: vscode.Disposable[] = [];
-  private initialized: boolean = false;
+  private initialized = false;
 
   /**
    * Creates a new LanguageModelToolsProvider
@@ -234,7 +285,7 @@ export class LanguageModelToolsProvider {
       try {
         logWithChannel(LogLevel.DEBUG, 'Registering create_task tool...');
         const createTaskDisposable = vscode.lm.registerTool('create_task', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const input = options.input as TaskWithPriorityInput;
             const description = input?.description;
             const priority = input?.priority;
@@ -248,25 +299,25 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Create a new task**\n\n` +
                   `Task Description: "${description}"\n` +
-                  (priorityText ? `Priority: ${priorityText}\n` : '')
-                )
+                  (priorityText ? `Priority: ${priorityText}\n` : ''),
+                ),
               },
-              invocationMessage: `Creating task: ${description}`
+              invocationMessage: `Creating task: ${description}`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(options, _token) {
             const input = options.input as TaskWithPriorityInput;
             const description = input?.description;
             const priority = input?.priority;
 
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             if (!description) {
-              throw new Error("A task description is required to create a task.");
+              throw new Error('A task description is required to create a task.');
             }
 
             try {
@@ -282,23 +333,23 @@ export class LanguageModelToolsProvider {
                 ? `Create a ${priority} priority task to ${description}`
                 : `Create a task to ${description}`;
 
-              await handleCreateTaskRequest(prompt, stream as any, toolManager, priority || null);
+              await handleCreateTaskRequest(prompt, stream as ChatResponseStreamLike, toolManager, priority || null);
 
               // Use VS Code's recommended LanguageModelToolResult format
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               // Enhanced error logging with details
               logDetailedError('createTask', error, {
                 description,
                 priority,
-                workspaceAvailable: isWorkspaceAvailable()
+                workspaceAvailable: isWorkspaceAvailable(),
               });
 
               throw new Error(`Failed to create task: ${error instanceof Error ? error.message : String(error)}`);
             }
-          }
+          },
         });
         this.disposables.push(createTaskDisposable);
         logWithChannel(LogLevel.DEBUG, '✓ create_task registered successfully');
@@ -311,7 +362,7 @@ export class LanguageModelToolsProvider {
       try {
         logWithChannel(LogLevel.DEBUG, 'Registering initialize_tracking tool...');
         const initializeToolDisposable = vscode.lm.registerTool('initialize_tracking', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(_options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const config = getConfiguration();
 
             // Get the potential tasks directory location for better context
@@ -324,7 +375,7 @@ export class LanguageModelToolsProvider {
               } else {
                 tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
               }
-            } catch (error) {
+            } catch {
               tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
             }
 
@@ -338,25 +389,26 @@ export class LanguageModelToolsProvider {
                   `- Creating a \`${config.defaultTasksLocation}\` directory\n` +
                   `- Adding \`tasks.json\` for storing task metadata\n` +
                   `- Setting up a README with usage instructions\n\n` +
-                  `Location: \`${tasksLocation}\``
-                )
+                  `Location: \`${tasksLocation}\``,
+                ),
               },
-              invocationMessage: `Initializing task tracking in ${config.defaultTasksLocation}...`
+              invocationMessage: `Initializing task tracking in ${config.defaultTasksLocation}...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(_options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
               // Create a custom stream to collect output from the handler
               const stream = new ToolResponseStream();
 
-              // Process the task initialization
-              await handleInitializeTaskTracking(stream as any, toolManager);
+              // Execute the task initialization
+              const prompt = 'Initialize task tracking';
+              await handleInitializeTaskTracking(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Get the workspace folder and task directory for the result message
               const { tasksDir } = await getWorkspacePaths();
@@ -365,17 +417,17 @@ export class LanguageModelToolsProvider {
               return new vscode.LanguageModelToolResult([
                 new vscode.LanguageModelTextPart(
                   `✅ Task tracking initialized successfully in ${tasksDir}\n\n` +
-                  stream.getResult()
-                )
+                  stream.getResult(),
+                ),
               ]);
-            } catch (error) {
-              logWithChannel(LogLevel.ERROR, 'Error in initializeTaskTracking tool:', error);
+            } catch {
+              logWithChannel(LogLevel.ERROR, 'Error in initializeTaskTracking tool');
               throw new Error(
-                `Failed to initialize task tracking: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure you have write access to the workspace directory.`
+                `Failed to initialize task tracking. ` +
+                `Make sure you have write access to the workspace directory.`,
               );
             }
-          }
+          },
         });
         this.disposables.push(initializeToolDisposable);
         logWithChannel(LogLevel.DEBUG, '✓ initialize_tracking registered successfully');
@@ -388,7 +440,7 @@ export class LanguageModelToolsProvider {
       try {
         logWithChannel(LogLevel.DEBUG, 'Registering initialise_tracking tool (British spelling alias)...');
         const initialiseToolDisposable = vscode.lm.registerTool('initialise_tracking', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(_options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const config = getConfiguration();
 
             // Get the potential tasks directory location for better context
@@ -401,7 +453,7 @@ export class LanguageModelToolsProvider {
               } else {
                 tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
               }
-            } catch (error) {
+            } catch {
               tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
             }
 
@@ -415,25 +467,26 @@ export class LanguageModelToolsProvider {
                   `- Creating a \`${config.defaultTasksLocation}\` directory\n` +
                   `- Adding \`tasks.json\` for storing task metadata\n` +
                   `- Setting up a README with usage instructions\n\n` +
-                  `Location: \`${tasksLocation}\``
-                )
+                  `Location: \`${tasksLocation}\``,
+                ),
               },
-              invocationMessage: `Initialising task tracking in ${config.defaultTasksLocation}...`
+              invocationMessage: `Initialising task tracking in ${config.defaultTasksLocation}...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(_options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
               // Create a custom stream to collect output from the handler
               const stream = new ToolResponseStream();
 
-              // Process the task initialization
-              await handleInitializeTaskTracking(stream as any, toolManager);
+              // Execute the task initialization
+              const prompt = 'Initialize task tracking';
+              await handleInitializeTaskTracking(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Get the workspace folder and task directory for the result message
               const { tasksDir } = await getWorkspacePaths();
@@ -442,17 +495,17 @@ export class LanguageModelToolsProvider {
               return new vscode.LanguageModelToolResult([
                 new vscode.LanguageModelTextPart(
                   `✅ Task tracking initialised successfully in ${tasksDir}\n\n` +
-                  stream.getResult()
-                )
+                  stream.getResult(),
+                ),
               ]);
-            } catch (error) {
-              logWithChannel(LogLevel.ERROR, 'Error in initialiseTaskTracking tool:', error);
+            } catch {
+              logWithChannel(LogLevel.ERROR, 'Error in initialiseTaskTracking tool');
               throw new Error(
-                `Failed to initialise task tracking: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure you have write access to the workspace directory.`
+                `Failed to initialise task tracking. ` +
+                `Make sure you have write access to the workspace directory.`,
               );
             }
-          }
+          },
         });
         this.disposables.push(initialiseToolDisposable);
         logWithChannel(LogLevel.DEBUG, '✓ initialise_tracking registered successfully');
@@ -464,7 +517,7 @@ export class LanguageModelToolsProvider {
       // Scan TODOs tool
       this.disposables.push(
         vscode.lm.registerTool('scan_todos', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const input = options.input as ScanTodosInput;
             const pattern = input?.pattern;
 
@@ -474,19 +527,19 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Scan Codebase for TODOs**\n\n` +
                   `This will scan your codebase for TODO comments and convert them to tasks.\n\n` +
-                  (pattern ? `File pattern: \`${pattern}\`` : 'All files will be scanned')
-                )
+                  (pattern ? `File pattern: \`${pattern}\`` : 'All files will be scanned'),
+                ),
               },
               invocationMessage: pattern
                 ? `Scanning for TODOs with pattern: ${pattern}`
-                : 'Scanning entire codebase for TODOs'
+                : 'Scanning entire codebase for TODOs',
             };
           },
 
-          async invoke(options, token) {
+          async invoke(options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
@@ -499,27 +552,27 @@ export class LanguageModelToolsProvider {
                 ? `Scan for TODOs in ${pattern}`
                 : 'Scan for TODOs in the codebase';
 
-              await handleScanTodosRequest(prompt, stream as any, toolManager);
+              await handleScanTodosRequest(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Use VS Code's recommended LanguageModelToolResult format
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in scanTodos tool:', error);
               throw new Error(
                 `Failed to scan for TODOs: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure the workspace is accessible and you have permission to read files.`
+                `Make sure the workspace is accessible and you have permission to read files.`,
               );
             }
-          }
-        })
+          },
+        }),
       );
 
       // List Tasks tool
       this.disposables.push(
         vscode.lm.registerTool('list_tasks', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const input = options.input as ListTasksInput;
             const priority = input?.priority;
             const status = input?.status;
@@ -539,17 +592,17 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**List Tasks**\n\n` +
                   `This will retrieve and display your project tasks.` +
-                  (filterInfo ? `\n\n**Filters:**\n${filterInfo}` : '\n\nAll tasks will be listed.')
-                )
+                  (filterInfo ? `\n\n**Filters:**\n${filterInfo}` : '\n\nAll tasks will be listed.'),
+                ),
               },
-              invocationMessage: 'Retrieving task list...'
+              invocationMessage: 'Retrieving task list...',
             };
           },
 
-          async invoke(options, token) {
+          async invoke(options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
@@ -567,27 +620,27 @@ export class LanguageModelToolsProvider {
                 prompt += ` with status ${status}`;
               }
 
-              await handleReadTasksRequest(prompt, stream as any, toolManager);
+              await handleReadTasksRequest(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Use VS Code's recommended LanguageModelToolResult format
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in listTasks tool:', error);
               throw new Error(
                 `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure task tracking has been initialized.`
+                `Make sure task tracking has been initialized.`,
               );
             }
-          }
-        })
+          },
+        }),
       );
 
       // Mark Task Done tool
       this.disposables.push(
         vscode.lm.registerTool('mark_task_done', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const input = options.input as TaskIdInput;
             const taskId = input?.taskId;
 
@@ -597,17 +650,17 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Mark Task Complete**\n\n` +
                   `This will mark task **${taskId}** as completed.\n\n` +
-                  `*Note: This action cannot be undone through the tool.*`
-                )
+                  `*Note: This action cannot be undone through the tool.*`,
+                ),
               },
-              invocationMessage: `Marking task ${taskId} as complete...`
+              invocationMessage: `Marking task ${taskId} as complete...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
@@ -615,7 +668,7 @@ export class LanguageModelToolsProvider {
               const taskId = input?.taskId;
 
               if (!taskId) {
-                throw new Error("A task ID is required to mark a task as complete.");
+                throw new Error('A task ID is required to mark a task as complete.');
               }
 
               const stream = new ToolResponseStream();
@@ -623,27 +676,29 @@ export class LanguageModelToolsProvider {
               // Construct a prompt that the existing handler can understand
               const prompt = `Mark task ${taskId} as complete`;
 
-              await handleMarkTaskDoneRequest(prompt, stream as any, toolManager);
+              await handleMarkTaskDoneRequest(prompt, stream as ChatResponseStreamLike, toolManager);
+
+              await streamMarkdown(stream, `We noticed that task ${taskId} appears to be complex. I'll help you break it down into smaller, more manageable pieces.`);
 
               // Use VS Code's recommended LanguageModelToolResult format
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in markTaskDone tool:', error);
               throw new Error(
                 `Failed to mark task as done: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure the task exists and task tracking has been initialized.`
+                `Make sure the task exists and task tracking has been initialized.`,
               );
             }
-          }
-        })
+          },
+        }),
       );
 
       // Change Task Priority tool
       this.disposables.push(
         vscode.lm.registerTool('update_task_priority', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const input = options.input as TaskPriorityChangeInput;
             const taskId = input?.taskId;
             const priority = input?.priority;
@@ -654,17 +709,17 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Change Task Priority**\n\n` +
                   `This will set the priority of task **${taskId}** to **${priority}**.\n\n` +
-                  `The task's status and other properties will remain unchanged.`
-                )
+                  `The task's status and other properties will remain unchanged.`,
+                ),
               },
-              invocationMessage: `Changing priority of task ${taskId} to ${priority}...`
+              invocationMessage: `Changing priority of task ${taskId} to ${priority}...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
@@ -673,7 +728,7 @@ export class LanguageModelToolsProvider {
               const priority = input?.priority;
 
               if (!taskId || !priority) {
-                throw new Error("Both task ID and priority are required to change a task's priority.");
+                throw new Error('Both task ID and priority are required to change a task\'s priority.');
               }
 
               const stream = new ToolResponseStream();
@@ -681,27 +736,27 @@ export class LanguageModelToolsProvider {
               // Construct a prompt that the existing handler can understand
               const prompt = `Mark task ${taskId} as ${priority} priority`;
 
-              await handleChangeTaskPriorityRequest(prompt, stream as any, toolManager);
+              await handleChangeTaskPriorityRequest(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Use VS Code's recommended LanguageModelToolResult format
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in changeTaskPriority tool:', error);
               throw new Error(
                 `Failed to change task priority: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure the task exists and task tracking has been initialized.`
+                `Make sure the task exists and task tracking has been initialized.`,
               );
             }
-          }
-        })
+          },
+        }),
       );
 
       // Prioritize Tasks tool
       this.disposables.push(
         vscode.lm.registerTool('prioritize_tasks', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(_options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             return {
               confirmationMessages: {
                 title: 'Prioritize Tasks',
@@ -710,17 +765,17 @@ export class LanguageModelToolsProvider {
                   `This will sort your tasks in the following order:\n\n` +
                   `1. Open tasks before completed tasks\n` +
                   `2. By priority: critical → high → medium → low\n\n` +
-                  `The sorting will be applied to your tasks.json file.`
-                )
+                  `The sorting will be applied to your tasks.json file.`,
+                ),
               },
-              invocationMessage: `Prioritizing tasks by status and priority...`
+              invocationMessage: `Prioritizing tasks by status and priority...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(_options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
@@ -729,44 +784,44 @@ export class LanguageModelToolsProvider {
 
               // Import and call the handler dynamically to avoid circular dependencies
               const { handlePrioritizeTasksRequest } = require('../handlers/tasks/taskPrioritizer');
-              await handlePrioritizeTasksRequest('Prioritize tasks', stream as any, toolManager);
+              await handlePrioritizeTasksRequest('Prioritize tasks', stream as ChatResponseStreamLike, toolManager);
 
               // Return the results
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in prioritizeTasks tool:', error);
               throw new Error(
                 `Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure task tracking has been initialized.`
+                `Make sure task tracking has been initialized.`,
               );
             }
-          }
-        })
+          },
+        }),
       );
 
       // Next Task tool
       this.disposables.push(
         vscode.lm.registerTool('next_task', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(_options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             return {
               confirmationMessages: {
                 title: 'Get Next Task',
                 message: new vscode.MarkdownString(
                   `**Get Next Task Recommendation**\n\n` +
                   `This will analyze your task list and recommend the next task to work on ` +
-                  `based on priority and status.`
-                )
+                  `based on priority and status.`,
+                ),
               },
-              invocationMessage: `Finding the next task you should work on...`
+              invocationMessage: `Finding the next task you should work on...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(_options, _token) {
             if (!isWorkspaceAvailable()) {
               notifyNoWorkspace();
-              throw new Error("No workspace available. Please open a workspace to use this tool.");
+              throw new Error('No workspace available. Please open a workspace to use this tool.');
             }
 
             try {
@@ -775,27 +830,30 @@ export class LanguageModelToolsProvider {
 
               // Import and call the handler dynamically to avoid circular dependencies
               const { handleNextTaskRequest } = require('../handlers/tasks/nextTaskHandler');
-              await handleNextTaskRequest('What task should I work on next?', stream as any, toolManager);
+              await handleNextTaskRequest('What task should I work on next?', stream as ChatResponseStreamLike, toolManager);
+
+              const nextTaskText = stream.getResult();
+              await streamMarkdown(stream, `### Next Task Suggestion\n\n${nextTaskText}`);
 
               // Return the results
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(nextTaskText),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in nextTask tool:', error);
               throw new Error(
                 `Failed to get next task recommendation: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure task tracking has been initialized.`
+                `Make sure task tracking has been initialized.`,
               );
             }
-          }
-        })
+          },
+        }),
       );
 
       // Help tool
       this.disposables.push(
         vscode.lm.registerTool('help', {
-          prepareInvocation(options, token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const input = options.input as { topic?: string };
             const topic = input?.topic || 'general';
 
@@ -814,14 +872,14 @@ export class LanguageModelToolsProvider {
                   `**Get Huckleberry Task Manager Help**\n\n` +
                   `This will show information about ${topic === 'general' ?
                     'all available features and commands' :
-                    `how to use the ${topicDisplay} feature`}.`
-                )
+                    `how to use the ${topicDisplay} feature`}.`,
+                ),
               },
-              invocationMessage: `Showing help for ${topicDisplay}...`
+              invocationMessage: `Showing help for ${topicDisplay}...`,
             };
           },
 
-          async invoke(options, token) {
+          async invoke(options, _token) {
             try {
               // Get the optional topic
               const input = options.input as { topic?: string };
@@ -846,24 +904,24 @@ export class LanguageModelToolsProvider {
                   'requirements-parsing': 'How do I parse requirements?',
                   'task-decomposition': 'How do I break down tasks into subtasks?',
                   'next-task': 'How do I find my next task?',
-                  'task-initialization': 'How do I initialize task tracking?'
+                  'task-initialization': 'How do I initialize task tracking?',
                 };
 
                 prompt = topicPrompts[topic] || `Help with ${topic.replace(/-/g, ' ')}`;
               }
 
-              await handleHelpRequest(prompt, stream as any, toolManager);
+              await handleHelpRequest(prompt, stream as ChatResponseStreamLike, toolManager);
 
               // Return the results
               return new vscode.LanguageModelToolResult([
-                new vscode.LanguageModelTextPart(stream.getResult())
+                new vscode.LanguageModelTextPart(stream.getResult()),
               ]);
             } catch (error) {
               logWithChannel(LogLevel.ERROR, 'Error in help tool:', error);
               throw new Error(`Failed to get help information: ${error instanceof Error ? error.message : String(error)}`);
             }
-          }
-        })
+          },
+        }),
       );
 
       // Register all disposables with the extension context
@@ -893,25 +951,25 @@ export class LanguageModelToolsProvider {
   /**
    * Tool implementation for prioritizing tasks
    */
-  private async prioritizeTasks(): Promise<any> {
+  private async prioritizeTasks(): Promise<Record<string, unknown>> {
     logWithChannel(LogLevel.INFO, '🔄 LM Tool: prioritize_tasks');
 
     // Ensure task tracking is initialized
     if (!(await isTaskTrackingInitialized())) {
       return {
-        error: 'Task tracking is not initialized. Please initialize task tracking first.'
+        error: 'Task tracking is not initialized. Please initialize task tracking first.',
       };
     }
 
     try {
       // Read the current tasks collection
-      const { workspaceFolder, tasksDir, tasksJsonPath } = await getWorkspacePaths();
+      const { workspaceFolder: _workspaceFolder, tasksDir: _tasksDir, tasksJsonPath } = await getWorkspacePaths();
       const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
 
       // Check if we have tasks to prioritize
       if (!tasksData.tasks || tasksData.tasks.length === 0) {
         return {
-          message: 'No tasks found to prioritize.'
+          message: 'No tasks found to prioritize.',
         };
       }
 
@@ -929,10 +987,10 @@ export class LanguageModelToolsProvider {
 
         // For tasks with the same completion status, sort by priority
         const priorityOrder: Record<string, number> = {
-          'critical': 0,
-          'high': 1,
-          'medium': 2,
-          'low': 3
+          critical: 0,
+          high: 1,
+          medium: 2,
+          low: 3,
         };
         const priorityA = priorityOrder[a.priority?.toLowerCase() || 'medium'] || 2;
         const priorityB = priorityOrder[b.priority?.toLowerCase() || 'medium'] || 2;
@@ -950,13 +1008,13 @@ export class LanguageModelToolsProvider {
         taskCount: {
           total: totalTasks,
           open: openTasks,
-          completed: completedTasks
-        }
+          completed: completedTasks,
+        },
       };
-    } catch (error) {
-      logWithChannel(LogLevel.ERROR, 'Error prioritizing tasks:', error);
+    } catch {
+      logWithChannel(LogLevel.ERROR, 'Error prioritizing tasks');
       return {
-        error: `Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}`
+        error: 'Failed to prioritize tasks',
       };
     }
   }

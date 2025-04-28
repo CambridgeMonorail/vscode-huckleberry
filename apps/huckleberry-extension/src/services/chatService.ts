@@ -2,7 +2,7 @@
  * Chat service for managing Huckleberry chat participants
  */
 import * as vscode from 'vscode';
-import { logWithChannel, LogLevel, showDebugChannel } from '../utils/debugUtils';
+import { logWithChannel, LogLevel, showDebugChannel as _showDebugChannel } from '../utils/debugUtils';
 import { ToolManager } from './toolManager';
 // Fix the import by using a more explicit path with the file extension
 import { handleChatRequest } from '../handlers/chatHandler.js';
@@ -76,7 +76,7 @@ export class ChatService {
     this.disposeAll();
     const options: ChatParticipantOptions = {
       primaryId: 'huckleberry',
-      debugName: 'Huckleberry Task Manager'
+      debugName: 'Huckleberry Task Manager',
     };
     const disposables = this.register(options);
     this.dumpParticipantState();
@@ -108,7 +108,7 @@ export class ChatService {
             logWithChannel(LogLevel.ERROR, `❌ Error handling chat request in ${primaryId}:`, error);
             await response.markdown(`**Well now, I seem to be having a bad day.** Try again, darlin'.`);
           }
-        }
+        },
       );
       logWithChannel(LogLevel.INFO, `Chat participant successfully registered with ID: ${primaryId}`);
       this.participants.set(primaryId, primaryParticipant);
@@ -119,7 +119,7 @@ export class ChatService {
       logWithChannel(LogLevel.CRITICAL, `❌ Failed to register chat participant: ${debugName || primaryId}`, error);
       vscode.window.showErrorMessage(
         'Huckleberry extension failed to register the chat participant. ' +
-        'The @Huckleberry commands will not work. Please reload the window or restart VS Code.'
+        'The @Huckleberry commands will not work. Please reload the window or restart VS Code.',
       );
       return [];
     }
@@ -134,7 +134,7 @@ export class ChatService {
     logWithChannel(LogLevel.INFO, `👂 Chat request received by ${participantId}:`, {
       prompt: request.prompt,
       participant: participantId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Also log to the console for immediate visibility
@@ -213,7 +213,7 @@ export class ChatService {
           this.isMonitoring = false;
           logWithChannel(LogLevel.DEBUG, '⏹️ Stopped chat participant health monitoring');
         }
-      }
+      },
     });
   }
 
@@ -227,7 +227,7 @@ export class ChatService {
       participantsCount: this.participants.size,
       lastActive: this.lastActive ? new Date(this.lastActive).toISOString() : 'never',
       workspaceAvailable,
-      workspaceFolders: vscode.workspace.workspaceFolders?.map(f => f.name) || []
+      workspaceFolders: vscode.workspace.workspaceFolders?.map(f => f.name) || [],
     });
 
     // If we've been inactive for too long, consider refreshing
@@ -268,8 +268,8 @@ export class ChatService {
       workspaceFolders: vscode.workspace.workspaceFolders?.map(f => ({
         name: f.name,
         path: f.uri.fsPath,
-        uri: f.uri.toString()
-      }))
+        uri: f.uri.toString(),
+      })),
     };
 
     logWithChannel(LogLevel.DEBUG, '📊 Chat Participant State:', state);
