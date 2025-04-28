@@ -11,6 +11,7 @@ export default [
       '**/tmp',
       '**/out-tsc',
       '**/apps/huckleberry-docs/build',
+      '**/apps/huckleberry-docs/.docusaurus',
       '**/node_modules',
       '**/.nx/cache',
       '**/.nx/workspace-data',
@@ -51,7 +52,7 @@ export default [
     ],
     // Enhanced rules for the Huckleberry project
     plugins: {
-      '@typescript-eslint': typescriptESLint
+      '@typescript-eslint': typescriptESLint,
     },
     rules: {
       // Error prevention
@@ -59,32 +60,32 @@ export default [
       'no-debugger': 'warn',
       'no-duplicate-imports': 'error',
       'no-unused-vars': 'off', // TypeScript has better unused checks
-      
+
       // Code style
       'indent': ['error', 2, { 'SwitchCase': 1 }],
       'quotes': ['error', 'single', { 'allowTemplateLiterals': true }],
       'semi': ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
       'arrow-parens': ['error', 'as-needed'],
-      
+
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': ['error', { 
-        'argsIgnorePattern': '^_', 
-        'varsIgnorePattern': '^_'
+      '@typescript-eslint/no-unused-vars': ['error', {
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
       }],
       '@typescript-eslint/explicit-function-return-type': ['warn', {
-        'allowExpressions': true, 
-        'allowTypedFunctionExpressions': true
+        'allowExpressions': true,
+        'allowTypedFunctionExpressions': true,
       }],
       '@typescript-eslint/no-explicit-any': 'warn',
-      
+
       // The problematic rule - checking if it's available
       ...(typescriptESLint.rules['member-delimiter-style'] ? {
         '@typescript-eslint/member-delimiter-style': ['error', {
           'multiline': { 'delimiter': 'semi', 'requireLast': true },
-          'singleline': { 'delimiter': 'semi', 'requireLast': false }
-        }]
-      } : {})
+          'singleline': { 'delimiter': 'semi', 'requireLast': false },
+        }],
+      } : {}),
     },
   },
   {

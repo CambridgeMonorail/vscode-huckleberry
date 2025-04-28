@@ -55,7 +55,7 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 ## Next Task Suggestions
 
 - [x] `@Huckleberry What task should I work on next?` suggests appropriate next task
-- [x] Next task suggestions consider priority and dependencies 
+- [x] Next task suggestions consider priority and dependencies
 - [x] Next task suggestions provide rationale for the recommendation
 
 ## Task Decomposition
@@ -81,6 +81,32 @@ This document outlines all the features of the Huckleberry Task Manager extensio
 - [ ] Document parsing extracts priorities where specified
 - [ ] Document parsing extracts dependencies where inferred
 - [ ] Document parsing generates meaningful task descriptions
+
+## Task Context and Enrichment
+
+- [ ] `@Huckleberry Enrich task TASK-123 with context` adds contextual information
+- [ ] Task enrichment captures relevant code context for TODO-based tasks
+- [ ] Task enrichment captures document context for requirements-based tasks
+- [ ] Enriched tasks display enhanced descriptions
+- [ ] Enriched tasks maintain original source links
+- [ ] Task enrichment works when offered after TODO scanning
+- [ ] Task enrichment works when offered after requirements parsing
+- [ ] Task enrichment handles missing source files gracefully
+- [ ] Enrichment context is properly stored in task metadata
+- [ ] Enriched content is properly displayed in markdown task files
+
+## Advanced Task Analysis
+
+- [ ] Language model properly suggests task decomposition
+- [ ] Task dependencies are properly inferred from context
+- [ ] Source code context is properly captured for task analysis
+- [ ] Task relationships are maintained after updates
+- [ ] Complex tasks are broken down into appropriate subtasks
+- [ ] Task enrichment preserves and enhances existing metadata
+- [ ] Task context is used for prioritization suggestions
+- [ ] Task context influences "next task" recommendations
+- [ ] Enriched tasks provide better context for subtask creation
+- [ ] Task context is properly synchronized between tasks.json and markdown files
 
 ## Help and Documentation
 
@@ -205,4 +231,4 @@ Use this format for reporting issues:
 
 ---
 
-*Last Updated: April 22, 2025*
+*Last Updated: April 28, 2025*
