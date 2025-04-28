@@ -14,8 +14,9 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/features/natural-language.svg').default,
     description: (
       <>
-        Manage tasks through simple, conversational language directly in VS Code's chat interface. 
-        Create, update, and query tasks using natural language commands.
+        Manage tasks through simple, conversational language directly in VS
+        Code's chat interface. Create, update, and query tasks using natural
+        language commands.
       </>
     ),
   },
@@ -24,8 +25,9 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/features/ai-integration.svg').default,
     description: (
       <>
-        Powered by VS Code's Language Model API, Huckleberry creates a conversational interface for 
-        automated task management without leaving your development environment.
+        Powered by VS Code's Language Model API, Huckleberry creates a
+        conversational interface for automated task management without leaving
+        your development environment.
       </>
     ),
   },
@@ -34,14 +36,15 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/features/local-storage.svg').default,
     description: (
       <>
-        All task data is stored as plain text files in your workspace, making it easy to version control, 
-        share with your team, and keep your task data alongside your code.
+        All task data is stored as plain text files in your workspace, making it
+        easy to version control, share with your team, and keep your task data
+        alongside your code.
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem): JSX.Element {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
