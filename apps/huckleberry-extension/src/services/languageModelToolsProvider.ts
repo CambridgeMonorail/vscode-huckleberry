@@ -16,10 +16,7 @@ import {
   handleReadTasksRequest,
   handleChangeTaskPriorityRequest,
   handleScanTodosRequest,
-} from '../handlers/taskHandlers';
-
-// Importing unused handlers but prefixing with underscore to indicate they're intentionally imported but not used directly
-import {
+  // Importing unused handlers with underscore prefix to indicate they're intentionally imported but not used directly
   handleParseRequirementsRequest as _handleParseRequirementsRequest,
   handlePriorityTaskQuery as _handlePriorityTaskQuery,
 } from '../handlers/taskHandlers';
@@ -54,7 +51,7 @@ export function logDetailedError(area: string, error: unknown, additionalInfo?: 
     try {
       errorMessage = JSON.stringify(error);
       errorObject = error as Record<string, unknown>;
-    } catch (e) {
+    } catch {
       errorMessage = 'Error cannot be stringified';
     }
   }
@@ -219,7 +216,7 @@ async function isTaskTrackingInitialized(): Promise<boolean> {
       // Check if tasks.json exists
       const _tasksJsonStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
       tasksJsonExists = true;
-    } catch (_error) {
+    } catch {
       // File doesn't exist or is inaccessible
       tasksJsonExists = false;
     }
@@ -228,7 +225,7 @@ async function isTaskTrackingInitialized(): Promise<boolean> {
       // Check if tasks directory exists and is actually a directory
       const tasksDirStat = await vscode.workspace.fs.stat(vscode.Uri.file(tasksDir));
       tasksDirExists = tasksDirStat.type === vscode.FileType.Directory;
-    } catch (_error) {
+    } catch {
       // Directory doesn't exist or is inaccessible
       tasksDirExists = false;
     }
@@ -301,7 +298,7 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Create a new task**\n\n` +
                   `Task Description: "${description}"\n` +
-                  (priorityText ? `Priority: ${priorityText}\n` : '')
+                  (priorityText ? `Priority: ${priorityText}\n` : ''),
                 ),
               },
               invocationMessage: `Creating task: ${description}`,
@@ -364,7 +361,7 @@ export class LanguageModelToolsProvider {
       try {
         logWithChannel(LogLevel.DEBUG, 'Registering initialize_tracking tool...');
         const initializeToolDisposable = vscode.lm.registerTool('initialize_tracking', {
-          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(_options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const config = getConfiguration();
 
             // Get the potential tasks directory location for better context
@@ -377,7 +374,7 @@ export class LanguageModelToolsProvider {
               } else {
                 tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
               }
-            } catch (error) {
+            } catch {
               tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
             }
 
@@ -391,7 +388,7 @@ export class LanguageModelToolsProvider {
                   `- Creating a \`${config.defaultTasksLocation}\` directory\n` +
                   `- Adding \`tasks.json\` for storing task metadata\n` +
                   `- Setting up a README with usage instructions\n\n` +
-                  `Location: \`${tasksLocation}\``
+                  `Location: \`${tasksLocation}\``,
                 ),
               },
               invocationMessage: `Initializing task tracking in ${config.defaultTasksLocation}...`,
@@ -418,14 +415,14 @@ export class LanguageModelToolsProvider {
               return new vscode.LanguageModelToolResult([
                 new vscode.LanguageModelTextPart(
                   `✅ Task tracking initialized successfully in ${tasksDir}\n\n` +
-                  stream.getResult()
+                  stream.getResult(),
                 ),
               ]);
-            } catch (_error) {
-              logWithChannel(LogLevel.ERROR, 'Error in initializeTaskTracking tool:', _error);
+            } catch {
+              logWithChannel(LogLevel.ERROR, 'Error in initializeTaskTracking tool');
               throw new Error(
-                `Failed to initialize task tracking: ${_error instanceof Error ? _error.message : String(_error)}. ` +
-                `Make sure you have write access to the workspace directory.`
+                `Failed to initialize task tracking. ` +
+                `Make sure you have write access to the workspace directory.`,
               );
             }
           },
@@ -441,7 +438,7 @@ export class LanguageModelToolsProvider {
       try {
         logWithChannel(LogLevel.DEBUG, 'Registering initialise_tracking tool (British spelling alias)...');
         const initialiseToolDisposable = vscode.lm.registerTool('initialise_tracking', {
-          prepareInvocation(options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
+          prepareInvocation(_options, _token): vscode.ProviderResult<vscode.PreparedToolInvocation> {
             const config = getConfiguration();
 
             // Get the potential tasks directory location for better context
@@ -454,7 +451,7 @@ export class LanguageModelToolsProvider {
               } else {
                 tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
               }
-            } catch (error) {
+            } catch {
               tasksLocation = `<workspace>/${config.defaultTasksLocation}`;
             }
 
@@ -468,7 +465,7 @@ export class LanguageModelToolsProvider {
                   `- Creating a \`${config.defaultTasksLocation}\` directory\n` +
                   `- Adding \`tasks.json\` for storing task metadata\n` +
                   `- Setting up a README with usage instructions\n\n` +
-                  `Location: \`${tasksLocation}\``
+                  `Location: \`${tasksLocation}\``,
                 ),
               },
               invocationMessage: `Initialising task tracking in ${config.defaultTasksLocation}...`,
@@ -495,14 +492,14 @@ export class LanguageModelToolsProvider {
               return new vscode.LanguageModelToolResult([
                 new vscode.LanguageModelTextPart(
                   `✅ Task tracking initialised successfully in ${tasksDir}\n\n` +
-                  stream.getResult()
+                  stream.getResult(),
                 ),
               ]);
-            } catch (_error) {
-              logWithChannel(LogLevel.ERROR, 'Error in initialiseTaskTracking tool:', _error);
+            } catch {
+              logWithChannel(LogLevel.ERROR, 'Error in initialiseTaskTracking tool');
               throw new Error(
-                `Failed to initialise task tracking: ${_error instanceof Error ? _error.message : String(_error)}. ` +
-                `Make sure you have write access to the workspace directory.`
+                `Failed to initialise task tracking. ` +
+                `Make sure you have write access to the workspace directory.`,
               );
             }
           },
@@ -527,7 +524,7 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Scan Codebase for TODOs**\n\n` +
                   `This will scan your codebase for TODO comments and convert them to tasks.\n\n` +
-                  (pattern ? `File pattern: \`${pattern}\`` : 'All files will be scanned')
+                  (pattern ? `File pattern: \`${pattern}\`` : 'All files will be scanned'),
                 ),
               },
               invocationMessage: pattern
@@ -562,11 +559,11 @@ export class LanguageModelToolsProvider {
               logWithChannel(LogLevel.ERROR, 'Error in scanTodos tool:', error);
               throw new Error(
                 `Failed to scan for TODOs: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure the workspace is accessible and you have permission to read files.`
+                `Make sure the workspace is accessible and you have permission to read files.`,
               );
             }
           },
-        })
+        }),
       );
 
       // List Tasks tool
@@ -592,7 +589,7 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**List Tasks**\n\n` +
                   `This will retrieve and display your project tasks.` +
-                  (filterInfo ? `\n\n**Filters:**\n${filterInfo}` : '\n\nAll tasks will be listed.')
+                  (filterInfo ? `\n\n**Filters:**\n${filterInfo}` : '\n\nAll tasks will be listed.'),
                 ),
               },
               invocationMessage: 'Retrieving task list...',
@@ -630,11 +627,11 @@ export class LanguageModelToolsProvider {
               logWithChannel(LogLevel.ERROR, 'Error in listTasks tool:', error);
               throw new Error(
                 `Failed to list tasks: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure task tracking has been initialized.`
+                `Make sure task tracking has been initialized.`,
               );
             }
           },
-        })
+        }),
       );
 
       // Mark Task Done tool
@@ -650,7 +647,7 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Mark Task Complete**\n\n` +
                   `This will mark task **${taskId}** as completed.\n\n` +
-                  `*Note: This action cannot be undone through the tool.*`
+                  `*Note: This action cannot be undone through the tool.*`,
                 ),
               },
               invocationMessage: `Marking task ${taskId} as complete...`,
@@ -686,11 +683,11 @@ export class LanguageModelToolsProvider {
               logWithChannel(LogLevel.ERROR, 'Error in markTaskDone tool:', error);
               throw new Error(
                 `Failed to mark task as done: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure the task exists and task tracking has been initialized.`
+                `Make sure the task exists and task tracking has been initialized.`,
               );
             }
           },
-        })
+        }),
       );
 
       // Change Task Priority tool
@@ -707,7 +704,7 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Change Task Priority**\n\n` +
                   `This will set the priority of task **${taskId}** to **${priority}**.\n\n` +
-                  `The task's status and other properties will remain unchanged.`
+                  `The task's status and other properties will remain unchanged.`,
                 ),
               },
               invocationMessage: `Changing priority of task ${taskId} to ${priority}...`,
@@ -726,7 +723,7 @@ export class LanguageModelToolsProvider {
               const priority = input?.priority;
 
               if (!taskId || !priority) {
-                throw new Error("Both task ID and priority are required to change a task's priority.");
+                throw new Error('Both task ID and priority are required to change a task\'s priority.');
               }
 
               const stream = new ToolResponseStream();
@@ -744,11 +741,11 @@ export class LanguageModelToolsProvider {
               logWithChannel(LogLevel.ERROR, 'Error in changeTaskPriority tool:', error);
               throw new Error(
                 `Failed to change task priority: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure the task exists and task tracking has been initialized.`
+                `Make sure the task exists and task tracking has been initialized.`,
               );
             }
           },
-        })
+        }),
       );
 
       // Prioritize Tasks tool
@@ -763,7 +760,7 @@ export class LanguageModelToolsProvider {
                   `This will sort your tasks in the following order:\n\n` +
                   `1. Open tasks before completed tasks\n` +
                   `2. By priority: critical → high → medium → low\n\n` +
-                  `The sorting will be applied to your tasks.json file.`
+                  `The sorting will be applied to your tasks.json file.`,
                 ),
               },
               invocationMessage: `Prioritizing tasks by status and priority...`,
@@ -792,11 +789,11 @@ export class LanguageModelToolsProvider {
               logWithChannel(LogLevel.ERROR, 'Error in prioritizeTasks tool:', error);
               throw new Error(
                 `Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure task tracking has been initialized.`
+                `Make sure task tracking has been initialized.`,
               );
             }
           },
-        })
+        }),
       );
 
       // Next Task tool
@@ -809,7 +806,7 @@ export class LanguageModelToolsProvider {
                 message: new vscode.MarkdownString(
                   `**Get Next Task Recommendation**\n\n` +
                   `This will analyze your task list and recommend the next task to work on ` +
-                  `based on priority and status.`
+                  `based on priority and status.`,
                 ),
               },
               invocationMessage: `Finding the next task you should work on...`,
@@ -838,11 +835,11 @@ export class LanguageModelToolsProvider {
               logWithChannel(LogLevel.ERROR, 'Error in nextTask tool:', error);
               throw new Error(
                 `Failed to get next task recommendation: ${error instanceof Error ? error.message : String(error)}. ` +
-                `Make sure task tracking has been initialized.`
+                `Make sure task tracking has been initialized.`,
               );
             }
           },
-        })
+        }),
       );
 
       // Help tool
@@ -867,7 +864,7 @@ export class LanguageModelToolsProvider {
                   `**Get Huckleberry Task Manager Help**\n\n` +
                   `This will show information about ${topic === 'general' ?
                     'all available features and commands' :
-                    `how to use the ${topicDisplay} feature`}.`
+                    `how to use the ${topicDisplay} feature`}.`,
                 ),
               },
               invocationMessage: `Showing help for ${topicDisplay}...`,
@@ -916,7 +913,7 @@ export class LanguageModelToolsProvider {
               throw new Error(`Failed to get help information: ${error instanceof Error ? error.message : String(error)}`);
             }
           },
-        })
+        }),
       );
 
       // Register all disposables with the extension context
@@ -958,7 +955,7 @@ export class LanguageModelToolsProvider {
 
     try {
       // Read the current tasks collection
-      const { workspaceFolder, tasksDir, tasksJsonPath } = await getWorkspacePaths();
+      const { workspaceFolder: _workspaceFolder, tasksDir: _tasksDir, tasksJsonPath } = await getWorkspacePaths();
       const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
 
       // Check if we have tasks to prioritize
@@ -1006,10 +1003,10 @@ export class LanguageModelToolsProvider {
           completed: completedTasks,
         },
       };
-    } catch (error) {
-      logWithChannel(LogLevel.ERROR, 'Error prioritizing tasks:', error);
+    } catch {
+      logWithChannel(LogLevel.ERROR, 'Error prioritizing tasks');
       return {
-        error: `Failed to prioritize tasks: ${error instanceof Error ? error.message : String(error)}`,
+        error: 'Failed to prioritize tasks',
       };
     }
   }

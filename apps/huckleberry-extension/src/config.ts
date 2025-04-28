@@ -5,7 +5,7 @@ import { taskmanagerConfig, TaskPriority } from './types';
 export const DEFAULT_CONFIG: taskmanagerConfig = {
   defaultTasksLocation: 'tasks',
   taskFileTemplate: 'markdown',
-  defaultTaskPriority: 'medium'
+  defaultTaskPriority: 'medium',
 };
 
 /**
@@ -24,7 +24,7 @@ export function getConfiguration(): taskmanagerConfig {
     taskFileTemplate: (config.get('taskFileTemplate') || DEFAULT_CONFIG.taskFileTemplate) as 'markdown' | 'json',
     defaultTaskPriority: taskPriority,
     defaultDueDate: config.get('defaultDueDate') || 'none',
-    customDueDateDays: config.get('customDueDateDays') || 0
+    customDueDateDays: config.get('customDueDateDays') || 0,
   };
   
   console.log('📋 Loaded configuration:', finalConfig);

@@ -25,7 +25,7 @@ export const DEBUG_ENABLED = true;
  * @param message The message to log
  * @param data Optional data to include
  */
-export function logDebug(level: LogLevel, message: string, data?: any): void {
+export function logDebug(level: LogLevel, message: string, data?: unknown): void {
   if (!DEBUG_ENABLED) {
     return;
   }
@@ -53,7 +53,7 @@ export function logDebug(level: LogLevel, message: string, data?: any): void {
   // Format the output
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
   const logPrefix = `[HUCKLEBERRY ${level}] ${emoji} ${timestamp}:`;
-  
+
   if (data !== undefined) {
     try {
       // For objects, try to stringify with proper formatting
@@ -62,7 +62,7 @@ export function logDebug(level: LogLevel, message: string, data?: any): void {
       } else {
         console.log(`${logPrefix} ${message}`, data);
       }
-    } catch (error) {
+    } catch {
       console.log(`${logPrefix} ${message} [Data could not be stringified]`, data);
     }
   } else {
@@ -91,16 +91,16 @@ export function initDebugChannel(): vscode.OutputChannel {
  * @param message The message to log
  * @param data Optional data to include
  */
-export function logWithChannel(level: LogLevel, message: string, data?: any): void {
+export function logWithChannel(level: LogLevel, message: string, data?: unknown): void {
   logDebug(level, message, data);
-  
+
   if (!debugChannel) {
     initDebugChannel();
   }
-  
+
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
   let channelMessage = `[${timestamp}] [${level}] ${message}`;
-  
+
   if (data !== undefined) {
     try {
       if (typeof data === 'object' && data !== null) {
@@ -108,11 +108,11 @@ export function logWithChannel(level: LogLevel, message: string, data?: any): vo
       } else {
         channelMessage += ` ${data}`;
       }
-    } catch (error) {
+    } catch {
       channelMessage += ' [Data could not be stringified]';
     }
   }
-  
+
   debugChannel?.appendLine(channelMessage);
 }
 
@@ -131,19 +131,19 @@ export function showDebugChannel(): void {
  * @param context The extension context
  * @param state Object containing the current state to log
  */
-export function dumpState(context: vscode.ExtensionContext, state: Record<string, any>): void {
+export function dumpState(context: vscode.ExtensionContext, state: Record<string, unknown>): void {
   logWithChannel(LogLevel.DEBUG, '📊 Extension State Dump:');
   logWithChannel(LogLevel.DEBUG, `- Extension ID: ${context.extension.id}`);
   logWithChannel(LogLevel.DEBUG, `- Extension Version: ${context.extension.packageJSON.version}`);
   logWithChannel(LogLevel.DEBUG, `- Extension Path: ${context.extensionPath}`);
   logWithChannel(LogLevel.DEBUG, `- Workspace Folders: ${vscode.workspace.workspaceFolders?.length || 0}`);
-  
+
   if (vscode.workspace.workspaceFolders?.length) {
     vscode.workspace.workspaceFolders.forEach((folder, index) => {
       logWithChannel(LogLevel.DEBUG, `  - [${index}] ${folder.name}: ${folder.uri.fsPath}`);
     });
   }
-  
+
   logWithChannel(LogLevel.DEBUG, '- Current State:', state);
   showDebugChannel();
 }
