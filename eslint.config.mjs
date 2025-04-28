@@ -11,6 +11,7 @@ export default [
       '**/tmp',
       '**/out-tsc',
       '**/apps/huckleberry-docs/build',
+      '**/apps/huckleberry-docs/.docusaurus',
       '**/node_modules',
       '**/.nx/cache',
       '**/.nx/workspace-data',
@@ -51,7 +52,7 @@ export default [
     ],
     // Enhanced rules for the Huckleberry project
     plugins: {
-      '@typescript-eslint': typescriptESLint
+      '@typescript-eslint': typescriptESLint,
     },
     rules: {
       // Error prevention
@@ -70,11 +71,11 @@ export default [
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': ['error', { 
         'argsIgnorePattern': '^_', 
-        'varsIgnorePattern': '^_'
+        'varsIgnorePattern': '^_',
       }],
       '@typescript-eslint/explicit-function-return-type': ['warn', {
         'allowExpressions': true, 
-        'allowTypedFunctionExpressions': true
+        'allowTypedFunctionExpressions': true,
       }],
       '@typescript-eslint/no-explicit-any': 'warn',
       
@@ -82,9 +83,9 @@ export default [
       ...(typescriptESLint.rules['member-delimiter-style'] ? {
         '@typescript-eslint/member-delimiter-style': ['error', {
           'multiline': { 'delimiter': 'semi', 'requireLast': true },
-          'singleline': { 'delimiter': 'semi', 'requireLast': false }
-        }]
-      } : {})
+          'singleline': { 'delimiter': 'semi', 'requireLast': false },
+        }],
+      } : {}),
     },
   },
   {
