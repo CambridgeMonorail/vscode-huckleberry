@@ -65,3 +65,16 @@ Huckleberry's not finished. Some features are still being tested, and the occasi
 
 If you've ever felt like you were constantly having to explain the obvious to your AI assistant, Huckleberry might be what you've been waiting for.
 
+## FAQs
+
+### Q: What is the .github/copilot-instructions.md file and how does it help?
+
+A: This file provides permanent context to GitHub Copilot about your project setup and preferences. For Huckleberry users, it helps Copilot understand how tasks are managed and stored in your workspace.
+
+### Q: How does Huckleberry improve Copilot's context awareness?
+
+A: Huckleberry helps by organizing tasks in context, clarifying your intentions through well-scoped tasks, and making task-related conversations feel natural. It provides Copilot with structured information about your project's tasks and priorities.
+
+### Q: Does Huckleberry require GitHub Copilot to function?
+
+A: Yes, Huckleberry is designed to work with GitHub Copilot and leverages its AI capabilities. You need an active GitHub Copilot subscription to use Huckleberry's full feature set.

@@ -112,6 +112,20 @@ Applying these patterns produces more reliable, target-specific outputs.
 
 While AI tools like Huckleberry can help manage your development tasks and GitHub Copilot can generate functional code, the human touch remains essential for creating truly exceptional user experiences. The partnership between AI assistance and thoughtful UX design represents the future of software development, technically robust applications that also delight users.
 
+## FAQs
+
+### Q: How can I use AI tools effectively for UX design feedback?
+
+A: Start by providing clear screenshots and specific questions about your design. Use AI tools to check accessibility compliance, get alternative design suggestions, and validate your design decisions against established UX principles.
+
+### Q: Can AI tools completely replace traditional UX testing?
+
+A: No, AI tools should complement, not replace, traditional UX testing methods. While AI can provide quick feedback and identify common issues, real user testing is still essential for understanding actual user behavior and preferences.
+
+### Q: How does Huckleberry help with UX-related tasks?
+
+A: Huckleberry can help track UX-related tasks, organize feedback from different sources, and maintain a structured approach to implementing UX improvements. It integrates with your development workflow to ensure UX considerations are part of your regular task management.
+
 ## Further Reading
 
 - [W3C Web Accessibility Evaluation Tools List](https://www.w3.org/WAI/ER/tools/)

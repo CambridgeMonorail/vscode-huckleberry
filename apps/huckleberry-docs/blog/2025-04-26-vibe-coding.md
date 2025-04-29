@@ -114,6 +114,20 @@ Huckleberry orchestrates each hop so you keep your rhythm.
 
 Drop a `.github/copilot-instructions.md` with team lore and Huckleberry will sound like part of the posse rather than a hired gun.
 
+## FAQs
+
+### Q: What is "Agent Mode" and how does it relate to Vibe Coding?
+
+A: Agent Mode is a feature in VS Code that allows for natural language interaction with Copilot. Vibe Coding leverages this through Huckleberry to create a smooth, conversational workflow where you can manage tasks and code without breaking your rhythm.
+
+### Q: How can I control the automation level when using Huckleberry?
+
+A: Huckleberry provides several control mechanisms: you can review commands in the chat log, keep auto-approve switched off for more control, and easily undo the last edit. You can also switch between Edit Mode for fine control and Agent Mode for broader actions.
+
+### Q: Can I customize Huckleberry's behavior to match my team's workflow?
+
+A: Yes, you can customize Huckleberry by adding a `.github/copilot-instructions.md` file with your team's preferences and conventions. This helps Huckleberry understand your team's workflow and communicate in a way that matches your team's style.
+
 ## Ready to Ride ?
 
 Open the Agent pane, voice your next high-level order and watch Huckleberry keep the beat while you solo. As the folk in Tombstone might put it : *I’m your Huckleberry*.
