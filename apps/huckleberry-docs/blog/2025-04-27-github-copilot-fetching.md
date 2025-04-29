@@ -82,6 +82,20 @@ Copilot rides back with the endpoints and lays out each step like street dust be
 
 Blend these with web fetching and you have a chuck‑wagon stew worthy of Tombstone's busiest cook.
 
+## FAQs
+
+### Q: How do I use web fetching effectively with Huckleberry?
+
+A: Focus on specific documentation pages rather than broad searches, combine fetched content with your workspace snippets, and ask targeted questions. Cross-check critical information and use it especially for fast-moving libraries.
+
+### Q: Are there any limitations to web fetching?
+
+A: Yes, some sites may block access, large pages might be truncated, and interactive documentation can be challenging to parse. Always verify critical information from fetched content.
+
+### Q: Can I customize which documentation sources Huckleberry fetches from?
+
+A: While Huckleberry uses Copilot's web fetching capabilities, you can influence the sources by providing specific URLs and combining the results with local workspace context.
+
 ## Last call at the Oriental
 
 Web‑fetching is less smoke and mirrors, more poker hand played with a cold stare. Call the right bet, keep your prompts tight, and always tilt your hat towards the source before pushing code to production. Your deputy will have the latest chapter of the law at hand.

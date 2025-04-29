@@ -109,3 +109,17 @@ Find a bug or dream up a feature? Wander over to [https://github.com/CambridgeMo
 Every webinar swears it can unlock 10× velocity. **Huckleberry promises fewer Post-it notes and more time in the flow state.** Install the VSIX, feed it a spec, and watch your coding session go from "Where did I put that to-do list?" to "Next task, please" in one dusty-trail trick.
 
 Happy hacking, and remember: read the tasks before the tasks pull a high-noon standoff.
+
+## FAQs
+
+### Q: How do I choose the right AI model for my development needs?
+
+A: Consider factors like the type of work you're doing (creative writing vs code-heavy tasks), model capabilities, and performance. For instance, Claude 3.7 Sonnet is recommended for creative writing and specifications, while Claude 3.5 Sonnet works well for code-focused conversations.
+
+### Q: What's the best way to use Huckleberry with specification documents?
+
+A: Start by having AI generate a markdown specification in your docs directory. You can then use Huckleberry to parse this specification into tasks, ensuring they link back to the original requirements. This creates a clear trail from specification to implementation.
+
+### Q: How can I maintain consistency when using AI-generated specifications?
+
+A: Use clear, detailed prompts when requesting specifications, review the generated content, and ensure all tasks link back to the specification document. Keep your requirements focused and use Huckleberry to validate task coverage against the specification.

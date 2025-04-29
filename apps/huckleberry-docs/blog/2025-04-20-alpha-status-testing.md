@@ -70,3 +70,17 @@ Our path to beta is clear: complete the testing checklist, fix any issues that s
 In the meantime, if you're using the alpha release, we'd love to hear about your experience. What works? What doesn't? What would make Huckleberry more valuable to your workflow?
 
 After all, there's no normal life, just tasks, and we want to make sure Huckleberry handles them with the reliability they deserve.
+
+## FAQs
+
+### Q: What kind of testing is being done during the alpha phase?
+
+A: We're following a comprehensive testing checklist that covers installation and setup, core chat functionality, task management, TODO scanning, requirements parsing, language model integration, settings, error handling, and cross-platform compatibility.
+
+### Q: How can I participate in alpha testing?
+
+A: You can participate by installing the alpha release from our GitHub repository and providing feedback through issues, suggestions, or pull requests. We especially value real-world usage feedback and edge case discoveries.
+
+### Q: What level of stability can I expect from the alpha release?
+
+A: While the core functionality is implemented and usable, you may encounter some bugs, incomplete features, or behavior that needs refinement. We recommend having a backup task management solution for critical work during the alpha phase.

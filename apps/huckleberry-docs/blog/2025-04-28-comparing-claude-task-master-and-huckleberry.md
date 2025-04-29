@@ -92,12 +92,14 @@ Both tools offer unique integration paths:
 ## Limitations to Consider
 
 **Task Master's constraints:**
+
 - Requires a Node.js environment
 - Needs an Anthropic Claude API key
 - CLI-only interface may have a learning curve
 - No built-in GUI or notification system
 
 **Huckleberry's challenges:**
+
 - Currently in early (alpha) development
 - Requires VS Code and GitHub Copilot
 - Limited to VS Code environments
@@ -124,6 +126,20 @@ These two tools are complementary rather than competitive - like a sheriff and a
 **Huckleberry** shines with **interactive, in-IDE task management** for developers who live primarily in VS Code and use GitHub Copilot.
 
 Your choice ultimately depends on whether you prefer the wide-open trails of CLI flexibility or the comfort of staying within the familiar VS Code saloon while managing your development tasks.
+
+## FAQs
+
+### Q: Can I use both Claude Task Master and Huckleberry together?
+
+A: Yes, you can use both tools as they serve different purposes. Claude Task Master excels at broad project planning and management, while Huckleberry provides deep VS Code integration for day-to-day task management during development.
+
+### Q: What are the main advantages of Huckleberry over Claude Task Master?
+
+A: Huckleberry's main advantages include direct VS Code integration, local task storage in your workspace, deep GitHub Copilot integration, and the ability to scan TODOs and parse PRDs into structured tasks without leaving your editor.
+
+### Q: Which tool should I choose for my project?
+
+A: If you primarily work in VS Code and want tight integration with your development workflow, Huckleberry is the better choice. If you need broader project management capabilities outside of coding tasks, Claude Task Master might be more suitable. For some teams, using both tools complementarily works best.
 
 ---
 

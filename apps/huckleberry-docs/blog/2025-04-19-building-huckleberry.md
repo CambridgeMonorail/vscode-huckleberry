@@ -48,3 +48,17 @@ We called it Huckleberry as a nod to the idea of being the right one for the job
 If you've ever felt like your task list is just a polite fiction, or that your productivity tools are making you feel more behind rather than ahead, give Huckleberry a go.
 
 It's not the future of work. It's just a tool that we wanted to use, and maybe you will too.
+
+## FAQs
+
+### Q: Is Huckleberry a replacement for traditional task management apps?
+
+A: No, Huckleberry is designed to complement your existing workflow by integrating task management directly into VS Code. It's built for developers who want to manage tasks without leaving their editor.
+
+### Q: Why did you choose to build it as a VS Code extension?
+
+A: We built Huckleberry as a VS Code extension because we wanted task management to live where the work happens. No context switching, no separate apps to manage - just natural conversation with your editor.
+
+### Q: Is Huckleberry ready for production use?
+
+A: Currently, Huckleberry is in alpha status. While it's functional and we use it daily, you should expect some rough edges and evolving features. We're sharing it early to gather feedback and improve it with the community.

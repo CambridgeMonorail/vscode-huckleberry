@@ -52,3 +52,17 @@ There's something uniquely satisfying about finding a tool that fits just right 
 So give Huckleberry a try. It might just be your new best friend in VS Code,  your faithful task-wrangling sidekick, ready whenever you need it.
 
 And if anyone asks why you're suddenly so much more organized, you can just tell them: "I'm your Huckleberry."
+
+## FAQs
+
+### Q: What are the system requirements for running Huckleberry?
+
+A: Huckleberry requires Visual Studio Code version 1.93 or later and an active GitHub Copilot subscription. It works on Windows, macOS, and Linux platforms where VS Code is supported.
+
+### Q: How do I get started with Huckleberry after installation?
+
+A: After installation, open the Copilot Chat panel and type `@Huckleberry help` to see available commands. You can then initialize task tracking in your workspace and start creating or importing tasks.
+
+### Q: Will my tasks be synchronized across different machines?
+
+A: Huckleberry stores tasks as files in your workspace, so they will be synchronized through your version control system (like Git). This means your tasks stay with your project and can be shared with your team.
