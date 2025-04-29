@@ -26,7 +26,7 @@ huckleberry:
 development:
   label: Development
   permalink: /development
-  description: Development processes, patterns, and best practices
+  description: Software development processes, patterns, and best practices
 
 ai-agents:
   label: AI Agents
