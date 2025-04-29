@@ -322,11 +322,29 @@ function createTask(): void {
       return;
     }
 
-    // Open chat with Huckleberry and prompt for task creation
-    vscode.commands.executeCommand(
-      'workbench.action.chat.open',
-      '@huckleberry Create a task',
-    );
+    // Import dynamically to prevent circular dependencies
+    import('./utils/parameterUtils').then(async ({ promptForPrioritySelection }) => {
+      const selectedPriority = await promptForPrioritySelection();
+      
+      // Prompt for task description
+      const description = await vscode.window.showInputBox({
+        placeHolder: 'Enter task description',
+        prompt: 'What needs to be done?',
+        title: 'Huckleberry: Create Task',
+      });
+
+      if (description) {
+        // Execute the command with the provided values
+        const priorityText = selectedPriority ? ` ${selectedPriority} priority task to` : ' task to';
+        vscode.commands.executeCommand(
+          'workbench.action.chat.open',
+          `@huckleberry Create a${priorityText} ${description}`,
+        );
+      }
+    }).catch(error => {
+      logWithChannel(LogLevel.ERROR, 'Error importing parameter utilities:', error);
+      vscode.window.showErrorMessage(`Failed to load task creation UI: ${error instanceof Error ? error.message : String(error)}`);
+    });
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in createTask command:', error);
     vscode.window.showErrorMessage(`Failed to create task: ${error instanceof Error ? error.message : String(error)}`);
