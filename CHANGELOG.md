@@ -1,3 +1,13 @@
+## 0.1.24 (2025-04-29)
+
+### 🚀 Features
+
+- **parameterUtils:** add option to exclude completed tasks in task selection ([#20](https://github.com/CambridgeMonorail/vscode-huckleberry/pull/20))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.23 (2025-04-29)
 
 This was a version bump only, there were no code changes.
