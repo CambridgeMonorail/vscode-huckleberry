@@ -28,9 +28,10 @@ interface TaskSelectionResult {
 /**
  * Prompts the user to select a task
  * @param toolManager The tool manager instance
+ * @param excludeCompleted Whether to exclude completed tasks from the list
  * @returns A promise that resolves with the selected task ID or undefined if cancelled
  */
-export async function promptForTaskSelection(toolManager: ToolManager): Promise<string | undefined> {
+export async function promptForTaskSelection(toolManager: ToolManager, excludeCompleted = false): Promise<string | undefined> {
   try {
     // Get workspace paths
     const { tasksJsonPath } = await getWorkspacePaths();
@@ -44,8 +45,18 @@ export async function promptForTaskSelection(toolManager: ToolManager): Promise<
       return undefined;
     }
     
+    // Filter tasks if needed
+    const availableTasks = excludeCompleted 
+      ? tasksData.tasks.filter(task => !task.completed)
+      : tasksData.tasks;
+
+    if (excludeCompleted && availableTasks.length === 0) {
+      vscode.window.showInformationMessage('No incomplete tasks found. All tasks are completed!');
+      return undefined;
+    }
+    
     // Create quick pick items with task details
-    const items: TaskQuickPickItem[] = tasksData.tasks.map(task => {
+    const items: TaskQuickPickItem[] = availableTasks.map(task => {
       const priorityIcon = task.priority ? priorityEmoji[task.priority] || '⚪' : '⚪';
       return {
         label: `${task.id}`,

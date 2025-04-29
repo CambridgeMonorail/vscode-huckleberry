@@ -479,7 +479,7 @@ function markTaskComplete(taskId?: string): void {
           vscode.window.showErrorMessage('Extension not properly initialized');
           return;
         }
-        const selectedTaskId = await promptForTaskSelection(extensionState.toolManager);
+        const selectedTaskId = await promptForTaskSelection(extensionState.toolManager, true);
         if (selectedTaskId) {
           // Execute the command with the selected task ID
           vscode.commands.executeCommand(
