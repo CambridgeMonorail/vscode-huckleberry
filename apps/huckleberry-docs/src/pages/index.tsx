@@ -100,8 +100,7 @@ function VideoSection(): JSX.Element {
           <div className="col col--12">
             <div className={styles.videoWrapper}>
               <iframe
-                width="560"
-                height="315"
+                className={styles.responsiveVideo}
                 src="https://www.youtube.com/embed/NnjEhP-Swmc?si=8EAQBMwwfV80UwTp"
                 title="YouTube video player"
                 frameBorder="0"
