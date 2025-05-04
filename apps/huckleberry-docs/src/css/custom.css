@@ -43,6 +43,14 @@
   color: #f8f3ea;
 }
 
+/* Hero title styling */
+.hero__title {
+  color: #f8f3ea;
+  font-weight: 700;
+  font-family: var(--ifm-heading-font-family);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 /* Logo styling */
 .navbar__logo img {
   height: 2rem;
