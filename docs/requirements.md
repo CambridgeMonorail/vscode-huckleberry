@@ -4,22 +4,6 @@ This document provides a structured list of requirements for implementing the re
 
 ## Core Functionality
 
-### Task Scanning and Auto-Discovery
-
-- [HIGH] Implement Code TODO Comment Scanner
-  - Create Language Model Tool to scan workspace files for TODO patterns
-  - Support configurable regex patterns for different TODO formats
-  - Support filtering by file type, directory, or exclusion patterns
-  - Extract context from surrounding code for task descriptions
-  - Create tasks from TODOs with appropriate metadata
-
-- [MEDIUM] Implement Requirements Document Parser
-  - Create parsing logic for common requirements document formats
-  - Extract hierarchical task structures from document headings/sections
-  - Identify dependencies between tasks based on document structure
-  - Infer priorities from document content
-  - Generate comprehensive task descriptions with context
-
 ### Task Visualization and UI
 
 - [HIGH] Create Task Explorer View
@@ -109,21 +93,25 @@ This document provides a structured list of requirements for implementing the re
 ## Implementation Schedule
 
 ### Milestone 1: Task Visualization (2 weeks)
+
 - Task Explorer View implementation
 - Task Status Badges and Decorations
 - Task data structure finalization
 
 ### Milestone 2: Task Discovery (2 weeks)
+
 - Code TODO Scanner implementation
 - Requirements Document Parser completion
 - Integration with Task Explorer View
 
 ### Milestone 3: Advanced Features (2 weeks)
+
 - Task Dependencies Management
 - Task Templates and Presets
 - Test coverage implementation
 
 ### Milestone 4: Integration (2 weeks)
+
 - GitHub Issue Integration
 - Task Export and Reporting
 - Documentation and release preparation
