@@ -46,6 +46,15 @@ const config: Config = {
     },
   ],
 
+  // Add custom script for GDPR compliance before Google Analytics loads
+  scripts: [
+    {
+      src: '/js/analytics-consent.js',
+      async: false, // Must load before Google Analytics
+      defer: false,
+    },
+  ],
+
   presets: [
     [
       'classic',
@@ -83,6 +92,14 @@ const config: Config = {
         gtag: {
           trackingID: 'G-J4S7Q0VMHR',
           anonymizeIP: true,
+        },
+        // Add sitemap configuration
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+          ignorePatterns: ['/tags/**'],
+          filename: 'sitemap.xml',
+          lastmod: 'date',
         },
       } satisfies Preset.Options,
     ],
