@@ -115,3 +115,28 @@
     font-size: 1rem;
   }
 }
+
+/* Video section styling */
+.videoSection {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+}
+
+.responsiveVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}

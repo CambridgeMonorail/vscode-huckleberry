@@ -100,6 +100,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
+        {to: '/blog/archive', label: 'Blog Archive', position: 'left'},
         {
           href: 'https://github.com/CambridgeMonorail/vscode-huckleberry',
           label: 'GitHub',

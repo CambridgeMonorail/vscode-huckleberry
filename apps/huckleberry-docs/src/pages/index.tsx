@@ -89,6 +89,33 @@ function InspirationSection(): JSX.Element {
   );
 }
 
+/**
+ * Displays an introductory video about Huckleberry
+ */
+function VideoSection(): JSX.Element {
+  return (
+    <section className={styles.videoSection}>
+      <div className="container">
+        <div className="row">
+          <div className="col col--12">
+            <div className={styles.videoWrapper}>
+              <iframe
+                className={styles.responsiveVideo}
+                src="https://www.youtube.com/embed/NnjEhP-Swmc?si=8EAQBMwwfV80UwTp"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
@@ -99,6 +126,7 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+        <VideoSection />
         <InspirationSection />
       </main>
     </Layout>
