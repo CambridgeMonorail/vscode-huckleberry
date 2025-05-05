@@ -55,7 +55,7 @@ function InspirationSection(): JSX.Element {
                 >
                   Claude Task Master
                 </a>
-                , a sharp bit of thinking that showed just how far a language
+               , a sharp bit of thinking that showed just how far a language
                 model can go when you let it run the planning meeting.
               </p>
               <p>
