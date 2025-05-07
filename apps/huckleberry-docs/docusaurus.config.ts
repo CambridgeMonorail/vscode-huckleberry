@@ -90,7 +90,7 @@ const config: Config = {
         },
         // Add Google Analytics configuration
         gtag: {
-          trackingID: 'G-J4S7Q0VMHR',
+          trackingID: 'GTM-N2JHGVNS',
           anonymizeIP: true,
         },
         // Add sitemap configuration
