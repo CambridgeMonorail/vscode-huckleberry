@@ -135,7 +135,7 @@ export default function Root({ children }): JSX.Element {
           We use Google Analytics to understand how our site is being used. 
           Your data is anonymized and processed in compliance with GDPR.{' '}
           <a 
-            href="/privacy" 
+            href="/vscode-huckleberry/privacy" 
             style={{ textDecoration: 'underline', color: 'white' }}
           >
             Learn more
