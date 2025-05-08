@@ -95,7 +95,24 @@ export class ChatService {
     const disposables: vscode.Disposable[] = [];
     const { primaryId, debugName } = options;
     logWithChannel(LogLevel.DEBUG, `Registering chat participant: ${debugName || primaryId}`);
+    
     try {
+      // First check if the chat API is available
+      if (!vscode.chat || typeof vscode.chat.createChatParticipant !== 'function') {
+        logWithChannel(LogLevel.WARN, 'VS Code Chat API not available. Huckleberry chat features will be disabled.');
+        vscode.window.showWarningMessage(
+          'Huckleberry: VS Code Chat API not available. AI-powered task management features will be limited.',
+          'Learn More',
+        ).then(selection => {
+          if (selection === 'Learn More') {
+            vscode.env.openExternal(
+              vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat'),
+            );
+          }
+        });
+        return [];
+      }
+      
       const primaryParticipant = vscode.chat.createChatParticipant(
         primaryId,
         async (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
@@ -121,10 +138,15 @@ export class ChatService {
       return disposables;
     } catch (error) {
       logWithChannel(LogLevel.CRITICAL, `❌ Failed to register chat participant: ${debugName || primaryId}`, error);
-      vscode.window.showErrorMessage(
-        'Huckleberry extension failed to register the chat participant. ' +
-        'The @Huckleberry commands will not work. Please reload the window or restart VS Code.',
-      );
+      vscode.window.showWarningMessage(
+        'Huckleberry extension could not register the chat participant. ' +
+        'The @Huckleberry commands may not work but other task management features are still available.',
+        'Learn More',
+      ).then(selection => {
+        if (selection === 'Learn More') {
+          vscode.commands.executeCommand('workbench.action.openSettings', 'github.copilot');
+        }
+      });
       return [];
     }
   }

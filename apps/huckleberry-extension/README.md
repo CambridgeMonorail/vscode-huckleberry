@@ -10,6 +10,8 @@
 
 Huckleberry Task Manager is a VS Code extension that brings AI-powered task management directly into your coding workflow. Using the VS Code Chat interface, you can have natural conversations with a dedicated Task Manager agent that helps you track, manage, and organize project tasks without ever leaving your development environment.
 
+> **AI Transparency Notice**: This extension utilizes the AI language model you've selected in VS Code. While these models are powerful tools for understanding and processing natural language requests, they may sometimes produce responses that are incorrect or incomplete. We recommend verifying important decisions or task interpretations, especially for critical project components.
+
 For comprehensive documentation, visit [https://cambridgemonorail.github.io/vscode-huckleberry/](https://cambridgemonorail.github.io/vscode-huckleberry/).
 
 ## Features
@@ -122,19 +124,35 @@ With this integration, VS Code's language models (like GitHub Copilot) can perfo
 
 ## Privacy and Security
 
-All task management operations are performed locally within VS Code. When you interact with Huckleberry through chat:
+Huckleberry Task Manager stores all task data locally in your workspace and does not send task information to external servers. When you interact with Huckleberry through chat:
 
-1. Your messages are processed by the GitHub Copilot service (similar to regular Copilot usage)
+1. Your messages are processed by the AI language model you've selected in VS Code (such as GitHub Copilot)
 2. File operations and task management are performed locally by the extension
 3. No task data is sent to external servers
+
+While your tasks and project data remain local, your text inputs for task management are processed according to the policies of your selected model provider. Please ensure you understand and accept the terms of service, privacy policy, and data handling practices of the specific model you choose to use with this extension.
+
+Different models may have varying terms regarding:
+- How your inputs are processed and stored
+- Whether your inputs are used for model training
+- Data retention policies
+- Usage limitations
+
+We recommend reviewing the relevant documentation for your selected model provider to make an informed decision about your privacy preferences.
+
+## Feedback and Support
+
+We value your feedback! If you encounter any issues, have suggestions for improvements, or want to request new features, please join us at our GitHub repository:
+
+- **Submit Issues**: [https://github.com/CambridgeMonorail/vscode-huckleberry/issues](https://github.com/CambridgeMonorail/vscode-huckleberry/issues)
+- **Feature Requests**: Use the issue tracker with the "enhancement" label
+- **Bug Reports**: Include steps to reproduce, expected behavior, and your environment details
+
+Your feedback helps us improve Huckleberry Task Manager for everyone. We review all submissions and appreciate your contributions to making this extension better.
 
 ## Keyboard Shortcuts
 
 No default keyboard shortcuts are assigned, but you can add your own through VS Code's keyboard shortcuts settings.
-
-## Privacy Notice
-
-Huckleberry Task Manager stores all task data locally in your workspace and does not send task information to external servers.
 
 ## Known Limitations
 
