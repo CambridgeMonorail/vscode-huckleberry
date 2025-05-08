@@ -110,6 +110,10 @@ export class ChatService {
           }
         },
       );
+
+      // Set the icon path for the chat participant
+      primaryParticipant.iconPath = vscode.Uri.joinPath(this._context.extensionUri, 'media', 'huck.svg');
+      
       logWithChannel(LogLevel.INFO, `Chat participant successfully registered with ID: ${primaryId}`);
       this.participants.set(primaryId, primaryParticipant);
       disposables.push(primaryParticipant);
