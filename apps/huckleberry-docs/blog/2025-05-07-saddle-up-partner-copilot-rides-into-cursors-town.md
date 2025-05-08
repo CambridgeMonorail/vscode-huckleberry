@@ -29,7 +29,7 @@ Cursor still packs a **Ghost (offline) mode** and a slicker diff pane, yet the d
 
 Copilot Chat now scouts every file in your repo (it respects `.gitignore`) and refreshes the map in seconds. Type `@workspace` in chat and it fetches symbols from any corner, the way a tracker follows hoofprints through the chaparral.
 
-The **workspace context feature** is a direct answer to one of the most common criticisms leveled at Copilot—that it lacks awareness of your broader codebase. With full repo context, Copilot can now suggest code that integrates properly with your existing architecture patterns and follows project conventions.
+The **workspace context feature** is a direct answer to one of the most common criticisms leveled at Copilot, that it lacks awareness of your broader codebase. With full repo context, Copilot can now suggest code that integrates properly with your existing architecture patterns and follows project conventions.
 
 *Docs: [Ask Copilot questions in your IDE](https://docs.github.com/en/copilot/using-github-copilot/copilot-chat/asking-github-copilot-questions-in-your-ide) | [Workspace Context in VS Code](https://code.visualstudio.com/docs/copilot/reference/workspace-context)*
 
@@ -47,7 +47,7 @@ Running a mighty Nx monorepo? Install **Nx Console** and accept the "Improve Cop
 | **Edit** | Select code, refactor or document it, preview in diff | [Copilot Edits guide](https://code.visualstudio.com/docs/copilot/copilot-edits) |
 | **Agent** | Multi‑step features including shell commands | See Agent section in docs above |
 
-Agent mode lines commands up like bottles on a fence and waits for your nod before pulling the trigger. Unlike standard chat, it doesn't just talk—it reads files, writes code, and runs commands, all within guardrails you control. Perfect for [taming the "vibe coding"](/blog/vibe-coding) tendencies where AI tools generate plausible but untested answers. With Agent mode, each action is transparent, each command authenticated by your approval, turning what would be hastily scribbled notes into an actionable trail map with defined waypoints.
+Agent mode lines commands up like bottles on a fence and waits for your nod before pulling the trigger. Unlike standard chat, it doesn't just talk, it reads files, writes code, and runs commands, all within guardrails you control. Perfect for [taming the "vibe coding"](/blog/vibe-coding) tendencies where AI tools generate plausible but untested answers. With Agent mode, each action is transparent, each command authenticated by your approval, turning what would be hastily scribbled notes into an actionable trail map with defined waypoints.
 
 ## 3. Smart Actions: one‑click rewrites
 
@@ -92,7 +92,7 @@ While Copilot is catching up fast, Cursor continues to pivot and innovate at the
 | IDE-wide completions | Yes: completes in search, terminals, and more | No: limited to supported file types |
 | Raw speed | Yes: consistently faster response times | No: sometimes lags on complex requests |
 
-Cursor's Ghost Mode remains its standout feature—the ability to run inference locally means you can code in an airplane at 30,000 feet, in a cabin with spotty satellite internet, or in secure environments where external AI services are forbidden. Their team's recent improvements to the local inference engine have reduced latency while maintaining quality, showing they're not just resting on their laurels.
+Cursor's Ghost Mode remains its standout feature, the ability to run inference locally means you can code in an airplane at 30,000 feet, in a cabin with spotty satellite internet, or in secure environments where external AI services are forbidden. Their team's recent improvements to the local inference engine have reduced latency while maintaining quality, showing they're not just resting on their laurels.
 
 Their development team also continues to ship weekly improvements while Copilot often follows a more measured monthly cadence. This rapid iteration means Cursor frequently introduces cutting-edge features that Copilot adopts months later.
 
