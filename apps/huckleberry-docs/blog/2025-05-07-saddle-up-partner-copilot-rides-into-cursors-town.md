@@ -29,7 +29,9 @@ Cursor still packs a **Ghost (offline) mode** and a slicker diff pane, yet the d
 
 Copilot Chat now scouts every file in your repo (it respects `.gitignore`) and refreshes the map in seconds. Type `@workspace` in chat and it fetches symbols from any corner, the way a tracker follows hoofprints through the chaparral.
 
-*Docs: [Ask Copilot questions in your IDE](https://docs.github.com/en/copilot/using-github-copilot/copilot-chat/asking-github-copilot-questions-in-your-ide)*
+The **workspace context feature** is a direct answer to one of the most common criticisms leveled at Copilot—that it lacks awareness of your broader codebase. With full repo context, Copilot can now suggest code that integrates properly with your existing architecture patterns and follows project conventions.
+
+*Docs: [Ask Copilot questions in your IDE](https://docs.github.com/en/copilot/using-github-copilot/copilot-chat/asking-github-copilot-questions-in-your-ide) | [Workspace Context in VS Code](https://code.visualstudio.com/docs/copilot/reference/workspace-context)*
 
 ### Nx adds extra horses to the posse
 
@@ -96,15 +98,31 @@ Their development team also continues to ship weekly improvements while Copilot 
 
 *Reference: [Cursor Ghost Mode overview](https://cursor.sh/blog/ghost-mode)*
 
+**Update:** The VS Code Insiders build now supports GitHub Copilot Bring-Your-Own Model with Ollama, bringing local model inference capabilities to Copilot users. This experimental feature allows developers to run local AI models through Ollama while maintaining the Copilot interface, potentially closing the offline capability gap with Cursor's Ghost Mode.
+
+*Reference: [GitHub Copilot with Ollama Demo](https://www.youtube.com/watch?v=hFM9gtIzBMI)*
+
 ## 8. Quick‑draw checklist
 
-* Update VS Code and Copilot to April 2025 or newer.
-* Turn on workspace context: `"copilot.experimental.workspaceContext": "on"`.
-* Install Nx Console and enable MCP if you use Nx.
-* Pick the right mode: Ask, Edit or Agent.
-* Approve tools so Agent sessions can run tests quietly.
-* Set organisation privacy policies.
-* Add the GitHub CLI extension if you prefer the terminal trail.
+1. Upgrade VS Code and Copilot to the April 2025 build or later.
+
+2. (Optional) Enable automatic #codebase retrieval with:
+
+   ```jsonc
+   "github.copilot.chat.codesearch.enabled": true
+   ```
+
+3. Install Nx Console and accept the MCP prompt (or set `"chat.mcp.enabled": true`) if you use Nx monorepos.
+
+4. Pick the right mode for each job: Ask, Edit, or Agent.
+
+5. Approve tools when Agent mode wants to run tests or migrations.
+
+6. Review enterprise privacy policies to exclude sensitive code or block public‑match suggestions.
+
+7. Add the GitHub CLI extension if you prefer to work from the terminal trail.
+
+8. (Optional) If you want the active file auto‑attached, set `"chat.implicitContext.enabled": true` – otherwise leave it alone and use the paper‑clip to attach context on demand.
 
 ## 9. Ride into the sunset
 
