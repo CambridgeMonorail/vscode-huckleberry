@@ -13,9 +13,9 @@ ai-agents:
   permalink: /ai-agents
   description: Topics related to AI agents and intelligent assistants
 
-vs-code:
+vscode:
   label: VS Code
-  permalink: /vs-code
+  permalink: /vscode
   description: Content related to Visual Studio Code and extensions
 
 testing:
@@ -162,3 +162,8 @@ ide-comparison:
   label: IDE Comparison
   permalink: /ide-comparison
   description: Comparative analysis of different Integrated Development Environments and code editors
+
+prompts:
+  label: Prompts
+  permalink: /prompts
+  description: Topics related to prompt engineering, prompt files, and custom instructions for AI assistants
