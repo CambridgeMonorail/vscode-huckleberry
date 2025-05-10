@@ -20,24 +20,20 @@ export async function enrichTask(): Promise<void> {
     // Check for Copilot availability before proceeding
     if (!(await checkCopilotAvailability())) {
       return;
-    }
-
-    const state = getExtensionState();
-    if (!state?.toolManager) {
+    }    const cachedState = getExtensionState();
+    if (!cachedState?.toolManager) {
       vscode.window.showErrorMessage('Extension not properly initialized');
       return;
     }
 
     // Import dynamically to prevent circular dependencies
     import('../../utils/parameterUtils').then(async ({ promptForTaskSelection }) => {
-      const state = getExtensionState();
-      if (!state?.toolManager) {
+      if (!cachedState?.toolManager) {
         vscode.window.showErrorMessage('Extension not properly initialized');
         return;
       }
-      
       // Prompt for task selection - pass false as the second parameter (not a string)
-      const taskId = await promptForTaskSelection(state.toolManager, false);
+      const taskId = await promptForTaskSelection(cachedState.toolManager, false);
       
       if (!taskId) {
         return;

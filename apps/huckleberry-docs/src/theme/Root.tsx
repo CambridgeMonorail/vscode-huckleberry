@@ -7,7 +7,7 @@
  * for Google Analytics tracking
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ReactNode } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import { useLocation } from '@docusaurus/router';
 import useIsBrowser from '@docusaurus/useIsBrowser';
@@ -17,7 +17,7 @@ import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
  * Custom Root component that wraps the entire application to provide
  * cookie consent functionality
  */
-export default function Root({ children }): JSX.Element {
+export default function Root({ children }: { children: ReactNode }): JSX.Element {
   const location = useLocation();
   const isBrowser = useIsBrowser();
   const [hasConsent, setHasConsent] = useState(false);
