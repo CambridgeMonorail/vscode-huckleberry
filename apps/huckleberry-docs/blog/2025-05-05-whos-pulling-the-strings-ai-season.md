@@ -7,13 +7,13 @@ tags: [ai, llm, development, productivity, context, agent-mode, vibe-coding]
 
 Who's really pulling the strings in the season of AI?
 
-<!-- truncate -->
-
 ## The Season of AI
 
 They're saying it's the season of AI. Big voices in tech declare that within three months, six, twelve, AI will be writing all the code, automating the work, replacing developers at the keyboard.
 
 Me? I'm not so sure.
+
+<!-- truncate -->
 
 ## Living with AI
 
@@ -43,11 +43,11 @@ If you're looking to ride this frontier effectively, don't just strap on your AI
 
 ### Become the Context Wrangler
 
-As we explored in ["I'm Your Huckleberry - Managing the LLM Context Frontier"](/blog/im-your-huckleberry-context), the most valuable skill you can develop is context management. LLMs aren't psychic gunslingers – they're storytellers working with what's in their campfire circle. Learn to feed them the right context at the right time, and use tools like Huckleberry that help "keep the important bits close to the fire." Remember: you're not just coding anymore; you're curating the inputs that shape what comes out.
+As we explored in ["I'm Your Huckleberry - Managing the LLM Context Frontier"](/blog/im-your-huckleberry-context), the most valuable skill you can develop is context management. LLMs aren't psychic gunslingers, they're storytellers working with what's in their campfire circle. Learn to feed them the right context at the right time, and use tools like Huckleberry that help "keep the important bits close to the fire." Remember: you're not just coding anymore; you're curating the inputs that shape what comes out.
 
 ### Tame That Vibe Coding
 
-Falling for the "vibe coding" trap is easier than tumbling off a horse. As outlined in ["Taming Vibe Coding"](/blog/taming-vibe-coding), we need to establish a robust posse of tools to keep AI output in check. TypeScript becomes your sheriff's badge, ESLint your deputy, and your test suite the jail that holds hallucinations prisoner. Follow our "trail-guide for safer AI sessions" – prompt narrow, anchor with real types, scaffold then refactor, write tests first, and let CI stand guard.
+Falling for the "vibe coding" trap is easier than tumbling off a horse. As outlined in ["Taming Vibe Coding"](/blog/taming-vibe-coding), we need to establish a robust posse of tools to keep AI output in check. TypeScript becomes your sheriff's badge, ESLint your deputy, and your test suite the jail that holds hallucinations prisoner. Follow our "trail-guide for safer AI sessions", prompt narrow, anchor with real types, scaffold then refactor, write tests first, and let CI stand guard.
 
 ### Scale Beyond the Solo Ride
 
@@ -59,11 +59,11 @@ Don't forget that modern AI tools can be your research deputies too. In ["GitHub
 
 ### Track, Measure, Improve
 
-Start tracking where AI actually saves you time versus where it's creating new work. Are you spending more time reviewing and fixing hallucinations than you would have spent just writing the code? Or has it unlocked new capabilities you wouldn't have attempted otherwise? The data might surprise you – and help you refine where to deploy your AI sidekick most effectively.
+Start tracking where AI actually saves you time versus where it's creating new work. Are you spending more time reviewing and fixing hallucinations than you would have spent just writing the code? Or has it unlocked new capabilities you wouldn't have attempted otherwise? The data might surprise you, and help you refine where to deploy your AI sidekick most effectively.
 
 ## Final Thoughts
 
-In this season of AI, the winners won't be those with the fanciest models or the longest context windows. The real advantage goes to those who understand the dance between human and machine – when to lead, when to follow, and when to change partners entirely.
+In this season of AI, the winners won't be those with the fanciest models or the longest context windows. The real advantage goes to those who understand the dance between human and machine, when to lead, when to follow, and when to change partners entirely.
 
 Because at the end of the day, someone's pulling the strings. Make sure it's you.
 
@@ -71,7 +71,7 @@ Because at the end of the day, someone's pulling the strings. Make sure it's you
 
 ### Q: What's the most important skill for working effectively with AI coding tools?
 
-A: Context management – understanding how to provide the right information at the right time, keeping the AI focused on what matters, and recognizing when it's drifted off course.
+A: Context management, understanding how to provide the right information at the right time, keeping the AI focused on what matters, and recognizing when it's drifted off course.
 
 ### Q: How can I avoid getting caught in "vibe coding" traps?
 

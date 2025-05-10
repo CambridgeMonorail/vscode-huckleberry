@@ -276,9 +276,23 @@ export class LanguageModelToolsProvider {
       // Store reference to toolManager for use in the closures
       const toolManager = this.toolManager;
 
-      // Explicitly check for and log VS Code API availability
+      // Check for VS Code API availability
       if (!vscode.lm || typeof vscode.lm.registerTool !== 'function') {
-        throw new Error('VS Code Language Model Tools API not available');
+        logWithChannel(LogLevel.WARN, 'VS Code Language Model Tools API not available. LM tools will be disabled.');
+        vscode.window.showWarningMessage(
+          'Huckleberry: GitHub Copilot or VS Code Language Model API not available. AI-powered task management features will be limited.',
+          'Learn More',
+        ).then(selection => {
+          if (selection === 'Learn More') {
+            vscode.env.openExternal(
+              vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=GitHub.copilot'),
+            );
+          }
+        });
+        
+        // Return empty array - no tools registered but extension can still activate
+        this.initialized = false;
+        return [];
       }
 
       // Create Task tool

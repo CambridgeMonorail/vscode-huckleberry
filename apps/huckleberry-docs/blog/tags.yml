@@ -13,9 +13,9 @@ ai-agents:
   permalink: /ai-agents
   description: Topics related to AI agents and intelligent assistants
 
-vs-code:
+vscode:
   label: VS Code
-  permalink: /vs-code
+  permalink: /vscode
   description: Content related to Visual Studio Code and extensions
 
 testing:
@@ -142,3 +142,28 @@ code-quality:
   label: Code Quality
   permalink: /code-quality
   description: Best practices, standards, and tools for maintaining high-quality code
+
+copilot:
+  label: Copilot
+  permalink: /copilot
+  description: Topics specifically focusing on Microsoft's GitHub Copilot AI assistant and its features
+
+cursor:
+  label: Cursor
+  permalink: /cursor
+  description: Content related to the Cursor AI-powered code editor and its capabilities
+
+tools:
+  label: Tools
+  permalink: /tools
+  description: Software tools and utilities that enhance developer workflows and productivity
+
+ide-comparison:
+  label: IDE Comparison
+  permalink: /ide-comparison
+  description: Comparative analysis of different Integrated Development Environments and code editors
+
+prompts:
+  label: Prompts
+  permalink: /prompts
+  description: Topics related to prompt engineering, prompt files, and custom instructions for AI assistants

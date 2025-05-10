@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { logWithChannel, LogLevel } from './debugUtils';
 
 /**
  * Interface for Copilot mode information
@@ -18,44 +19,69 @@ export interface CopilotModeInfo {
    * Whether Copilot chat is available
    */
   isChatAvailable: boolean;
+
+  /**
+   * Error message if detection failed
+   */
+  error?: string;
 }
 
 /**
- * Detects the current state of GitHub Copilot and its agent mode
- * @returns Promise with Copilot mode information
+ * Detects the current mode and availability of GitHub Copilot
+ * @returns A promise that resolves to an object containing Copilot mode information
  */
-export async function detectCopilotMode(): Promise<CopilotModeInfo> {
-  const result: CopilotModeInfo = {
-    isAvailable: false,
-    isAgentModeEnabled: false,
-    isChatAvailable: false,
-  };
-
+export async function detectCopilotMode(): Promise<{
+  isAvailable: boolean;
+  isChatAvailable: boolean;
+  isAgentModeEnabled: boolean;
+  error?: string;
+}> {
   try {
-    // Check if GitHub Copilot extension is installed
-    const copilotExtension = vscode.extensions.getExtension('GitHub.copilot');
-    result.isAvailable = !!copilotExtension;
+    // Set a default result with all features unavailable
+    const result = {
+      isAvailable: false,
+      isChatAvailable: false,
+      isAgentModeEnabled: false,
+    };
 
-    // Check if GitHub Copilot Chat extension is installed
-    const copilotChatExtension = vscode.extensions.getExtension('GitHub.copilot-chat');
-    result.isChatAvailable = !!copilotChatExtension;
+    // First check if Copilot and related extensions are installed
+    const extensions = vscode.extensions.all;
+    
+    // Check GitHub Copilot
+    const copilot = extensions.find(ext => ext.id === 'GitHub.copilot');
+    result.isAvailable = !!copilot && copilot.isActive;
+    
+    // Check GitHub Copilot Chat
+    const copilotChat = extensions.find(ext => ext.id === 'GitHub.copilot-chat');
+    result.isChatAvailable = !!copilotChat && copilotChat.isActive;
 
-    // Try to access GitHub Copilot configuration to check agent mode
+    // Only try to check agent mode settings if Copilot is actually available
+    // This prevents errors when Copilot isn't installed or isn't active
     if (result.isAvailable) {
-      const config = vscode.workspace.getConfiguration('github.copilot');
-      // The setting for agent mode might be under different paths depending on Copilot version
-      // These are the most likely paths based on current documentation
-      const agentMode = config.get('advanced.agentMode') || 
-                       config.get('chat.agentMode') || 
-                       config.get('enable.agentMode');
-                       
-      result.isAgentModeEnabled = !!agentMode;
+      try {
+        // Try to get the agent mode setting - this might fail if Copilot's API has changed
+        const config = vscode.workspace.getConfiguration('github.copilot');
+        const agentMode = config.get<boolean>('advanced.agents.enabled');
+        result.isAgentModeEnabled = !!agentMode;
+      } catch (settingError) {
+        // Log the error but don't fail the overall detection
+        logWithChannel(LogLevel.WARN, 'Error checking Copilot agent mode setting:', settingError);
+        // Don't modify the isAgentModeEnabled flag - leave it as false
+      }
     }
 
     return result;
   } catch (error) {
-    console.error('Error detecting Copilot mode:', error);
-    return result;
+    // Handle any unexpected errors gracefully
+    logWithChannel(LogLevel.ERROR, 'Error in detectCopilotMode:', error);
+    
+    // Return a result with an error field but don't throw
+    return {
+      isAvailable: false,
+      isChatAvailable: false,
+      isAgentModeEnabled: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -101,6 +127,51 @@ export async function recommendAgentMode(showAnyway = false): Promise<boolean> {
     return false;
   } catch (error) {
     console.error('Error recommending agent mode:', error);
+    return false;
+  }
+}
+
+/**
+ * Checks if GitHub Copilot is available and shows an appropriate message if not
+ * @returns True if Copilot is available, false otherwise
+ */
+export async function checkCopilotAvailability(): Promise<boolean> {
+  try {
+    const modeInfo = await detectCopilotMode();
+    
+    if (!modeInfo.isAvailable) {
+      vscode.window.showWarningMessage(
+        'Copilot is not available. Please ensure you have an active GitHub Copilot subscription or access token.',
+        'Get Copilot',
+      ).then(selection => {
+        if (selection === 'Get Copilot') {
+          vscode.env.openExternal(
+            vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=GitHub.copilot'),
+          );
+        }
+      });
+      return false;
+    }
+    
+    if (!modeInfo.isChatAvailable) {
+      vscode.window.showWarningMessage(
+        'GitHub Copilot Chat is not available. Huckleberry works best with Copilot Chat installed.',
+        'Get Copilot Chat',
+      ).then(selection => {
+        if (selection === 'Get Copilot Chat') {
+          vscode.commands.executeCommand(
+            'workbench.extensions.search',
+            'GitHub.copilot-chat',
+          );
+        }
+      });
+      // Return true anyway since basic functionality can work without Chat
+      return true;
+    }
+    
+    return true;
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error checking Copilot availability:', error);
     return false;
   }
 }

@@ -1,4 +1,4 @@
-import { BaseTool, BaseToolParams } from '../tools/BaseTool';
+import { BaseTool, BaseToolParams } from '../tools';
 
 /**
  * Represents the possible return types from tool execution
