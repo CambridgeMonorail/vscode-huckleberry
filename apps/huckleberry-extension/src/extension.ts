@@ -11,7 +11,7 @@ import { ChatService } from './services/chatService';
 import { LanguageModelToolsProvider } from './services/languageModelToolsProvider';
 import { showInfo } from './utils/uiHelpers';
 import { isWorkspaceAvailable, notifyNoWorkspace } from './handlers/chatHandler';
-import { detectCopilotMode } from './utils/copilotHelper';
+import { detectCopilotMode, checkCopilotAvailability } from './utils/copilotHelper';
 import { initDebugChannel, logWithChannel, LogLevel, dumpState } from './utils/debugUtils';
 
 /**
@@ -31,17 +31,27 @@ let extensionState: ExtensionState | null = null;
 /**
  * Command handler for the manageTasks command
  */
-function manageTasks(): void {
+async function manageTasks(): Promise<void> {
+  // Check for Copilot availability before proceeding
+  if (!(await checkCopilotAvailability())) {
+    return;
+  }
+
   showInfo('Task management interface will be implemented soon!');
 }
 
 /**
  * Command handler for prioritizing tasks
  */
-function prioritizeTasks(): void {
+async function prioritizeTasks(): Promise<void> {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
+      return;
+    }
+
+    // Check for Copilot availability before proceeding
+    if (!(await checkCopilotAvailability())) {
       return;
     }
 
@@ -61,10 +71,15 @@ function prioritizeTasks(): void {
  * @param taskId Optional task ID to change priority for
  * @param priority Optional priority to set
  */
-function changeTaskPriority(taskId?: string, priority?: string): void {
+async function changeTaskPriority(taskId?: string, priority?: string): Promise<void> {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
+      return;
+    }
+
+    // Check for Copilot availability before proceeding
+    if (!(await checkCopilotAvailability())) {
       return;
     }
 
@@ -284,10 +299,15 @@ async function forceRefreshChatParticipants(): Promise<void> {
 /**
  * Command handler for getting the next task suggestion
  */
-function getNextTask(): void {
+async function getNextTask(): Promise<void> {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
+      return;
+    }
+
+    // Check for Copilot availability before proceeding
+    if (!(await checkCopilotAvailability())) {
       return;
     }
 
@@ -351,10 +371,15 @@ function getHelp(topic?: string): void {
 /**
  * Command handler for creating a new task
  */
-function createTask(): void {
+async function createTask(): Promise<void> {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
+      return;
+    }
+
+    // Check for Copilot availability before proceeding
+    if (!(await checkCopilotAvailability())) {
       return;
     }
 
@@ -392,10 +417,15 @@ function createTask(): void {
  * @param priority Optional priority filter (e.g. 'high', 'low', etc.)
  * @param status Optional status filter (e.g. 'open', 'done', etc.)
  */
-function listTasks(priority?: string, status?: string): void {
+async function listTasks(priority?: string, status?: string): Promise<void> {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
+      return;
+    }
+
+    // Check for Copilot availability before proceeding
+    if (!(await checkCopilotAvailability())) {
       return;
     }
 
@@ -544,10 +574,15 @@ function markTaskComplete(taskId?: string): void {
  * Command handler for scanning TODOs in the codebase
  * @param pattern Optional file pattern to limit the scan
  */
-function scanTodos(pattern?: string): void {
+async function scanTodos(pattern?: string): Promise<void> {
   try {
     if (!isWorkspaceAvailable()) {
       notifyNoWorkspace();
+      return;
+    }
+
+    // Check for Copilot availability before proceeding
+    if (!(await checkCopilotAvailability())) {
       return;
     }
 

@@ -23,7 +23,6 @@
     "chat-participant"
   ],
   "activationEvents": [
-    "onStartupFinished",
     "onChatParticipant:huckleberry",
     "onLanguageModelTool:create_task",
     "onLanguageModelTool:initialize_tracking",
@@ -32,7 +31,21 @@
     "onLanguageModelTool:list_tasks",
     "onLanguageModelTool:mark_task_done",
     "onLanguageModelTool:update_task_priority",
-    "onLanguageModelTool:break_task_into_subtasks"
+    "onLanguageModelTool:prioritize_tasks",
+    "onLanguageModelTool:next_task",
+    "onLanguageModelTool:help",
+    "onLanguageModelTool:break_task_into_subtasks",
+    "onCommand:vscode-copilot-huckleberry.manageTasks",
+    "onCommand:vscode-copilot-huckleberry.initializeTaskTracking",
+    "onCommand:vscode-copilot-huckleberry.initialiseTaskTracking",
+    "onCommand:vscode-copilot-huckleberry.createTask",
+    "onCommand:vscode-copilot-huckleberry.listTasks",
+    "onCommand:vscode-copilot-huckleberry.markTaskComplete",
+    "onCommand:vscode-copilot-huckleberry.changeTaskPriority",
+    "onCommand:vscode-copilot-huckleberry.scanTodos",
+    "onCommand:vscode-copilot-huckleberry.prioritizeTasks",
+    "onCommand:vscode-copilot-huckleberry.getNextTask",
+    "onCommand:github-copilot.show"
   ],
   "contributes": {
     "commands": [

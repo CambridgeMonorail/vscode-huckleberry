@@ -130,3 +130,48 @@ export async function recommendAgentMode(showAnyway = false): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Checks if GitHub Copilot is available and shows an appropriate message if not
+ * @returns True if Copilot is available, false otherwise
+ */
+export async function checkCopilotAvailability(): Promise<boolean> {
+  try {
+    const modeInfo = await detectCopilotMode();
+    
+    if (!modeInfo.isAvailable) {
+      vscode.window.showWarningMessage(
+        'Copilot is not available. Please ensure you have an active GitHub Copilot subscription or access token.',
+        'Get Copilot',
+      ).then(selection => {
+        if (selection === 'Get Copilot') {
+          vscode.env.openExternal(
+            vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=GitHub.copilot'),
+          );
+        }
+      });
+      return false;
+    }
+    
+    if (!modeInfo.isChatAvailable) {
+      vscode.window.showWarningMessage(
+        'GitHub Copilot Chat is not available. Huckleberry works best with Copilot Chat installed.',
+        'Get Copilot Chat',
+      ).then(selection => {
+        if (selection === 'Get Copilot Chat') {
+          vscode.commands.executeCommand(
+            'workbench.extensions.search',
+            'GitHub.copilot-chat',
+          );
+        }
+      });
+      // Return true anyway since basic functionality can work without Chat
+      return true;
+    }
+    
+    return true;
+  } catch (error) {
+    logWithChannel(LogLevel.ERROR, 'Error checking Copilot availability:', error);
+    return false;
+  }
+}
