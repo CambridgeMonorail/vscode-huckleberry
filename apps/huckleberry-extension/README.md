@@ -4,6 +4,7 @@
   <img src="https://raw.githubusercontent.com/CambridgeMonorail/vscode-huckleberry/main/assets/images/huckleberry-logo.png" alt="Huckleberry Logo" width="128">
   
   <p><em>AI-powered task management inside Visual Studio Code</em></p>
+  <p><strong>Version 0.1.24</strong></p>
 </div>
 
 ## Overview
@@ -43,7 +44,7 @@ After installation:
 
 Try these commands in the VS Code chat panel:
 
-```
+```text
 @Huckleberry Initialize task tracking for this project
 @Huckleberry Create a task to implement user authentication
 @Huckleberry Create a high priority task to fix security vulnerability
@@ -55,6 +56,11 @@ Try these commands in the VS Code chat panel:
 @Huckleberry Mark task TASK-123 as high priority
 @Huckleberry Parse requirements.md and create tasks
 @Huckleberry What task should I work on next?
+@Huckleberry Break task TASK-123 into subtasks
+@Huckleberry Export tasks to markdown
+@Huckleberry Help me with task creation
+@Huckleberry Prioritize all tasks
+@Huckleberry Open task explorer
 ```
 
 ## Settings
@@ -86,6 +92,20 @@ Huckleberry provides both chat commands and traditional VS Code commands:
 | Command | Description |
 |---------|-------------|
 | `Huckleberry: Manage Tasks` | Open the task management interface |
+| `Huckleberry: Initialize Task Tracking` | Set up task tracking for the current workspace |
+| `Huckleberry: Create Task` | Create a new task in the workspace |
+| `Huckleberry: List Tasks` | List all tasks in the workspace |
+| `Huckleberry: Mark Task Complete` | Mark a task as completed |
+| `Huckleberry: Change Task Priority` | Change the priority of a task |
+| `Huckleberry: Scan TODOs` | Scan workspace files for TODO comments and convert them to tasks |
+| `Huckleberry: Scan for TODOs` | Scan codebase for TODO comments and create tasks |
+| `Huckleberry: Prioritize Tasks` | Sort tasks by status and priority |
+| `Huckleberry: Get Next Task` | Suggest the next task to work on |
+| `Huckleberry: Get Help` | Show help and available commands for task management |
+| `Huckleberry: Parse Requirements Document` | Parse a requirements document and create tasks from it |
+| `Huckleberry: Open Task Explorer` | Open the Task Explorer view to visualize and manage tasks |
+| `Huckleberry: Create Subtasks` | Break down a task into multiple subtasks |
+| `Huckleberry: Export Tasks` | Export tasks to a different format (markdown, CSV, JSON) |
 
 ### Chat Commands
 
@@ -115,10 +135,15 @@ Huckleberry integrates with the VS Code Language Model Tools API (also known as 
 |------|-------------|
 | `create_task` | Creates a new task with optional priority |
 | `initialize_tracking` | Sets up task tracking for a project workspace |
+| `initialise_tracking` | Alternative spelling for setting up task tracking (UK English) |
 | `scan_todos` | Scans the codebase for TODO comments and converts them to tasks |
 | `list_tasks` | Lists tasks from the task manager with optional filtering by priority or status |
 | `mark_task_done` | Marks a task as complete by providing the task ID |
 | `update_task_priority` | Changes the priority of a task by providing the task ID and new priority |
+| `prioritize_tasks` | Sorts and organizes tasks by status and priority |
+| `next_task` | Suggests the next task to work on based on priority and status |
+| `help` | Provides help and explanations about task management features |
+| `break_task_into_subtasks` | Breaks a task into multiple subtasks |
 
 With this integration, VS Code's language models (like GitHub Copilot) can perform task management operations without requiring explicit `@Huckleberry` mentions, creating a more seamless experience.
 
@@ -133,6 +158,7 @@ Huckleberry Task Manager stores all task data locally in your workspace and does
 While your tasks and project data remain local, your text inputs for task management are processed according to the policies of your selected model provider. Please ensure you understand and accept the terms of service, privacy policy, and data handling practices of the specific model you choose to use with this extension.
 
 Different models may have varying terms regarding:
+
 - How your inputs are processed and stored
 - Whether your inputs are used for model training
 - Data retention policies
@@ -164,6 +190,10 @@ No default keyboard shortcuts are assigned, but you can add your own through VS 
 ## License
 
 MIT License - See the LICENSE file for details.
+
+## Issues and Bug Reports
+
+Found a bug? Have a feature request? Please report it at our [GitHub Issues page](https://github.com/CambridgeMonorail/vscode-huckleberry/issues).
 
 ---
 
