@@ -1,0 +1,179 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2025-05-10T09:31:05.347Z",
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "title": "Set up Vitest configuration for the Huckleberry extension",
+      "description": "Set up Vitest configuration for the Huckleberry extension",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:31:25.459Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-002",
+      "title": "Create VS Code API mock shim for testing",
+      "description": "Create VS Code API mock shim for testing",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:31:35.846Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-003",
+      "title": "Set up initial test folder structure following the testing strategy",
+      "description": "Set up initial test folder structure following the testing strategy",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:31:44.292Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-004",
+      "title": "Create first test for debugUtils.ts",
+      "description": "Create first test for debugUtils.ts",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:31:50.725Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-005",
+      "title": "Identify and extract pure logic functions for improved testability",
+      "description": "Identify and extract pure logic functions for improved testability",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:31:57.194Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-006",
+      "title": "Create a src/lib folder for pure, easily testable code",
+      "description": "Create a src/lib folder for pure, easily testable code",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:04.092Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-007",
+      "title": "Add initial service interfaces for dependency injection",
+      "description": "Add initial service interfaces for dependency injection",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:10.598Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-008",
+      "title": "Create mock implementations of services for testing",
+      "description": "Create mock implementations of services for testing",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:17.769Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-009",
+      "title": "Add tests for task manipulation functions",
+      "description": "Add tests for task manipulation functions",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:24.188Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-010",
+      "title": "Set up Extension Development Host (EDH) testing with @vscode/test-electron",
+      "description": "Set up Extension Development Host (EDH) testing with @vscode/test-electron",
+      "priority": "low",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:32.494Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-011",
+      "title": "Configure GitHub Actions workflow for test automation",
+      "description": "Configure GitHub Actions workflow for test automation",
+      "priority": "low",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:40.082Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-012",
+      "title": "Add Vitest and coverage dependencies to the project",
+      "description": "Add Vitest and coverage dependencies to the project",
+      "priority": "medium",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:48.521Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-013",
+      "title": "Add VS Code task for running tests",
+      "description": "Add VS Code task for running tests",
+      "priority": "low",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:32:56.196Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-014",
+      "title": "Implement comprehensive testing for taskUtils.ts",
+      "description": "Implement comprehensive testing for taskUtils.ts",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:33:03.792Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-015",
+      "title": "Setup initial debugging of taskUtils.ts unit tests",
+      "description": "Setup initial debugging of taskUtils.ts unit tests",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:36:28.352Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-016",
+      "title": "Create unit tests for task parsing functions in taskUtils.ts",
+      "description": "Create unit tests for task parsing functions in taskUtils.ts",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:36:40.095Z",
+      "tags": []
+    },
+    {
+      "id": "TASK-017",
+      "title": "Create unit tests for task prioritization functions in taskUtils.ts",
+      "description": "Create unit tests for task prioritization functions in taskUtils.ts",
+      "priority": "high",
+      "status": "todo",
+      "completed": false,
+      "createdAt": "2025-05-10T09:36:52.357Z",
+      "tags": []
+    }
+  ],
+  "metadata": {
+    "nextId": 1
+  }
+}
