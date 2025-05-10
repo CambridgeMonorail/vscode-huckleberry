@@ -1,0 +1,260 @@
+{
+  "tasks": [
+    {
+      "id": "setup-vitest",
+      "description": "Set up Vitest configuration and dependencies",
+      "priority": "high",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "setup-vitest-deps",
+          "description": "Add Vitest and coverage dependencies to the project",
+          "command": "cd c:\\Projects\\vscode-huckleberry && pnpm add -D vitest @vitest/coverage-c8 @types/node",
+          "priority": "high"
+        },
+        {
+          "id": "create-vitest-config",
+          "description": "Create vitest.config.ts file in huckleberry-extension",
+          "priority": "high",
+          "file": "apps/huckleberry-extension/vitest.config.ts"
+        },
+        {
+          "id": "update-package-json",
+          "description": "Add test scripts to package.json",
+          "priority": "high",
+          "file": "apps/huckleberry-extension/package.json"
+        }
+      ]
+    },
+    {
+      "id": "create-test-structure",
+      "description": "Create the initial test folder structure",
+      "priority": "high",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "create-unit-folder",
+          "description": "Create unit test folder structure",
+          "command": "mkdir -p apps/huckleberry-extension/tests/unit/utils apps/huckleberry-extension/tests/unit/handlers/tasks apps/huckleberry-extension/tests/unit/services",
+          "priority": "high"
+        },
+        {
+          "id": "create-mocks-folder",
+          "description": "Create mocks folder for VS Code API",
+          "command": "mkdir -p apps/huckleberry-extension/tests/__mocks__",
+          "priority": "high"
+        },
+        {
+          "id": "create-stubs-folder",
+          "description": "Create stubs folder for service mocks",
+          "command": "mkdir -p apps/huckleberry-extension/tests/stubs",
+          "priority": "high"
+        },
+        {
+          "id": "create-integration-folder",
+          "description": "Create integration test folder",
+          "command": "mkdir -p apps/huckleberry-extension/tests/integration-edh",
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "id": "create-vscode-mock",
+      "description": "Create VS Code API mock/shim",
+      "priority": "high",
+      "status": "open",
+      "file": "apps/huckleberry-extension/tests/__mocks__/vscode.ts"
+    },
+    {
+      "id": "test-utils",
+      "description": "Implement tests for utility functions",
+      "priority": "high",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "test-debug-utils",
+          "description": "Create tests for debugUtils.ts",
+          "priority": "high",
+          "file": "apps/huckleberry-extension/tests/unit/utils/debugUtils.test.ts"
+        },
+        {
+          "id": "test-parameter-utils",
+          "description": "Create tests for parameterUtils.ts",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/utils/parameterUtils.test.ts"
+        },
+        {
+          "id": "test-ui-helpers",
+          "description": "Create tests for uiHelpers.ts",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/utils/uiHelpers.test.ts"
+        },
+        {
+          "id": "test-copilot-helper",
+          "description": "Create tests for copilotHelper.ts",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/utils/copilotHelper.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "test-task-utils",
+      "description": "Implement tests for task utility functions",
+      "priority": "high",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "test-task-utils-functions",
+          "description": "Create tests for taskUtils.ts",
+          "priority": "high",
+          "file": "apps/huckleberry-extension/tests/unit/handlers/tasks/taskUtils.test.ts"
+        },
+        {
+          "id": "test-task-prioritizer",
+          "description": "Create tests for taskPrioritizer.ts",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/handlers/tasks/taskPrioritizer.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "create-lib-folder",
+      "description": "Create src/lib folder for pure logic",
+      "priority": "medium",
+      "status": "open",
+      "command": "mkdir -p apps/huckleberry-extension/src/lib"
+    },
+    {
+      "id": "extract-task-logic",
+      "description": "Extract pure task logic to src/lib",
+      "priority": "medium",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "create-task-lib",
+          "description": "Create task.ts in lib folder",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/src/lib/task.ts"
+        },
+        {
+          "id": "test-task-lib",
+          "description": "Create tests for the task library",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/lib/task.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "create-interfaces",
+      "description": "Create interfaces for service layer",
+      "priority": "medium",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "create-file-system-interface",
+          "description": "Create FileSystemService interface",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/src/lib/interfaces/fileSystemService.ts"
+        },
+        {
+          "id": "create-task-service-interface",
+          "description": "Create TaskService interface",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/src/lib/interfaces/taskService.ts"
+        }
+      ]
+    },
+    {
+      "id": "test-tools",
+      "description": "Implement tests for tools",
+      "priority": "medium",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "test-read-file-tool",
+          "description": "Create tests for ReadFileTool",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/tools/ReadFileTool.test.ts"
+        },
+        {
+          "id": "test-write-file-tool",
+          "description": "Create tests for WriteFileTool",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/tools/WriteFileTool.test.ts"
+        },
+        {
+          "id": "test-mark-done-tool",
+          "description": "Create tests for MarkDoneTool",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/tools/MarkDoneTool.test.ts"
+        },
+        {
+          "id": "test-break-task-tool",
+          "description": "Create tests for BreakTaskTool",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/tools/BreakTaskTool.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "service-layer-testing",
+      "description": "Implement tests for service layer",
+      "priority": "medium",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "create-service-stubs",
+          "description": "Create service stubs for testing",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/stubs/serviceStubs.ts"
+        },
+        {
+          "id": "test-tool-manager",
+          "description": "Create tests for ToolManager",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/services/toolManager.test.ts"
+        },
+        {
+          "id": "test-chat-service",
+          "description": "Create tests for ChatService",
+          "priority": "medium",
+          "file": "apps/huckleberry-extension/tests/unit/services/chatService.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "setup-integration-testing",
+      "description": "Set up integration testing with VS Code Extension Host",
+      "priority": "low",
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "add-test-electron",
+          "description": "Add @vscode/test-electron package",
+          "priority": "low",
+          "command": "cd c:\\Projects\\vscode-huckleberry && pnpm add -D @vscode/test-electron"
+        },
+        {
+          "id": "create-integration-test",
+          "description": "Create basic integration test",
+          "priority": "low",
+          "file": "apps/huckleberry-extension/tests/integration-edh/extension.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "setup-ci-workflow",
+      "description": "Set up CI workflow for running tests",
+      "priority": "low",
+      "status": "open",
+      "file": ".github/workflows/test.yml"
+    },
+    {
+      "id": "update-vscode-tasks",
+      "description": "Add test tasks to VS Code tasks configuration",
+      "priority": "high",
+      "status": "open",
+      "file": ".vscode/tasks.json"
+    }
+  ]
+}
