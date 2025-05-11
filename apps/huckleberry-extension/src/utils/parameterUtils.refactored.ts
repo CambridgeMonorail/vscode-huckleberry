@@ -2,7 +2,7 @@
  * Utilities for handling command parameters and user input
  */
 import * as vscode from 'vscode';
-import { TaskPriority, Task, TaskCollection } from '../types';
+import { TaskPriority } from '../types';
 import { getWorkspacePaths, readTasksJson, priorityEmoji } from '../handlers/tasks/taskUtils';
 import { ToolManager } from '../services/toolManager';
 import { logWithChannel, LogLevel } from './debugUtils';
@@ -44,7 +44,7 @@ export interface UIProvider {
  * Interface for task data operations
  */
 export interface TaskDataProvider {
-  getTasksData(toolManager: ToolManager, tasksJsonPath: string): Promise<TaskCollection>;
+  getTasksData(toolManager: ToolManager, tasksJsonPath: string): Promise<any>;
   getWorkspacePaths(): Promise<{ workspaceFolder: string; tasksDir: string; tasksJsonPath: string }>;
 }
 
@@ -71,7 +71,7 @@ export const defaultTaskDataProvider: TaskDataProvider = {
  * Creates task quick pick items from task data
  * This pure function is easy to test
  */
-export function createTaskQuickPickItems(tasks: Task[], excludeCompleted = false): TaskQuickPickItem[] {
+export function createTaskQuickPickItems(tasks: any[], excludeCompleted = false): TaskQuickPickItem[] {
   const availableTasks = excludeCompleted 
     ? tasks.filter(task => !task.completed)
     : tasks;
@@ -95,7 +95,8 @@ export function createTaskQuickPickItems(tasks: Task[], excludeCompleted = false
  * @param taskDataProvider Custom task data provider for testing
  * @returns A promise that resolves with the selected task ID or undefined if cancelled
  */
-export async function promptForTaskSelection(  toolManager: ToolManager, 
+export async function promptForTaskSelection(
+  toolManager: ToolManager, 
   excludeCompleted = false,
   uiProvider: UIProvider = defaultUIProvider,
   taskDataProvider: TaskDataProvider = defaultTaskDataProvider,
@@ -165,7 +166,7 @@ export function extractPriorityFromLabel(label: string): TaskPriority | undefine
     '🟢 Low': 'low',
   };
   
-  return priorityMap[label];
+  return priorityMap[label] as TaskPriority;
 }
 
 /**

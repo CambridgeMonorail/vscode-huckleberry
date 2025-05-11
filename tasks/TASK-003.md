@@ -2,25 +2,26 @@
 
 ## Details
 - **Priority**: medium
-- **Status**: To Do
+- **Status**: Done
 - **Created**: 5/10/2025
 - **Est. Effort**: 1.5 hours
+- **Completed**: 5/10/2025
 
 ## Description
 Create the initial folder structure for test files as outlined in the testing strategy document. This structure will organize unit tests, integration tests, and mock implementations to support the overall testing approach for the Huckleberry extension.
 
 ## Acceptance Criteria
-- [ ] Create the following folder structure in the extension directory:
-  - [ ] `tests/unit/` for pure logic unit tests
-  - [ ] `tests/unit/utils/` for utility function tests
-  - [ ] `tests/unit/handlers/` for handler function tests
-  - [ ] `tests/unit/services/` for service tests
-  - [ ] `tests/stubs/` for mock implementations
-  - [ ] `tests/__mocks__/` for module mocks
-  - [ ] `tests/integration-edh/` placeholder for future extension host tests
-- [ ] Create initial README.md files in each folder explaining its purpose
-- [ ] Create sample test files in appropriate folders following proper naming conventions
-- [ ] Update .gitignore to exclude test coverage reports
+- [x] Create the following folder structure in the extension directory:
+  - [x] `tests/unit/` for pure logic unit tests
+  - [x] `tests/unit/utils/` for utility function tests
+  - [x] `tests/unit/handlers/` for handler function tests
+  - [x] `tests/unit/services/` for service tests
+  - [x] `tests/stubs/` for mock implementations
+  - [x] `tests/__mocks__/` for module mocks
+  - [x] `tests/integration-edh/` placeholder for future extension host tests
+- [x] Create initial README.md files in each folder explaining its purpose
+- [x] Create sample test files in appropriate folders following proper naming conventions
+- [x] Update .gitignore to exclude test coverage reports
 
 ## Implementation Details
 1. Create the directory structure:

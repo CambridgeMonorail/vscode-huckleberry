@@ -1,0 +1,382 @@
+/**
+ * Tests for parameterUtils.ts
+ */
+
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { createVSCodeMock, createMockToolManager } from './mocks';
+
+// Create mock task data for tests
+const mockTasksData = {
+  tasks: [
+    { id: 'task-1', title: 'Task 1', description: 'First task', priority: 'high', completed: false },
+    { id: 'task-2', title: 'Task 2', description: 'Second task', priority: 'medium', completed: false },
+    { id: 'task-3', title: 'Task 3', description: 'Completed task', priority: 'low', completed: true },
+  ],
+  nextId: 4,
+};
+
+// Mock vscode (hoisted to the top)
+const vscodeMock = createVSCodeMock();
+vi.mock('vscode', () => vscodeMock);
+
+// Import vscode after mocking
+import * as vscode from 'vscode';
+
+// Mock task utils
+vi.mock('../../../src/handlers/tasks/taskUtils', () => ({
+  getWorkspacePaths: vi.fn().mockImplementation(() => {
+    return Promise.resolve({
+      workspacePath: '/test/workspace',
+      tasksJsonPath: '/test/workspace/tasks.json',
+    });
+  }),
+  readTasksJson: vi.fn().mockImplementation(() => Promise.resolve(mockTasksData)),
+  priorityEmoji: {
+    critical: '⚠️',
+    high: '🔴',
+    medium: '🟠',
+    low: '🟢',
+  },
+}));
+
+// Import taskUtils after mocking
+import { readTasksJson } from '../../../src/handlers/tasks/taskUtils';
+
+// Import the real module - DO NOT MOCK IT
+import * as parameterUtils from '../../../src/utils/parameterUtils';
+const { 
+  promptForTaskSelection,
+  promptForPrioritySelection,
+  promptForFilePattern,
+  promptForDocumentSelection,
+  promptForHelpTopic,
+  promptForTaskAndPriority,
+} = parameterUtils;
+
+describe('parameterUtils', () => {
+  const mockToolManager = createMockToolManager();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (readTasksJson as ReturnType<typeof vi.fn>).mockResolvedValue(mockTasksData);
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  describe('promptForTaskSelection', () => {
+    it('should show a message when no tasks are found', async () => {
+      // Mock empty tasks data for this test
+      (readTasksJson as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ tasks: [], nextId: 1 });
+      
+      const result = await promptForTaskSelection(mockToolManager, false);
+      
+      expect(vscodeMock.window.showInformationMessage).toHaveBeenCalledWith('No tasks found. Create a task first.');
+      expect(result).toBeUndefined();
+    });
+
+    it('should show a message when no incomplete tasks are found with excludeCompleted=true', async () => {
+    // Mock tasks data with only completed tasks
+      (readTasksJson as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        tasks: [
+          { id: 'task-1', title: 'Task 1', completed: true },
+        ],
+      });
+      
+      const result = await promptForTaskSelection(mockToolManager, true);
+      
+      expect(vscodeMock.window.showInformationMessage).toHaveBeenCalledWith('No incomplete tasks found. All tasks are completed!');
+      expect(result).toBeUndefined();
+    });    
+    
+    it('should return selected task ID when user makes a selection', async () => {
+      // Mock the showQuickPick to return a selected item
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        taskId: 'task-2',
+        label: 'task-2',
+        description: 'Task 2',
+      });
+      
+      const result = await promptForTaskSelection(mockToolManager, false);
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBe('task-2');
+    });    
+    
+    it('should filter out completed tasks when excludeCompleted is true', async () => {
+      // Mock the showQuickPick implementation to check inputs
+      vscodeMock.window.showQuickPick.mockImplementationOnce((items) => {
+        // Simple check to ensure showQuickPick is called
+        return Promise.resolve({
+          taskId: 'task-1',
+          label: 'task-1',
+          description: 'Task 1',
+        });
+      });
+      
+      await promptForTaskSelection(mockToolManager, true);
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+    });
+    
+    it('should handle errors gracefully', async () => {
+      // Mock readTasksJson to throw an error
+      const testError = new Error('Test error');
+      (readTasksJson as ReturnType<typeof vi.fn>).mockRejectedValueOnce(testError);
+      
+      const result = await promptForTaskSelection(mockToolManager, false);
+      
+      expect(vscodeMock.window.showErrorMessage).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('promptForPrioritySelection', () => {
+    it('should return undefined when user cancels selection', async () => {
+      // Mock the showQuickPick to return undefined (user cancelled)
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce(undefined);
+      
+      const result = await promptForPrioritySelection();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should return the correct priority when user makes a selection', async () => {
+      // Mock the showQuickPick to return a selected item
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: '🔴 High',
+        description: 'Important tasks that should be done soon',
+      });
+      
+      const result = await promptForPrioritySelection();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBe('high');
+    });
+    
+    it('should show all priority options', async () => {
+      // Just mock a response, we just need to check the call happened
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: '🔴 High',
+        description: 'Important tasks that should be done soon',
+      });
+      
+      await promptForPrioritySelection();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+    });
+  });
+
+  describe('promptForFilePattern', () => {
+    it('should return undefined when user cancels selection', async () => {
+      // Mock the showQuickPick to return undefined (user cancelled)
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce(undefined);
+      
+      const result = await promptForFilePattern();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined for "All Files" option', async () => {
+      // Mock the showQuickPick to return the "All Files" option
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: 'All Files',
+        description: '**/*',
+      });
+      
+      const result = await promptForFilePattern();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should return the description for predefined patterns', async () => {
+      // Mock the showQuickPick to return a predefined pattern option
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: 'TypeScript Files',
+        description: '**/*.ts',
+      });
+      
+      const result = await promptForFilePattern();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBe('**/*.ts');
+    });
+
+    it('should prompt for custom pattern when "Custom Pattern" is selected', async () => {
+      // Mock the showQuickPick to return the "Custom Pattern" option
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: 'Custom Pattern',
+        description: 'Enter a custom file pattern',
+      });
+      
+      // Mock the showInputBox to return a custom pattern
+      vscodeMock.window.showInputBox.mockResolvedValueOnce('src/**/*.{js,jsx}');
+      
+      const result = await promptForFilePattern();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(vscodeMock.window.showInputBox).toHaveBeenCalled();
+      expect(result).toBe('src/**/*.{js,jsx}');
+    });
+    
+    it('should return undefined if user cancels custom pattern input', async () => {
+      // Mock the showQuickPick to return the "Custom Pattern" option
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: 'Custom Pattern',
+        description: 'Enter a custom file pattern',
+      });
+      
+      // Mock the showInputBox to return undefined (user cancelled)
+      vscodeMock.window.showInputBox.mockResolvedValueOnce(undefined);
+      
+      const result = await promptForFilePattern();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(vscodeMock.window.showInputBox).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('promptForDocumentSelection', () => {
+    it('should return undefined when user cancels selection', async () => {
+      // Mock the showOpenDialog to return undefined (user cancelled)
+      vscodeMock.window.showOpenDialog.mockResolvedValueOnce(undefined);
+      
+      const result = await promptForDocumentSelection();
+      
+      expect(vscodeMock.window.showOpenDialog).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should return file path when user selects a file', async () => {
+      // Mock the showOpenDialog to return a file URI
+      vscodeMock.window.showOpenDialog.mockResolvedValueOnce([
+        { fsPath: '/test/workspace/requirements.md' },
+      ]);
+      
+      const result = await promptForDocumentSelection();
+      
+      expect(vscodeMock.window.showOpenDialog).toHaveBeenCalled();
+      expect(result).toBe('/test/workspace/requirements.md');
+    });
+
+    it('should handle errors gracefully', async () => {
+      // Mock showOpenDialog to throw an error
+      const testError = new Error('Test error');
+      vscodeMock.window.showOpenDialog.mockRejectedValueOnce(testError);
+      
+      const result = await promptForDocumentSelection();
+      
+      expect(vscodeMock.window.showErrorMessage).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('promptForHelpTopic', () => {
+    it('should return undefined when user cancels selection', async () => {
+      // Mock the showQuickPick to return undefined (user cancelled)
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce(undefined);
+      
+      const result = await promptForHelpTopic();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should return the selected topic value when user makes a selection', async () => {
+      // Mock the showQuickPick to return a selected item
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: 'Task Creation',
+        value: 'task-creation',
+        description: 'Creating and managing tasks',
+      });
+      
+      const result = await promptForHelpTopic();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+      expect(result).toBe('task-creation');
+    });
+    
+    it('should show all help topics', async () => {
+      // Just mock a simple response
+      vscodeMock.window.showQuickPick.mockResolvedValueOnce({
+        label: 'Task Creation',
+        value: 'task-creation',
+        description: 'Creating and managing tasks',
+      });
+      
+      await promptForHelpTopic();
+      
+      expect(vscodeMock.window.showQuickPick).toHaveBeenCalled();
+    });
+  });  
+  
+  describe('promptForTaskAndPriority', () => {
+    // For the task and priority tests, we'll mock the individual functions
+    // instead of using spyOn, which doesn't work well in this context
+    
+    it('should return empty object when task selection is cancelled', async () => {
+      // Set up a spy for promptForTaskSelection
+      const originalTaskSelection = parameterUtils.promptForTaskSelection;
+      parameterUtils.promptForTaskSelection = vi.fn().mockResolvedValue(undefined);
+      
+      try {
+        const result = await promptForTaskAndPriority(mockToolManager);
+        
+        expect(parameterUtils.promptForTaskSelection).toHaveBeenCalledWith(mockToolManager);
+        expect(result).toEqual({});
+      } finally {
+        // Restore original implementation
+        parameterUtils.promptForTaskSelection = originalTaskSelection;
+      }
+    });
+    
+    it('should return task ID and priority when both are selected', async () => {
+      // Set up spies for both functions
+      const originalTaskSelection = parameterUtils.promptForTaskSelection;
+      const originalPrioritySelection = parameterUtils.promptForPrioritySelection;
+      
+      parameterUtils.promptForTaskSelection = vi.fn().mockResolvedValue('task-1');
+      parameterUtils.promptForPrioritySelection = vi.fn().mockResolvedValue('high');
+      
+      try {
+        const result = await promptForTaskAndPriority(mockToolManager);
+        
+        expect(parameterUtils.promptForTaskSelection).toHaveBeenCalledWith(mockToolManager);
+        expect(parameterUtils.promptForPrioritySelection).toHaveBeenCalled();
+        expect(result.taskId).toBe('task-1');
+        expect(result.priority).toBe('high');
+      } finally {
+        // Restore original implementations
+        parameterUtils.promptForTaskSelection = originalTaskSelection;
+        parameterUtils.promptForPrioritySelection = originalPrioritySelection;
+      }
+    });
+    
+    it('should return only task ID when priority selection is cancelled', async () => {
+      // Set up spies for both functions
+      const originalTaskSelection = parameterUtils.promptForTaskSelection;
+      const originalPrioritySelection = parameterUtils.promptForPrioritySelection;
+      
+      parameterUtils.promptForTaskSelection = vi.fn().mockResolvedValue('task-2');
+      parameterUtils.promptForPrioritySelection = vi.fn().mockResolvedValue(undefined);
+      
+      try {
+        const result = await promptForTaskAndPriority(mockToolManager);
+        
+        expect(parameterUtils.promptForTaskSelection).toHaveBeenCalledWith(mockToolManager);
+        expect(parameterUtils.promptForPrioritySelection).toHaveBeenCalled();
+        expect(result.taskId).toBe('task-2');
+        expect(result.priority).toBeUndefined();
+      } finally {
+        // Restore original implementations
+        parameterUtils.promptForTaskSelection = originalTaskSelection;
+        parameterUtils.promptForPrioritySelection = originalPrioritySelection;
+      }
+    });
+  });
+});

@@ -2,20 +2,21 @@
 
 ## Details
 - **Priority**: high
-- **Status**: To Do
+- **Status**: Done
 - **Created**: 5/10/2025
 - **Est. Effort**: 3 hours
+- **Completed**: 5/10/2025
 
 ## Description
 Create and configure Vitest for the Huckleberry extension to enable unit testing. This includes creating a `vitest.config.ts` file in the extension root, configuring the test environment, and setting up proper aliases for VS Code API mocking.
 
 ## Acceptance Criteria
-- [ ] Vitest configuration file is created and properly configured for the extension
-- [ ] Test environment is set to "node"
-- [ ] Test file pattern includes tests in the `tests/unit` directory
-- [ ] Coverage reporting is configured to output text, HTML, and LCOV formats
-- [ ] VS Code API can be mocked via alias configuration
-- [ ] Running `vitest run` executes without errors (even if no tests exist yet)
+- [x] Vitest configuration file is created and properly configured for the extension
+- [x] Test environment is set to "node"
+- [x] Test file pattern includes tests in the `tests/unit` directory
+- [x] Coverage reporting is configured to output text, HTML, and LCOV formats
+- [x] VS Code API can be mocked via alias configuration
+- [x] Running `vitest run` executes without errors (even if no tests exist yet)
 
 ## Implementation Details
 1. Add Vitest dependencies to the project:

@@ -2,24 +2,25 @@
 
 ## Details
 - **Priority**: high
-- **Status**: To Do
+- **Status**: Done
 - **Created**: 5/10/2025
 - **Est. Effort**: 4 hours
+- **Completed**: 5/10/2025
 
 ## Description
 Create a VS Code API mock shim that allows unit tests to run without actual VS Code dependencies. This mock will simulate VS Code's API functionality for testing purposes, focusing on the APIs used by the Huckleberry extension.
 
 ## Acceptance Criteria
-- [ ] Create a mock implementation of VS Code API in `tests/__mocks__/vscode.ts`
-- [ ] Implement the following VS Code APIs with mock functions:
-  - [ ] `window` (showInformationMessage, showErrorMessage, createOutputChannel)
-  - [ ] `workspace` (workspaceFolders, onDidChangeWorkspaceFolders, fs)
-  - [ ] `commands` (executeCommand, registerCommand)
-  - [ ] `LanguageModelChatMessage` (if used in tests)
-- [ ] Implement realistic return values for all mock functions
-- [ ] Add Vitest spies (vi.fn()) to all functions to allow test assertion
-- [ ] Document the mock API with JSDoc comments
-- [ ] Verify that the mock can be imported in test files
+- [x] Create a mock implementation of VS Code API in `tests/__mocks__/vscode.ts`
+- [x] Implement the following VS Code APIs with mock functions:
+  - [x] `window` (showInformationMessage, showErrorMessage, createOutputChannel)
+  - [x] `workspace` (workspaceFolders, onDidChangeWorkspaceFolders, fs)
+  - [x] `commands` (executeCommand, registerCommand)
+  - [x] `LanguageModelChatMessage` (if used in tests)
+- [x] Implement realistic return values for all mock functions
+- [x] Add Vitest spies (vi.fn()) to all functions to allow test assertion
+- [x] Document the mock API with JSDoc comments
+- [x] Verify that the mock can be imported in test files
 
 ## Implementation Details
 1. Create the directory structure for mocks:
