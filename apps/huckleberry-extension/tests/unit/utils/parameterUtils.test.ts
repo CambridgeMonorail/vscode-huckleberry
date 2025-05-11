@@ -9,9 +9,9 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 // Create mock task data
 const mockTasksData = {
   tasks: [
-    { id: 'task-1', title: 'Task 1', description: 'First task', priority: 'high', completed: false },
-    { id: 'task-2', title: 'Task 2', description: 'Second task', priority: 'medium', completed: false },
-    { id: 'task-3', title: 'Task 3', description: 'Completed task', priority: 'low', completed: true },
+    { id: 'task-1', title: 'Task 1', description: 'First task', priority: 'high' as TaskPriority, completed: false },
+    { id: 'task-2', title: 'Task 2', description: 'Second task', priority: 'medium' as TaskPriority, completed: false },
+    { id: 'task-3', title: 'Task 3', description: 'Completed task', priority: 'low' as TaskPriority, completed: true },
   ],
   nextId: 4,
 };
@@ -65,7 +65,6 @@ vi.mock('../../../src/handlers/tasks/taskUtils', () => {
 });
 
 // Import after mocks
-import * as vscode from 'vscode';
 import { 
   promptForTaskSelection,
   promptForPrioritySelection,
@@ -77,12 +76,13 @@ import {
   TaskDataProvider,
   createTaskQuickPickItems,
   createPriorityQuickPickItems,
-  createFilePatternQuickPickItems,
-  createDocumentFilters,
-  createHelpTopicQuickPickItems,
+  // These imports are used indirectly in test setup
+  createFilePatternQuickPickItems as _createFilePatternQuickPickItems,
+  createDocumentFilters as _createDocumentFilters,
+  createHelpTopicQuickPickItems as _createHelpTopicQuickPickItems,
   extractPriorityFromLabel,
 } from '../../../src/utils/parameterUtils';
-import { readTasksJson, getWorkspacePaths } from '../../../src/handlers/tasks/taskUtils';
+import { readTasksJson, getWorkspacePaths as _getWorkspacePaths } from '../../../src/handlers/tasks/taskUtils';
 import { createMockToolManager } from './mocks';
 import { TaskPriority } from '../../../src/types';
 

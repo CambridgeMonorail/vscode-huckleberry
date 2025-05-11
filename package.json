@@ -25,8 +25,8 @@
     "typecheck:all": "nx run-many --target=typecheck --all",
     "typecheck:affected": "nx affected -t typecheck",
     "watch:extension": "nx build vscode-copilot-huckleberry --watch",
-    "validate": "pnpm run lint:all && pnpm run typecheck:all && pnpm run build:all",
-    "validate:affected": "pnpm run lint:affected && pnpm run typecheck:affected && pnpm run build:affected"
+    "validate": "pnpm run lint:all && pnpm run typecheck:all && pnpm run test:all && pnpm run build:all",
+    "validate:affected": "pnpm run lint:affected && pnpm run typecheck:affected && pnpm run test:affected && pnpm run build:affected"
   },
   "private": true,
   "dependencies": {

@@ -14,9 +14,8 @@
     },
     {
       "text": "Keep the subject line under 72 characters. If more detail is needed, add a blank line after the subject line followed by a more detailed body."
-    },
-    {
-      "text": "Use a multi-paragraph body when needed to explain the WHAT and WHY of the change, not the HOW. Keep body lines wrapped at 100 characters."
+    },    {
+      "text": "Use a multi-paragraph body when needed to explain the WHAT and WHY of the change, not the HOW. Keep body lines wrapped at 100 characters. For bullet points, each point counts as a separate line and must not exceed 100 characters. Insert manual line breaks to keep within this limit."
     },
     {
       "text": "For breaking changes: Either add ! after the type/scope (feat!: breaking change) or include 'BREAKING CHANGE:' in the footer, followed by description of the breaking change."
@@ -25,7 +24,10 @@
       "text": "Include references to issues or tickets at the end of the body using 'Fixes #123' or 'Closes #456' syntax."
     },
     {
-      "text": "Example good commit messages:\n- feat(extension): add task priority filtering capability\n- fix(ui): correct task status display in sidebar\n- docs: update project setup instructions in README\n- refactor(utils): simplify file handling logic"
+      "text": "Examples of good subject lines:\n- feat(extension): add task priority filtering capability\n- fix(ui): correct task status display in sidebar\n- docs: update project setup instructions in README\n- refactor(utils): simplify file handling logic"
+    },
+    {
+      "text": "Example of a complete commit message with bullet points:\n\nfeat(extension): add task filtering capability\n\nAdds the ability to filter tasks by status and priority:\n- Implements status filter dropdown in the task view with options for All, Open, In Progress,\n  and Done.\n- Adds priority filtering with color-coded indicators for easy recognition.\n- Updates the documentation to reflect the new filtering capabilities.\n\nCloses #42"
     }
   ],
   "github.copilot.chat.codesearch.enabled": true,
