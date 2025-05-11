@@ -26,13 +26,13 @@ jobs:
   build-and-deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+      url: ${{ steps.deployment.outputs.page_url }}    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0  # Ensures full git history is available
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -50,13 +50,15 @@ jobs:
         with:
           node-version: '18'
           cache: 'pnpm'
-            - name: Install dependencies
+          
+      - name: Install dependencies
         id: Install_dependencies
         run: |
           pnpm install
           echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
           echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
-          - name: Build Docusaurus site
+          
+      - name: Build Docusaurus site
         id: Build_Docusaurus_site
         run: |
           echo "### 🏗️ Building Documentation Site" >> $GITHUB_STEP_SUMMARY
@@ -76,10 +78,11 @@ jobs:
           fi
         env:
           GITHUB_ACTIONS: 'true'
-          - name: Setup Pages
+            - name: Setup Pages
         id: Setup_Pages
         uses: actions/configure-pages@v5
-          - name: Upload artifact
+        
+      - name: Upload artifact
         id: Upload_artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -87,7 +90,9 @@ jobs:
           
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4      - name: Deployment Summary
+        uses: actions/deploy-pages@v4
+        
+      - name: Deployment Summary
         if: always()
         run: |
           echo "## 📘 Documentation Deployment Summary" >> $GITHUB_STEP_SUMMARY
