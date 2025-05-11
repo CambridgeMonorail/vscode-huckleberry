@@ -11,17 +11,16 @@ Add Vitest and related test coverage tools as development dependencies to the pr
 
 ## Acceptance Criteria
 - [ ] Install Vitest as a development dependency
-- [ ] Install @vitest/coverage-c8 for code coverage analysis
+- [ ] Install @vitest/coverage-v8 for code coverage analysis
 - [ ] Install necessary type definitions for Node.js
 - [ ] Add test scripts to package.json
 - [ ] Create an initial .vitest directory and .gitignore entry
 - [ ] Test the installation by running a simple test command
 
 ## Implementation Details
-1. Install the required dependencies:
-   ```powershell
+1. Install the required dependencies:   ```powershell
    cd c:\Projects\vscode-huckleberry
-   pnpm add -D vitest @vitest/coverage-c8 @types/node
+   pnpm add -D vitest @vitest/coverage-v8 @types/node
    ```
 
 2. Add test scripts to the extension's package.json:
@@ -71,5 +70,5 @@ Add Vitest and related test coverage tools as development dependencies to the pr
 
 ## Notes
 - This task is a prerequisite for TASK-001 (Vitest configuration)
-- The @vitest/coverage-c8 package provides c8-based coverage reporting
+- The @vitest/coverage-v8 package provides V8-based coverage reporting
 - Created via Huckleberry Task Manager

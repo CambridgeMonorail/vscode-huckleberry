@@ -20,23 +20,20 @@ Create and configure Vitest for the Huckleberry extension to enable unit testing
 
 ## Implementation Details
 1. Add Vitest dependencies to the project:
-   ```powershell
-   cd c:\Projects\vscode-huckleberry
-   pnpm add -D vitest @vitest/coverage-c8 @types/node
+   ```powershell   cd c:\Projects\vscode-huckleberry
+   pnpm add -D vitest @vitest/coverage-v8 @types/node
    ```
 
 2. Create `vitest.config.ts` in the extension root with the following configuration:
    ```typescript
    import { defineConfig } from 'vite';
-   import { resolve } from 'path';
-
-   export default defineConfig({
+   import { resolve } from 'path';   export default defineConfig({
      test: {
        environment: 'node',
        include: ['tests/unit/**/*.test.ts'],
        globals: true,
-       coverage: { 
-         provider: 'c8',
+       coverage: {
+         provider: 'v8',
          reporter: ['text', 'html', 'lcov'],
          exclude: ['**/node_modules/**', '**/tests/**']
        },

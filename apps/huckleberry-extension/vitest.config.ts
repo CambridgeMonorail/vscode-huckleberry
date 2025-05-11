@@ -7,7 +7,7 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts'],
     globals: true,
     coverage: { 
-      provider: 'v8',
+      provider: 'v8', // Using v8 provider as it's the current recommended provider in Vitest 3.x
       reporter: ['text', 'html', 'lcov'],
       exclude: ['**/node_modules/**', '**/tests/**'],
     },

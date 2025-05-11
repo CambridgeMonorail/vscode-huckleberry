@@ -5,11 +5,10 @@
       "description": "Set up Vitest configuration and dependencies",
       "priority": "high",
       "status": "open",
-      "subtasks": [
-        {
+      "subtasks": [        {
           "id": "setup-vitest-deps",
           "description": "Add Vitest and coverage dependencies to the project",
-          "command": "cd c:\\Projects\\vscode-huckleberry && pnpm add -D vitest @vitest/coverage-c8 @types/node",
+          "command": "cd c:\\Projects\\vscode-huckleberry && pnpm add -D vitest @vitest/coverage-v8 @types/node",
           "priority": "high"
         },
         {
