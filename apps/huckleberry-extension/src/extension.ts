@@ -91,7 +91,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     // Initialize extension state
-    ExtensionStateService.getInstance().initialize(
+    ExtensionStateService.getStaticInstance().initializeWithServices(
       chatService,
       toolManager,
       languageModelToolsProvider,
@@ -248,7 +248,7 @@ export function activate(context: vscode.ExtensionContext): void {
     // Set a small delay to check if chat works after startup
     setTimeout(() => {
       // If chat service hasn't been active yet, schedule a refresh
-      if (!chatService.lastActive && isWorkspaceAvailable()) {
+      if (!chatService.getLastActiveTimestamp() && isWorkspaceAvailable()) {
         logWithChannel(LogLevel.INFO, 'Scheduling post-activation chat participant refresh');
         chatService.forceRefresh().catch(err => {
           logWithChannel(LogLevel.ERROR, 'Failed to refresh chat participants during delayed check:', err);
@@ -271,5 +271,5 @@ export function activate(context: vscode.ExtensionContext): void {
  */
 export function deactivate(): void {
   logWithChannel(LogLevel.INFO, '👋 Deactivating Huckleberry extension');
-  ExtensionStateService.getInstance().clear();
+  ExtensionStateService.getStaticInstance().reset();
 }

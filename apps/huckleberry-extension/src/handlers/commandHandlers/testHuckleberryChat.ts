@@ -29,13 +29,10 @@ export async function testHuckleberryChat(): Promise<void> {
     chatExtensions.forEach(ext => {
       const participants = ext.packageJSON?.contributes?.chatParticipants || [];
       logWithChannel(LogLevel.DEBUG, `- ${ext.id}: ${participants.map((p: { id: string }) => p.id).join(', ')}`);
-    });
-
-    // Dump current extension state
+    });    // Dump current extension state
     dumpState(state.chatService.context, {
-      chatServiceActive: state.chatService.isActive,
-      lastActive: state.chatService.lastActive ?
-        new Date(state.chatService.lastActive).toISOString() : 'never',
+      chatServiceActive: state.chatService.isActive(),      lastActive: state.chatService.getLastActiveTimestamp() ?
+        new Date(state.chatService.getLastActiveTimestamp() as number).toISOString() : 'never',
       workspaceAvailable: isWorkspaceAvailable(),
     });
 

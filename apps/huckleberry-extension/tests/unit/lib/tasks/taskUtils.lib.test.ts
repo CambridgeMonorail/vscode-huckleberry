@@ -2,7 +2,7 @@
  * Tests for pure task utility functions
  */
 import { describe, it, expect, vi } from 'vitest';
-import { 
+import {
   extractTaskNumber,
   findHighestTaskNumber,
   generateTaskId,
@@ -13,7 +13,6 @@ import {
 import { Task, TaskCollection } from '../../../../src/types';
 
 describe('taskUtils.lib', () => {
-
   describe('extractTaskNumber', () => {
     it('should extract the number from a task ID', () => {
       expect(extractTaskNumber('TASK-123')).toBe(123);
@@ -27,7 +26,8 @@ describe('taskUtils.lib', () => {
       expect(extractTaskNumber('')).toBe(0);
       expect(extractTaskNumber('TASK-')).toBe(0);
       expect(extractTaskNumber('TASK-abc')).toBe(0);
-    });    it('should handle edge cases', () => {
+    });
+    it('should handle edge cases', () => {
       expect(extractTaskNumber('TASK-0001')).toBe(1);
       // This test would typically fail if not handled well, but our implementation is robust
       try {
@@ -41,17 +41,45 @@ describe('taskUtils.lib', () => {
   describe('findHighestTaskNumber', () => {
     it('should find the highest task number in an array of tasks', () => {
       const tasks: Task[] = [
-        { id: 'TASK-001', title: 'First task', description: '', priority: 'medium', status: 'todo', completed: false, createdAt: '', tags: [] },
-        { id: 'TASK-005', title: 'Fifth task', description: '', priority: 'medium', status: 'todo', completed: false, createdAt: '', tags: [] },
-        { id: 'TASK-003', title: 'Third task', description: '', priority: 'medium', status: 'todo', completed: false, createdAt: '', tags: [] },
+        {
+          id: 'TASK-001',
+          title: 'First task',
+          description: '',
+          priority: 'medium',
+          status: 'todo',
+          completed: false,
+          createdAt: '',
+          tags: [],
+        },
+        {
+          id: 'TASK-005',
+          title: 'Fifth task',
+          description: '',
+          priority: 'medium',
+          status: 'todo',
+          completed: false,
+          createdAt: '',
+          tags: [],
+        },
+        {
+          id: 'TASK-003',
+          title: 'Third task',
+          description: '',
+          priority: 'medium',
+          status: 'todo',
+          completed: false,
+          createdAt: '',
+          tags: [],
+        },
       ];
-      
+
       expect(findHighestTaskNumber(tasks)).toBe(5);
     });
 
     it('should return 0 for empty arrays', () => {
       expect(findHighestTaskNumber([])).toBe(0);
-    });    it('should handle null or undefined gracefully', () => {
+    });
+    it('should handle null or undefined gracefully', () => {
       expect(findHighestTaskNumber(null as unknown as Task[])).toBe(0);
       expect(findHighestTaskNumber(undefined as unknown as Task[])).toBe(0);
     });
@@ -63,19 +91,38 @@ describe('taskUtils.lib', () => {
         name: 'Test Collection',
         description: 'Test Description',
         tasks: [
-          { id: 'TASK-001', title: 'First task', description: '', priority: 'medium', status: 'todo', completed: false, createdAt: '', tags: [] },
-          { id: 'TASK-005', title: 'Fifth task', description: '', priority: 'medium', status: 'todo', completed: false, createdAt: '', tags: [] },
-        ]
+          {
+            id: 'TASK-001',
+            title: 'First task',
+            description: '',
+            priority: 'medium',
+            status: 'todo',
+            completed: false,
+            createdAt: '',
+            tags: [],
+          },
+          {
+            id: 'TASK-005',
+            title: 'Fifth task',
+            description: '',
+            priority: 'medium',
+            status: 'todo',
+            completed: false,
+            createdAt: '',
+            tags: [],
+          },
+        ],
       };
-      
+
       expect(generateTaskId(taskCollection)).toBe('TASK-006');
-    });    it('should generate TASK-001 for empty collections', () => {
+    });
+    it('should generate TASK-001 for empty collections', () => {
       const emptyCollection: TaskCollection = {
         name: 'Empty Collection',
         description: 'Empty Description',
         tasks: [],
       };
-      
+
       expect(generateTaskId(emptyCollection)).toBe('TASK-001');
     });
 
@@ -87,10 +134,12 @@ describe('taskUtils.lib', () => {
     it('should create a new task object with default values', () => {
       const now = new Date();
       // Replace the real Date with a mock
-      const dateSpy = vi.spyOn(global, 'Date').mockImplementation(() => now as unknown as Date);
-      
+      const dateSpy = vi
+        .spyOn(global, 'Date')
+        .mockImplementation(() => now as unknown as Date);
+
       const task = createTaskObject('TASK-123', 'Test Task', 'high');
-      
+
       expect(task).toEqual({
         id: 'TASK-123',
         title: 'Test Task',
@@ -101,31 +150,65 @@ describe('taskUtils.lib', () => {
         createdAt: now.toISOString(),
         tags: [],
       });
-      
+
       dateSpy.mockRestore();
-    });    it('should override default values with additional properties', () => {
+    });
+    it('should override default values with additional properties', () => {
       const additionalProps = {
         description: 'Custom description',
         status: 'in-progress' as const,
         completed: true,
         tags: ['important', 'urgent'],
       };
-      
-      const task = createTaskObject('TASK-456', 'Test Task', 'medium', additionalProps);
-      
+
+      const task = createTaskObject(
+        'TASK-456',
+        'Test Task',
+        'medium',
+        additionalProps,
+      );
+
       expect(task.description).toBe('Custom description');
       expect(task.status).toBe('in-progress');
       expect(task.completed).toBe(true);
       expect(task.tags).toEqual(['important', 'urgent']);
     });
   });
-  describe('getTaskById', () => {    const taskCollection: TaskCollection = {
+  describe('getTaskById', () => {
+    const taskCollection: TaskCollection = {
       name: 'Test Collection',
       description: 'Test Description',
       tasks: [
-        { id: 'TASK-001', title: 'First task', description: '', priority: 'medium', status: 'todo', completed: false, createdAt: '', tags: [] },
-        { id: 'TASK-002', title: 'Second task', description: '', priority: 'high', status: 'todo', completed: false, createdAt: '', tags: [] },
-        { id: 'TASK-003', title: 'Third task', description: '', priority: 'low', status: 'todo', completed: false, createdAt: '', tags: [] },
+        {
+          id: 'TASK-001',
+          title: 'First task',
+          description: '',
+          priority: 'medium',
+          status: 'todo',
+          completed: false,
+          createdAt: '',
+          tags: [],
+        },
+        {
+          id: 'TASK-002',
+          title: 'Second task',
+          description: '',
+          priority: 'high',
+          status: 'todo',
+          completed: false,
+          createdAt: '',
+          tags: [],
+        },
+        {
+          id: 'TASK-003',
+          title: 'Third task',
+          description: '',
+          priority: 'low',
+          status: 'todo',
+          completed: false,
+          createdAt: '',
+          tags: [],
+        },
       ],
     };
 
