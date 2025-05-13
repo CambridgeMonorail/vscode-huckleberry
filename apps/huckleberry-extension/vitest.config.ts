@@ -2,6 +2,13 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
+  root: __dirname,
+  resolve: {
+    alias: {
+      '@huckleberry/extension': resolve(__dirname, 'src'),
+      'vscode': resolve(__dirname, './tests/__mocks__/vscode.ts'),
+    },
+  },
   test: {
     environment: 'node',
     include: ['tests/unit/**/*.test.ts'],

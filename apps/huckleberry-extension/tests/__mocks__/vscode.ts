@@ -3,10 +3,15 @@
  * This file is aliased as 'vscode' in vitest.config.ts
  */
 import { vi } from 'vitest';
+import type { MessageItem } from 'vscode';
 
 // Window namespace
+/**
+ * showInformationMessage can return a string (button label) or undefined when using string buttons.
+ * This matches the real VS Code API behavior.
+ */
 export const window = { 
-  showInformationMessage: vi.fn().mockResolvedValue(undefined),
+  showInformationMessage: vi.fn() as unknown as ((message: string, ...items: string[]) => Promise<string | undefined>) & ((message: string, ...items: MessageItem[]) => Promise<MessageItem | undefined>),
   showErrorMessage: vi.fn().mockResolvedValue(undefined),
   showWarningMessage: vi.fn().mockResolvedValue(undefined),
   createOutputChannel: vi.fn().mockReturnValue({

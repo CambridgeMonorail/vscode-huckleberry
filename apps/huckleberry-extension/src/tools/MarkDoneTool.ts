@@ -123,7 +123,12 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       
       // Write the updated content back to the file
       await fs.promises.writeFile(resolvedPath, updatedContent, 'utf-8');
-      
+
+      // Also update tasks.json status if this is a markdown file in the tasks folder
+      if (extension === '.md') {
+        await this.updateTasksJsonStatus(taskIdentifier, isDone);
+      }
+
       this.debug('Task marked successfully', {
         filePath: resolvedPath,
         taskIdentifier,
@@ -240,6 +245,40 @@ export class MarkDoneTool extends BaseTool<MarkDoneToolParams> {
       this.logError(error, 'Error processing JSON file');
       // Return the original content if there was an error
       return content;
+    }
+  }
+
+  /**
+   * Updates the status of a task in tasks/tasks.json when marked done/undone
+   * @param taskIdentifier The task identifier (id or title)
+   * @param isDone Whether the task is done
+   */
+  private async updateTasksJsonStatus(taskIdentifier: string, isDone: boolean): Promise<void> {
+    try {
+      // Find the workspace root
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders || workspaceFolders.length === 0) return;
+      const workspacePath = workspaceFolders[0].uri.fsPath;
+      const tasksJsonPath = path.join(workspacePath, 'tasks', 'tasks.json');
+      if (!fs.existsSync(tasksJsonPath)) return;
+      const jsonRaw = await fs.promises.readFile(tasksJsonPath, 'utf-8');
+      const json = JSON.parse(jsonRaw);
+      if (!Array.isArray(json.tasks)) return;
+      let updated = false;
+      for (const task of json.tasks) {
+        const matchesId = task.id && task.id.toString().includes(taskIdentifier);
+        const matchesTitle = task.title && task.title.includes(taskIdentifier);
+        if (matchesId || matchesTitle) {
+          task.completed = isDone;
+          task.status = isDone ? 'done' : 'todo';
+          updated = true;
+        }
+      }
+      if (updated) {
+        await fs.promises.writeFile(tasksJsonPath, JSON.stringify(json, null, 2), 'utf-8');
+      }
+    } catch (err) {
+      this.logError(err, 'Failed to update tasks.json status');
     }
   }
 
