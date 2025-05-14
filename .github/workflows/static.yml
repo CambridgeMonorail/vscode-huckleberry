@@ -26,7 +26,8 @@ jobs:
   build-and-deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}    runs-on: ubuntu-latest
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -78,20 +79,21 @@ jobs:
           fi
         env:
           GITHUB_ACTIONS: 'true'
-            - name: Setup Pages
+
+      - name: Setup Pages
         id: Setup_Pages
         uses: actions/configure-pages@v5
-        
+      
       - name: Upload artifact
         id: Upload_artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'apps/huckleberry-docs/build'
-          
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        
+      
       - name: Deployment Summary
         if: always()
         run: |
