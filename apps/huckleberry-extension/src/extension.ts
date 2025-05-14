@@ -5,8 +5,9 @@ import * as vscode from 'vscode';
 import { ReadFileTool, WriteFileTool, MarkDoneTool, BreakTaskTool } from './tools';
 import { ToolManager, ChatService, LanguageModelToolsProvider } from './services';
 import { isWorkspaceAvailable } from './handlers/chatHandler';
-import { detectCopilotMode, initDebugChannel, logWithChannel, LogLevel } from './utils';
+import { initDebugChannel, logWithChannel, LogLevel } from './utils';
 import { ExtensionStateService } from './services/extensionStateService';
+import { TaskExplorerProvider, TaskTreeItem } from './providers/TaskExplorerProvider';
 
 // Import all command handlers
 import * as commandHandlers from './handlers/commandHandlers';
@@ -39,17 +40,6 @@ export function activate(context: vscode.ExtensionContext): void {
   logWithChannel(LogLevel.INFO, '🚀 Huckleberry extension activating');
 
   try {
-    // Check Copilot mode and recommend agent mode if needed
-    detectCopilotMode().then(modeInfo => {
-      logWithChannel(LogLevel.INFO, 'Copilot mode detected:', modeInfo);
-
-      if (modeInfo.isAvailable && !modeInfo.isAgentModeEnabled) {
-        logWithChannel(LogLevel.DEBUG, 'Agent mode recommendation suppressed based on user feedback');
-      }
-    }).catch(error => {
-      logWithChannel(LogLevel.ERROR, 'Error checking Copilot mode:', error);
-    });
-
     // Create and register tools
     const toolManager = new ToolManager();
     const readFileTool = new ReadFileTool();
@@ -61,6 +51,39 @@ export function activate(context: vscode.ExtensionContext): void {
     toolManager.registerTool(writeFileTool);
     toolManager.registerTool(markDoneTool);
     toolManager.registerTool(breakTaskTool);
+
+    // Register Task Explorer Provider
+    const taskExplorerProvider = new TaskExplorerProvider(toolManager);
+    const taskTreeView = vscode.window.createTreeView('huckleberryTaskExplorer', {
+      treeDataProvider: taskExplorerProvider,
+      showCollapseAll: true,
+    });
+    
+    // Register Task Explorer related commands
+    const taskExplorerCommands = [
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.refresh', () => {
+        taskExplorerProvider.refresh();
+      }),
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.sortByPriority', () => {
+        taskExplorerProvider.toggleSortByPriority();
+      }),
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted', () => {
+        taskExplorerProvider.toggleShowCompleted();
+      }),
+      // Add handlers for task item actions
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.openTask', (item: TaskTreeItem) => {
+        // Open the task file when clicked
+        if (item.task.source?.file) {
+          vscode.commands.executeCommand('vscode.open', vscode.Uri.file(item.task.source.file));
+        }
+      }),
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.markComplete', (item: TaskTreeItem) => {
+        commandHandlers.markTaskComplete(item.task.id);
+      }),
+    ];
+
+    // Add task explorer disposables to context subscriptions
+    context.subscriptions.push(taskTreeView, ...taskExplorerCommands);
 
     // Initialize chat service
     const chatService = new ChatService(context, toolManager);

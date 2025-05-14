@@ -45,7 +45,8 @@
     "onCommand:vscode-copilot-huckleberry.scanTodos",
     "onCommand:vscode-copilot-huckleberry.prioritizeTasks",
     "onCommand:vscode-copilot-huckleberry.getNextTask",
-    "onCommand:github-copilot.show"
+    "onCommand:github-copilot.show",
+    "onView:huckleberryTaskExplorer"
   ],
   "contributes": {
     "commands": [
@@ -165,6 +166,27 @@
         "enablement": "huckleberry.developmentMode",
         "category": "Huckleberry",
         "description": "Force refresh of chat participants if they stop responding (development only)"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.taskExplorer.refresh",
+        "title": "Refresh Task Explorer",
+        "category": "Huckleberry",
+        "icon": "$(refresh)",
+        "description": "Refresh the Task Explorer view"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.taskExplorer.sortByPriority",
+        "title": "Sort by Priority",
+        "category": "Huckleberry",
+        "icon": "$(sort-precedence)",
+        "description": "Toggle sorting tasks by priority"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted",
+        "title": "Show/Hide Completed Tasks",
+        "category": "Huckleberry",
+        "icon": "$(check)",
+        "description": "Toggle visibility of completed tasks"
       }
     ],
     "chatParticipants": [
@@ -478,6 +500,49 @@
           "description": "Number of days for custom due date setting (when defaultDueDate is set to 'custom')"
         }
       }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "huckleberryTaskExplorer",
+          "name": "Huckleberry Tasks",
+          "icon": "$(tasklist)",
+          "type": "tree",
+          "visibility": "collapsed",
+          "contextualTitle": "Tasks"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "vscode-copilot-huckleberry.taskExplorer.refresh",
+          "when": "view == huckleberryTaskExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.taskExplorer.sortByPriority",
+          "when": "view == huckleberryTaskExplorer",
+          "group": "1_filtering"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted",
+          "when": "view == huckleberryTaskExplorer",
+          "group": "1_filtering"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-copilot-huckleberry.markTaskComplete",
+          "when": "view == huckleberryTaskExplorer && viewItem == incompleteTask",
+          "group": "1_modification"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.createSubtasks",
+          "when": "view == huckleberryTaskExplorer",
+          "group": "1_modification"
+        }
+      ]
     }
   },
   "scripts": {

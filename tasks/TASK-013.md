@@ -1,12 +1,12 @@
-# TASK-013: Add VS Code task for running tests
+# TASK-013: Update contribution guidelines in README with development setup, testing requirements, and code style guide
 
 ## Details
-- **Priority**: low
+- **Priority**: medium
 - **Status**: To Do
-- **Created**: 5/10/2025
+- **Created**: 5/24/2025
 
 ## Description
-Add VS Code task for running tests
+Update contribution guidelines in README with development setup, testing requirements, and code style guide
 
 ## Notes
 - Created via Huckleberry Task Manager
