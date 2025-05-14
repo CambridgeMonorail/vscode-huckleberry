@@ -1,7 +1,7 @@
 {
   "name": "vscode-copilot-huckleberry",
   "displayName": "Huckleberry Task Manager",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
   "publisher": "CambridgeMonorail",
   "repository": {
@@ -479,7 +479,8 @@
         }
       }
     }
-  },  "scripts": {
+  },
+  "scripts": {
     "vscode:prepublish": "npm run build",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",

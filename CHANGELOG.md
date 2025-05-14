@@ -1,3 +1,13 @@
+## 0.1.26 (2025-05-14)
+
+### 🚀 Features
+
+- **extension:** add typechecking capability for huckleberry extension ([#27](https://github.com/CambridgeMonorail/vscode-huckleberry/pull/27))
+
+### ❤️ Thank You
+
+- Tim Morris @TimDMorris
+
 ## 0.1.25 (2025-05-10)
 
 This was a version bump only, there were no code changes.
