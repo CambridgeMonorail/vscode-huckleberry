@@ -25,6 +25,12 @@
         "command": "docusaurus serve --dir=build",
         "cwd": "apps/huckleberry-docs"
       }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'No linting required for docs.'"
+      }
     }
   },
   "tags": ["docs"]
