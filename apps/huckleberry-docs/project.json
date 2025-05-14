@@ -15,7 +15,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/build"],
       "options": {
-        "command": "docusaurus build",
+        "command": "sh -c 'docusaurus build'",
         "cwd": "apps/huckleberry-docs"
       }
     },
