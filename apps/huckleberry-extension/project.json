@@ -40,6 +40,15 @@
         "cwd": "apps/huckleberry-extension",
         "command": "npm run lint"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/huckleberry-extension",
+        "command": "sh -c 'tsc -p tsconfig.json --noEmit'"
+      },
+      "outputs": [],
+      "dependsOn": []
     }
   }
 }

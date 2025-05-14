@@ -32,6 +32,13 @@
         "command": "echo 'No linting required for docs.'"
       },
       "outputs": []
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'No typechecking required for docs.'"
+      },
+      "outputs": []
     }
   },
   "tags": ["docs"]
