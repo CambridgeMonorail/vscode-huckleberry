@@ -1,23 +1,33 @@
-{
-  "github.copilot.chat.commitMessageGeneration.useInstructionFiles": true,
+{  "github.copilot.chat.commitMessageGeneration.useInstructionFiles": true,
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {
-      "text": "Always follow the conventional commits specification exactly."
+      "text": "Follow the Conventional Commits specification (https://www.conventionalcommits.org/)."
     },
     {
-      "text": "Use the appropriate commit type (feat, fix, docs, style, refactor, perf, test, build, ci, chore) based on the changes."
+      "text": "Use the appropriate type prefix based on the changes:\n- feat: A new feature\n- fix: A bug fix\n- docs: Documentation only changes\n- style: Changes that don't affect code meaning (formatting, etc.)\n- refactor: Code changes that neither fix bugs nor add features\n- perf: Code changes that improve performance\n- test: Adding or modifying tests\n- build: Changes to build system or external dependencies\n- ci: Changes to CI configuration files and scripts\n- chore: Other changes that don't modify src or test files"
     },
     {
-      "text": "Include a scope in parentheses when appropriate (e.g., feat(extension): or fix(ui):)."
+      "text": "Include a scope in parentheses when it adds clarity:\n- extension: Changes to extension functionality\n- ui: User interface changes\n- utils: Utility function changes\n- types: Type definition changes\n- tools: Developer tooling changes\n- tests: Test infrastructure changes"
     },
     {
-      "text": "Use imperative, present tense verbs (add, fix, update) and don't capitalize the first letter or use a period at the end."
+      "text": "Write a concise and specific subject line using imperative, present tense verbs (add, fix, update, implement, refactor), lowercase and no ending period. The subject should complete this sentence: 'If applied, this commit will...'"
     },
     {
-      "text": "Keep the first line under 72 characters."
+      "text": "Keep the subject line under 72 characters. If more detail is needed, add a blank line after the subject line followed by a more detailed body."
+    },    {
+      "text": "Use a multi-paragraph body when needed to explain the WHAT and WHY of the change, not the HOW. Keep body lines wrapped at 100 characters. For bullet points, each point counts as a separate line and must not exceed 100 characters. Insert manual line breaks to keep within this limit."
     },
     {
-      "text": "Indicate breaking changes with ! after the type/scope or by including BREAKING CHANGE: in the footer."
+      "text": "For breaking changes: Either add ! after the type/scope (feat!: breaking change) or include 'BREAKING CHANGE:' in the footer, followed by description of the breaking change."
+    },
+    {
+      "text": "Include references to issues or tickets at the end of the body using 'Fixes #123' or 'Closes #456' syntax."
+    },
+    {
+      "text": "Examples of good subject lines:\n- feat(extension): add task priority filtering capability\n- fix(ui): correct task status display in sidebar\n- docs: update project setup instructions in README\n- refactor(utils): simplify file handling logic"
+    },
+    {
+      "text": "Example of a complete commit message with bullet points:\n\nfeat(extension): add task filtering capability\n\nAdds the ability to filter tasks by status and priority:\n- Implements status filter dropdown in the task view with options for All, Open, In Progress,\n  and Done.\n- Adds priority filtering with color-coded indicators for easy recognition.\n- Updates the documentation to reflect the new filtering capabilities.\n\nCloses #42"
     }
   ],
   "github.copilot.chat.codesearch.enabled": true,
@@ -35,5 +45,6 @@
   },
   "eslint.format.enable": true,
   "editor.formatOnSave": false,
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "nxConsole.generateAiAgentRules": true
 }

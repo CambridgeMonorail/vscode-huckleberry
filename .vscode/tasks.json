@@ -35,14 +35,50 @@
         "reveal": "always",
         "panel": "dedicated"
       }
-    },
-    {
+    },    {
       "label": "watch-extension",
       "type": "shell",
       "command": "cd apps/huckleberry-extension && pnpm run watch",
       "isBackground": true,
       "group": "build",
       "problemMatcher": "$tsc-watch"
+    },
+    {
+      "label": "run-tests",
+      "type": "shell",
+      "command": "cd apps/huckleberry-extension && pnpm run test",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-tests-watch",
+      "type": "shell",
+      "command": "cd apps/huckleberry-extension && pnpm run test:watch",
+      "isBackground": true,
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-tests-coverage",
+      "type": "shell",
+      "command": "cd apps/huckleberry-extension && pnpm run test:coverage",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
     }
   ]
 }

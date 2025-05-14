@@ -180,17 +180,35 @@ For detailed setup instructions, see [workspace setup documentation](./docs/work
 ```
 vscode-huckleberry/
 ├─ apps/
-│  ├─ huckleberry-extension/  # VS Code extension (TypeScript)
-│  ├─ huckleberry-docs/       # Documentation site (Docusaurus)
-│  └─ demo-site/              # React SPA for demonstration purposes
+│  ├─ huckleberry-extension/       # VS Code extension (TypeScript)
+│  │  ├─ src/                      # Source code
+│  │  │  ├─ config/                # Configuration settings
+│  │  │  ├─ handlers/              # Command and chat message handlers
+│  │  │  ├─ lib/                   # Pure logic functions (no VS Code dependencies)
+│  │  │  │  ├─ tasks/              # Task-related pure functions
+│  │  │  │  └─ utils/              # General utility pure functions
+│  │  │  ├─ services/              # Core services
+│  │  │  ├─ tools/                 # Language Model Tools implementation
+│  │  │  └─ utils/                 # Utility functions with VS Code dependencies
+│  │  ├─ tests/                    # Test files
+│  │  │  ├─ unit/                  # Unit tests
+│  │  │  ├─ integration-edh/       # Extension Host tests
+│  │  │  ├─ stubs/                 # Mock implementations
+│  │  │  └─ __mocks__/             # Module mocks (including VS Code API)
+│  │  └─ vitest.config.ts          # Test configuration
+│  ├─ huckleberry-docs/            # Documentation site (Docusaurus)
+│  └─ demo-site/                   # React SPA for demonstration purposes
 ├─ assets/
-│  └─ images/                 # Project logos and assets
-└─ docs/
-   ├─ implementation-guide.md # Technical implementation details
-   ├─ task-master.md          # Task Manager documentation
-   ├─ tasks.md                # Project task tracking
-   ├─ workspace-setup.md      # Setup instructions
-   └─ debug-setup.md          # Debugging configuration
+│  └─ images/                      # Project logos and assets
+├─ docs/
+│  ├─ understanding the huckleberry extension.md  # Detailed extension structure
+│  ├─ testing-strategy.md          # Testing approach
+│  ├─ improving-quality.md         # Quality improvement documentation
+│  ├─ workspace-setup.md           # Setup instructions
+│  └─ debug-setup.md               # Debugging configuration
+└─ tasks/                          # Project task tracking
+   ├─ TASK-*.md                    # Individual task descriptions
+   └─ tasks.json                   # Task metadata
 ```
 
 The project is organized as an Nx monorepo with the following components:

@@ -69,8 +69,9 @@ jobs:
           pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
           echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
           echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
-
+      
       - name: Run Nx Release (version bump and git tag only)
+        id: nx_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -81,8 +82,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           if pnpm nx release ${{ github.event.inputs.releaseType }} ${{ github.event.inputs.dryRun == 'true' && '--dry-run' || '' }} ${{ github.event.inputs.firstRelease == 'true' && '--first-release' || '' }}; then
             echo "✅ Version bump and git tag created successfully" >> $GITHUB_STEP_SUMMARY
+            echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Version bump failed" >> $GITHUB_STEP_SUMMARY
+            echo "success=false" >> $GITHUB_OUTPUT
             exit 1
           fi
 
@@ -94,8 +97,9 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "### 📎 Package Version" >> $GITHUB_STEP_SUMMARY
           echo "Version: v$VERSION" >> $GITHUB_STEP_SUMMARY
-          
+      
       - name: Update Root Package.json Version
+        id: update_root_version
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
           VERSION=$(node -p "require('./apps/huckleberry-extension/package.json').version")
@@ -104,8 +108,7 @@ jobs:
             const fs = require('fs');
             const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
             packageJson.version = '$VERSION';
-            fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2) + '\n');
-            console.log('Updated root package.json to version $VERSION');
+            fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2) + '\n');            console.log('Updated root package.json to version $VERSION');
           "
           
           git add package.json
@@ -113,7 +116,8 @@ jobs:
           git push origin HEAD:${GITHUB_REF#refs/heads/}
           echo "### 📝 Root Package.json Update" >> $GITHUB_STEP_SUMMARY
           echo "✅ Root package.json version synced to v$VERSION" >> $GITHUB_STEP_SUMMARY
-
+          echo "success=true" >> $GITHUB_OUTPUT
+          
       - name: Extract Changes From Changelog
         if: ${{ github.event.inputs.dryRun != 'true' }}
         id: extract_changes
@@ -139,13 +143,11 @@ jobs:
             fi
           fi
           
-          CHANGES="${CHANGES//'%'/'%25'}"
-          CHANGES="${CHANGES//$'\n'/'%0A'}"
-          CHANGES="${CHANGES//$'\r'/'%0D'}"
+          # Create a proper JSON string with escaped newlines for GitHub Actions output
+          # This ensures correct formatting when used in the release notes
+          CHANGES_JSON=$(echo "$CHANGES" | jq -Rs .)
           
-          echo "changes<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "changes=$CHANGES_JSON" >> $GITHUB_OUTPUT
           
           echo "### 📜 Changelog" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`markdown" >> $GITHUB_STEP_SUMMARY
@@ -153,11 +155,13 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Package VS Code Extension
+        id: package_extension
         if: ${{ github.event.inputs.dryRun != 'true' }}
         run: |
           pnpm package:extension
           echo "### 📦 Extension Packaging" >> $GITHUB_STEP_SUMMARY
           echo "✅ VSIX package created successfully" >> $GITHUB_STEP_SUMMARY
+          echo "success=true" >> $GITHUB_OUTPUT
           
       - name: List Generated VSIX
         if: ${{ github.event.inputs.dryRun != 'true' }}
@@ -167,10 +171,10 @@ jobs:
           echo "$VSIX_FILES"
           echo "### 📋 Generated VSIX Files" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "$VSIX_FILES" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
+          echo "$VSIX_FILES" >> $GITHUB_STEP_SUMMARY          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
       - name: Create GitHub Release
+        id: create_release
         if: ${{ github.event.inputs.dryRun != 'true' }}
         uses: softprops/action-gh-release@v1
         with:
@@ -203,26 +207,31 @@ jobs:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Git Configuration | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
           echo "| Dependencies | ✅ Installed |" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps['Run Nx Release (version bump and git tag only)'].conclusion }}" = "success" ]; then
+          
+          # Check version bump status
+          if [ "${{ steps.nx_release.outcome }}" == "success" ]; then
             echo "| Version Bump | ✅ Success |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| Version Bump | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
           fi
           
           if [ "${{ github.event.inputs.dryRun }}" != "true" ]; then
-            if [ "${{ steps['Update Root Package.json Version'].conclusion }}" = "success" ]; then
+            # Check root package.json update status
+            if [ "${{ steps.update_root_version.outcome }}" == "success" ]; then
               echo "| Root Package.json Update | ✅ Success |" >> $GITHUB_STEP_SUMMARY
             else
               echo "| Root Package.json Update | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
             fi
             
-            if [ "${{ steps['Package VS Code Extension'].conclusion }}" = "success" ]; then
+            # Check extension packaging status
+            if [ "${{ steps.package_extension.outcome }}" == "success" ]; then
               echo "| Extension Packaging | ✅ Success |" >> $GITHUB_STEP_SUMMARY
             else
               echo "| Extension Packaging | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
             fi
             
-            if [ "${{ steps['Create GitHub Release'].conclusion }}" = "success" ]; then
+            # Check GitHub release status
+            if [ "${{ steps.create_release.outcome }}" == "success" ]; then
               echo "| GitHub Release | ✅ Success |" >> $GITHUB_STEP_SUMMARY
             else
               echo "| GitHub Release | ❌ Failed |" >> $GITHUB_STEP_SUMMARY

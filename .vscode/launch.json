@@ -1,6 +1,5 @@
 {
-  "version": "0.2.0",
-  "configurations": [
+  "version": "0.2.0",  "configurations": [
     {
       "name": "Debug Extension",
       "type": "extensionHost",
@@ -20,6 +19,42 @@
       "url": "http://localhost:4200",
       "webRoot": "${workspaceFolder}/demo-site/src",
       "preLaunchTask": "serve-react-app"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/apps/huckleberry-extension"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug All Tests",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run"],
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/apps/huckleberry-extension"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Utils Tests",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "tests/unit/utils/**/*.test.ts"],
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/apps/huckleberry-extension"
     }
   ],
   "compounds": [

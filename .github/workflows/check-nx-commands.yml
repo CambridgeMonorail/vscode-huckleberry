@@ -1,0 +1,76 @@
+name: Check NX Commands
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  check-nx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for Nx affected commands
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
+          
+      - name: Setup pnpm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: |
+          pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
+          echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check Git Status
+        run: |
+          echo "### 🔍 Git Repository Status" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          git branch -a >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          git log --oneline -n 5 >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if main branch exists
+          if git rev-parse --verify origin/main >/dev/null 2>&1; then
+            echo "✅ origin/main branch exists" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ origin/main branch does not exist" >> $GITHUB_STEP_SUMMARY
+            echo "Available remote branches:" >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+            git branch -r >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Run Safe NX Affected Command
+        run: |
+          echo "### 🔍 Running NX Affected Test" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if main branch exists
+          if git rev-parse --verify origin/main >/dev/null 2>&1; then
+            BASE_BRANCH="origin/main"
+          else
+            # If main branch doesn't exist, use the first commit as base to compare against all files
+            BASE_BRANCH=$(git rev-list --max-parents=0 HEAD)
+            echo "Using first commit as base: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "Running with base: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+          if pnpm exec nx affected --base=$BASE_BRANCH --target=lint --dry-run; then
+            echo "✅ NX affected command ran successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ NX affected command failed" >> $GITHUB_STEP_SUMMARY
+          fi

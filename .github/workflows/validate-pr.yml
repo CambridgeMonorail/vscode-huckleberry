@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for Nx affected commands
+          ref: ${{ github.event.pull_request.base.ref || 'main' }}
       
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -23,53 +26,78 @@ jobs:
         with:
           version: 8
           run_install: false
-          
+
       - name: Setup pnpm cache
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
-
+          
       - name: Install Dependencies
         run: |
           pnpm install --no-frozen-lockfile --no-strict-peer-dependencies --shamefully-hoist
           echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
           echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
-        
-      - name: Lint
+          
+      - name: Determine base branch
+        id: base-branch
+        run: |
+          # For pull requests, use the base branch; otherwise default to origin/main
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_BRANCH="origin/${{ github.event.pull_request.base.ref }}"
+          else
+            # Make sure we have the main branch
+            git fetch origin main:refs/remotes/origin/main --depth=1 || true
+            BASE_BRANCH="origin/main"
+          fi
+          echo "base-branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
+          echo "### 🔍 NX Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "Base branch for affected commands: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Lint affected
         run: |
           echo "### 🔍 Linting Results" >> $GITHUB_STEP_SUMMARY
-          if pnpm run lint:all; then
-            echo "✅ No linting issues found" >> $GITHUB_STEP_SUMMARY
+          if pnpm run lint:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
+            echo "✅ No linting issues found in affected projects" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Linting issues detected" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Linting issues detected in affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
         
-      - name: Type check
+      - name: Type check affected
         run: |
           echo "### 📘 TypeScript Type Checking" >> $GITHUB_STEP_SUMMARY
-          if pnpm run typecheck:all; then
-            echo "✅ No type errors found" >> $GITHUB_STEP_SUMMARY
+          if pnpm run typecheck:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
+            echo "✅ No type errors found in affected projects" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Type errors detected" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Type errors detected in affected projects" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+      - name: Test affected
+        run: |
+          echo "### 🧪 Running tests" >> $GITHUB_STEP_SUMMARY
+          if pnpm run test:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
+            echo "✅ All tests passed for affected projects" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Test failures detected in affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
         
-      - name: Build
+      - name: Build affected
         run: |
           echo "### 🏗️ Build Process" >> $GITHUB_STEP_SUMMARY
-          if pnpm run build:all; then
-            echo "✅ Build completed successfully" >> $GITHUB_STEP_SUMMARY
-            echo "Built projects:" >> $GITHUB_STEP_SUMMARY
+          if pnpm run build:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
+            echo "✅ Build completed successfully for affected projects" >> $GITHUB_STEP_SUMMARY
+            echo "Affected projects:" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            pnpm exec nx show projects >> $GITHUB_STEP_SUMMARY
+            pnpm exec nx print-affected --base=${{ steps.base-branch.outputs.base-branch }} --type=app >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Build failed for affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-
+          
       - name: Validation Summary
         if: always()
         run: |
@@ -77,6 +105,7 @@ jobs:
           echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Dependencies | ${{ steps['Install Dependencies'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ${{ steps['Lint'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Type Check | ${{ steps['Type check'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ${{ steps['Build'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ steps['Lint affected'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Check | ${{ steps['Type check affected'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ steps['Test affected'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ steps['Build affected'].outcome == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY

@@ -1,22 +1,17 @@
 import { BaseTool, BaseToolParams } from '../tools';
-
-/**
- * Represents the possible return types from tool execution
- */
-export type ToolResult = unknown;
+import { IToolManager, ToolResult } from '../interfaces/IToolManager';
 
 /**
  * Service class to manage language model tools
  */
-export class ToolManager {
+export class ToolManager implements IToolManager {
   private tools = new Map<string, BaseTool<BaseToolParams>>();
 
   /**
    * Register a tool with the manager
    * @param tool The tool to register
    * @returns The tool manager instance for method chaining
-   */
-  public registerTool<P extends BaseToolParams>(tool: BaseTool<P>): ToolManager {
+   */  public registerTool<P extends BaseToolParams>(tool: BaseTool<P>): IToolManager {
     // Safe to cast since P extends BaseToolParams
     this.tools.set(tool.id, tool as unknown as BaseTool<BaseToolParams>);
     console.log(`Registered tool: ${tool.id}`);
@@ -46,12 +41,19 @@ export class ToolManager {
 
     return await tool.execute(params);
   }
-
   /**
    * Get all registered tools
    * @returns Array of all registered tools
    */
   public getTools(): BaseTool<BaseToolParams>[] {
     return Array.from(this.tools.values());
+  }
+  
+  /**
+   * Get all registered tool IDs
+   * @returns Array of all registered tool IDs
+   */
+  public getAllTools(): string[] {
+    return Array.from(this.tools.keys());
   }
 }

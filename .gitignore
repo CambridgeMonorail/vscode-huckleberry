@@ -34,6 +34,7 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+.vitest-cache/
 
 # System Files
 .DS_Store
@@ -47,3 +48,7 @@ vitest.config.*.timestamp*
 
 # VS Code extension artifacts
 apps/huckleberry-extension/*.vsix
+
+apps/huckleberry-extension/coverage
+.cursor\rules\nx-rules.mdc
+.github\instructions\nx.instructions.md

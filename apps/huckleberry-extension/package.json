@@ -479,15 +479,17 @@
         }
       }
     }
-  },
-  "scripts": {
+  },  "scripts": {
     "vscode:prepublish": "npm run build",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "build": "tsc -p ./",
     "lint": "eslint src --ext ts",
     "package": "npx @vscode/vsce package --no-dependencies",
-    "test": "node ./dist/test/runTest.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:edh": "node ./dist/test/runTest.js"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

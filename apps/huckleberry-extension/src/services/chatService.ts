@@ -3,26 +3,17 @@
  */
 import * as vscode from 'vscode';
 import { logWithChannel, LogLevel, showDebugChannel as _showDebugChannel } from '../utils/debugUtils';
+import { IChatService, ChatParticipantOptions } from '../interfaces/IChatService';
 import { ToolManager } from './toolManager';
 // Fix the import by using a more explicit path with the file extension
 import { handleChatRequest } from '../handlers/chatHandler.js';
 
 /**
- * Interface for chat participant registration options
- */
-export interface ChatParticipantOptions {
-  /** Primary ID for the chat participant */
-  primaryId: string;
-  /** Debug name for identifying this participant in logs */
-  debugName?: string;
-}
-
-/**
  * Service for managing Huckleberry chat participants
  */
-export class ChatService {
-  private _context: vscode.ExtensionContext;
-  private toolManager: ToolManager;
+export class ChatService implements IChatService {  
+  private _context!: vscode.ExtensionContext;
+  private toolManager!: ToolManager;
   private participants: Map<string, vscode.Disposable> = new Map();
   private lastActiveTimestamp: number | null = null;
   private monitoringInterval: NodeJS.Timeout | null = null;
@@ -32,10 +23,22 @@ export class ChatService {
    * Creates a new ChatService instance
    * @param context The extension context
    * @param toolManager The tool manager instance
+   */  
+  constructor(context?: vscode.ExtensionContext, toolManager?: ToolManager) {
+    if (context) {
+      this._context = context;
+    }
+    if (toolManager) {
+      this.toolManager = toolManager;
+    }
+  }
+  
+  /**
+   * Initialize the chat service
+   * @param context VS Code extension context
    */
-  constructor(context: vscode.ExtensionContext, toolManager: ToolManager) {
+  public initialize(context: vscode.ExtensionContext): void {
     this._context = context;
-    this.toolManager = toolManager;
   }
 
   /**
@@ -44,24 +47,25 @@ export class ChatService {
   public get context(): vscode.ExtensionContext {
     return this._context;
   }
-
   /**
    * Gets whether chat participants are currently active
+   * @returns True if a chat participant is active
    */
-  public get isActive(): boolean {
+  public isActive(): boolean {
     return this.participants.size > 0;
   }
 
   /**
    * Gets the timestamp of the last activity
+   * @returns The timestamp of the last activity or null if not active
    */
-  public get lastActive(): number | null {
+  public getLastActiveTimestamp(): number | null {
     return this.lastActiveTimestamp;
   }
 
   /**
    * Updates the last active timestamp
-   */
+   */  
   public updateLastActive(): void {
     this.lastActiveTimestamp = Date.now();
     logWithChannel(LogLevel.DEBUG, `Chat participant last active timestamp updated to ${new Date(this.lastActiveTimestamp).toISOString()}`);
@@ -149,6 +153,103 @@ export class ChatService {
       });
       return [];
     }
+  }
+
+  /**
+   * Register a chat participant
+   * @param options Chat participant options
+   * @param handler The function to handle chat requests
+   * @returns A disposable that unregisters the participant when disposed
+   */  public registerChatParticipant(
+    options: ChatParticipantOptions,
+    handler: (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream) => Promise<void>,
+  ): vscode.Disposable {
+    const { primaryId, debugName } = options;
+    
+    logWithChannel(LogLevel.DEBUG, `Registering chat participant: ${debugName || primaryId}`);
+    
+    try {
+      // We need to update our activity timestamp whenever we get a request
+      this.updateLastActive();
+      
+      // Register with the VS Code chat API
+      const disposable = vscode.chat.createChatParticipant(
+        primaryId,
+        async (request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream, _token: vscode.CancellationToken) => {
+          try {
+            await handler(request, context, response);
+          } catch (error) {
+            // Log the error but don't re-throw - we want to handle the error gracefully
+            logWithChannel(LogLevel.ERROR, `❌ Error in chat participant response handler: ${error}`);
+            response.markdown(`I'm sorry, but I encountered an error while processing your request. Please try again or contact support if the issue persists.`);
+          }
+        },
+      );
+      
+      // Store the disposable so we can clean up later
+      this.participants.set(primaryId, disposable);
+      
+      logWithChannel(LogLevel.INFO, `Chat participant successfully registered with ID: ${primaryId}`);
+      
+      return disposable;
+    } catch (error) {
+      logWithChannel(LogLevel.CRITICAL, `❌ Failed to register chat participant: ${debugName || primaryId}`, error);
+      throw new Error(`Failed to register chat participant: ${debugName || primaryId}`);
+    }
+  }
+  /**
+   * Handle a chat request
+   * @param request The chat request
+   * @param context The chat context
+   * @param response The response stream
+   */
+  public async handleRequest(request: vscode.ChatRequest, context: vscode.ChatContext, response: vscode.ChatResponseStream): Promise<void> {
+    try {
+      // Update the activity timestamp
+      this.updateLastActive();
+      
+      // Use the imported handler to handle the request
+      const token = new vscode.CancellationTokenSource().token;
+      await handleChatRequest(request, context, response, token, this.toolManager);
+    } catch (error) {
+      logWithChannel(LogLevel.ERROR, `❌ Error handling chat request: ${error}`);
+      response.markdown(`I'm sorry, but I encountered an error while processing your request. Please try again.`);
+    }
+  }
+
+  /**
+   * Stop monitoring for participant activity
+   */
+  public stopMonitoring(): void {
+    if (this.monitoringInterval !== null) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+      this.isMonitoring = false;
+      logWithChannel(LogLevel.DEBUG, '⏹️ Stopped chat participant health monitoring');
+    }
+  }
+
+  /**
+   * Refresh the chat participant registration
+   */
+  public refreshParticipants(): void {
+    this.forceRefresh();
+  }
+
+  /**
+   * Get all registered participant IDs
+   * @returns The IDs of all registered participants
+   */
+  public getParticipantIds(): string[] {
+    return Array.from(this.participants.keys());
+  }
+
+  /**
+   * Dispose all participants and clean up resources
+   */
+  public dispose(): void {
+    this.disposeAll();
+    this.stopMonitoring();
   }
 
   /**
@@ -251,13 +352,14 @@ export class ChatService {
     const workspaceAvailable = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0;
     logWithChannel(LogLevel.DEBUG, '🩺 Checking chat participant health', {
       participantsCount: this.participants.size,
-      lastActive: this.lastActive ? new Date(this.lastActive).toISOString() : 'never',
+      lastActive: this.getLastActiveTimestamp() ? new Date(this.getLastActiveTimestamp() as number).toISOString() : 'never',
       workspaceAvailable,
       workspaceFolders: vscode.workspace.workspaceFolders?.map(f => f.name) || [],
     });
 
     // If we've been inactive for too long, consider refreshing
-    if (this.lastActive && Date.now() - this.lastActive > 5 * 60 * 1000) {
+    const lastTimestamp = this.getLastActiveTimestamp();
+    if (lastTimestamp && Date.now() - lastTimestamp > 5 * 60 * 1000) {
       logWithChannel(LogLevel.WARN, '⚠️ Chat participants have been inactive for over 5 minutes');
       
       // Only force refresh if we have a workspace
@@ -288,7 +390,7 @@ export class ChatService {
     const state = {
       participantCount: this.participants.size,
       participantIds: Array.from(this.participants.keys()),
-      lastActive: this.lastActive ? new Date(this.lastActive).toISOString() : null,
+      lastActive: this.getLastActiveTimestamp() ? new Date(this.getLastActiveTimestamp() as number).toISOString() : null,
       isMonitoring: this.isMonitoring,
       workspaceAvailable: vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0,
       workspaceFolders: vscode.workspace.workspaceFolders?.map(f => ({

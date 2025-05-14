@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0  # Ensures full git history is available
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,12 +53,14 @@ jobs:
           cache: 'pnpm'
           
       - name: Install dependencies
+        id: Install_dependencies
         run: |
           pnpm install
           echo "### 📦 Dependencies Installation" >> $GITHUB_STEP_SUMMARY
           echo "✅ Dependencies installed successfully" >> $GITHUB_STEP_SUMMARY
-        
+          
       - name: Build Docusaurus site
+        id: Build_Docusaurus_site
         run: |
           echo "### 🏗️ Building Documentation Site" >> $GITHUB_STEP_SUMMARY
           echo "Branch: ${{ github.event.inputs.branch }}" >> $GITHUB_STEP_SUMMARY
@@ -76,19 +79,21 @@ jobs:
           fi
         env:
           GITHUB_ACTIONS: 'true'
-        
+
       - name: Setup Pages
+        id: Setup_Pages
         uses: actions/configure-pages@v5
-        
+      
       - name: Upload artifact
+        id: Upload_artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'apps/huckleberry-docs/build'
-          
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
+      
       - name: Deployment Summary
         if: always()
         run: |
@@ -96,12 +101,36 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Dependencies Installation | ${{ steps['Install dependencies'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Documentation Build | ${{ steps['Build Docusaurus site'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Pages Configuration | ${{ steps['Setup Pages'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Artifact Upload | ${{ steps['Upload artifact'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Deployment | ${{ steps['Deploy to GitHub Pages'].outcome == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ job.steps['Deploy to GitHub Pages'].outcome }}" == "success" ]]; then
+          
+          # Use the proper step.ID.outcome syntax instead of steps['Name']
+          if [ "${{ steps.Install_dependencies.outcome }}" == "success" ]; then
+            echo "| Dependencies Installation | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Dependencies Installation | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.Build_Docusaurus_site.outcome }}" == "success" ]; then
+            echo "| Documentation Build | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Documentation Build | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.Setup_Pages.outcome }}" == "success" ]; then
+            echo "| Pages Configuration | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Pages Configuration | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.Upload_artifact.outcome }}" == "success" ]; then
+            echo "| Artifact Upload | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Artifact Upload | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.deployment.outcome }}" == "success" ]; then
+            echo "| Deployment | ✅ Success |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
             echo "🌐 **Site URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Deployment | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
           fi
