@@ -1,0 +1,13 @@
+{
+  "root": true,
+  "overrides": [
+    {
+      "files": ["**/*"],
+      "rules": {},
+      "parserOptions": {},
+      "env": {},
+      "plugins": [],
+      "extends": []
+    }
+  ]
+}
