@@ -198,7 +198,6 @@ jobs:
             - Select the downloaded VSIX file
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
 
       - name: Release Summary
         if: always()
