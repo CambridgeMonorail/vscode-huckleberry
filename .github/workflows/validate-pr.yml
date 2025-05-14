@@ -92,11 +92,11 @@ jobs:
             echo "Affected projects:" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             pnpm exec nx print-affected --base=${{ steps.base-branch.outputs.base-branch }} --type=app >> $GITHUB_STEP_SUMMARY
-            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Build failed for affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           
       - name: Validation Summary
         if: always()
