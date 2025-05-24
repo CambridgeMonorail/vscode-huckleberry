@@ -1,0 +1,14 @@
+{
+  "name": "huckleberry-demo",
+  "version": "1.0.0",
+  "description": "Demo workspace for Huckleberry Task Manager screenshots",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}

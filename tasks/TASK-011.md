@@ -1,12 +1,12 @@
-# TASK-011: Configure GitHub Actions workflow for test automation
+# TASK-011: Document VS Code extension API contributions: commands, views, settings, keyboard shortcuts
 
 ## Details
-- **Priority**: low
+- **Priority**: medium
 - **Status**: To Do
-- **Created**: 5/10/2025
+- **Created**: 5/24/2025
 
 ## Description
-Configure GitHub Actions workflow for test automation
+Document VS Code extension API contributions: commands, views, settings, keyboard shortcuts
 
 ## Notes
 - Created via Huckleberry Task Manager

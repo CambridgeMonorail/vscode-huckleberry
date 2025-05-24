@@ -1,0 +1,12 @@
+.task-explorer-icon {
+    font-family: "codicon";
+    margin-right: 4px;
+    opacity: 0.8;
+    font-size: 14px;
+}
+
+.task-explorer-item {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+}

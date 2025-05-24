@@ -1,12 +1,12 @@
-# TASK-010: Set up Extension Development Host (EDH) testing with @vscode/test-electron
+# TASK-010: Add clear AI transparency and privacy documentation to README and Marketplace listing: explain VS Code LM API usage, data handling, and privacy safeguards
 
 ## Details
-- **Priority**: low
+- **Priority**: high
 - **Status**: To Do
-- **Created**: 5/10/2025
+- **Created**: 5/24/2025
 
 ## Description
-Set up Extension Development Host (EDH) testing with @vscode/test-electron
+Add clear AI transparency and privacy documentation to README and Marketplace listing: explain VS Code LM API usage, data handling, and privacy safeguards
 
 ## Notes
 - Created via Huckleberry Task Manager
