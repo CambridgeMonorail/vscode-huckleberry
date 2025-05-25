@@ -22,10 +22,8 @@ export async function openTaskExplorer(): Promise<void> {
     }
 
     // Log that the command was executed
-    logWithChannel(LogLevel.INFO, '🔍 Opening task explorer view');
-
-    // Focus the task explorer view
-    await vscode.commands.executeCommand('huckleberryTaskExplorer.focus');
+    logWithChannel(LogLevel.INFO, '🔍 Opening task explorer view');    // Open and focus the task explorer view
+    await vscode.commands.executeCommand('workbench.view.huckleberryTaskExplorer');
 
   } catch (error) {
     logWithChannel(LogLevel.ERROR, 'Error in openTaskExplorer command:', error);

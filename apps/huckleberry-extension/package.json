@@ -500,15 +500,27 @@
           "description": "Number of days for custom due date setting (when defaultDueDate is set to 'custom')"
         }
       }
-    },
-    "views": {
-      "explorer": [
+    },    "viewsContainers": {
+      "activitybar": [
         {
           "id": "huckleberryTaskExplorer",
-          "name": "Huckleberry Tasks",
-          "icon": "$(tasklist)",
-          "type": "tree",
-          "visibility": "collapsed",
+          "title": "Huckleberry Tasks",
+          "icon": {
+            "light": "./resources/huckleberry-logo-light.svg",
+            "dark": "./resources/huckleberry-logo-dark.svg"
+          }
+        }
+      ]
+    },
+    "views": {
+      "huckleberryTaskExplorer": [
+        {
+          "id": "huckleberryTaskExplorer",
+          "name": "Task Explorer",
+          "icon": {
+            "light": "./resources/huckleberry-logo-light.svg",
+            "dark": "./resources/huckleberry-logo-dark.svg"
+          },
           "contextualTitle": "Tasks"
         }
       ]

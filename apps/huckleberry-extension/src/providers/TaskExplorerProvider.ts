@@ -8,6 +8,18 @@ import { priorityEmoji } from '../lib/tasks/taskUtils.lib';
 import { ToolManager } from '../services/toolManager';
 import { logWithChannel, LogLevel } from '../utils/debugUtils';
 
+class WelcomeTreeItem extends vscode.TreeItem {
+  constructor() {
+    super('Initialize Task Tracking', vscode.TreeItemCollapsibleState.None);
+    this.tooltip = 'Click to set up task tracking in your workspace';
+    this.iconPath = new vscode.ThemeIcon('gear');
+    this.command = {
+      title: 'Initialize Task Tracking',
+      command: 'vscode-copilot-huckleberry.initializeTaskTracking',
+    };
+  }
+}
+
 /**
  * Represents a task item in the TreeView
  */
@@ -55,9 +67,9 @@ export class TaskTreeItem extends vscode.TreeItem {
 /**
  * TreeDataProvider for task visualization
  */
-export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<TaskTreeItem | undefined | null | void> = new vscode.EventEmitter<TaskTreeItem | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<TaskTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeItem | WelcomeTreeItem> {
+  private _onDidChangeTreeData: vscode.EventEmitter<TaskTreeItem | WelcomeTreeItem | undefined | null | void> = new vscode.EventEmitter<TaskTreeItem | WelcomeTreeItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<TaskTreeItem | WelcomeTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
   private _sortByPriority = false;
   private _showCompleted = false;
@@ -79,6 +91,23 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
       watcher.onDidDelete(() => this.refresh());
     } catch (error) {
       logWithChannel(LogLevel.ERROR, 'Error setting up task file watcher:', error);
+    }
+  }
+
+  private async isInitialized(): Promise<boolean> {
+    try {
+      const { tasksDir, tasksJsonPath } = await getWorkspacePaths();
+      
+      // Check if the files exist
+      try {
+        await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
+        await vscode.workspace.fs.stat(vscode.Uri.file(tasksDir));
+        return true;
+      } catch {
+        return false;
+      }
+    } catch {
+      return false;
     }
   }
 
@@ -106,11 +135,26 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
     this.refresh();
   }
 
-  getTreeItem(element: TaskTreeItem): vscode.TreeItem {
+  getTreeItem(element: TaskTreeItem | WelcomeTreeItem): vscode.TreeItem {
     return element;
   }
 
-  async getChildren(element?: TaskTreeItem): Promise<TaskTreeItem[]> {
+  async getChildren(element?: TaskTreeItem | WelcomeTreeItem): Promise<Array<TaskTreeItem | WelcomeTreeItem>> {
+    // If this is a subtask request, handle it with existing logic
+    if (element instanceof TaskTreeItem) {
+      return this.getTaskChildren(element);
+    }
+
+    // For root level, first check if tasks are initialized
+    if (!await this.isInitialized()) {
+      return [new WelcomeTreeItem()];
+    }
+
+    // Tasks are initialized, get the regular task list
+    return this.getTaskChildren();
+  }
+
+  private async getTaskChildren(element?: TaskTreeItem): Promise<TaskTreeItem[]> {
     try {
       const { tasksJsonPath } = await getWorkspacePaths();
       const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
