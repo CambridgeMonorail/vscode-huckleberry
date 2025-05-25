@@ -11,12 +11,15 @@ import { logWithChannel, LogLevel } from '../utils/debugUtils';
 class WelcomeTreeItem extends vscode.TreeItem {
   constructor() {
     super('Initialize Task Tracking', vscode.TreeItemCollapsibleState.None);
+    logWithChannel(LogLevel.DEBUG, '🎯 Constructing WelcomeTreeItem');
     this.tooltip = 'Click to set up task tracking in your workspace';
     this.iconPath = new vscode.ThemeIcon('gear');
     this.command = {
       title: 'Initialize Task Tracking',
       command: 'vscode-copilot-huckleberry.initializeTaskTracking',
+      arguments: [],
     };
+    logWithChannel(LogLevel.DEBUG, '✓ WelcomeTreeItem constructed with command:', this.command);
   }
 }
 
@@ -139,7 +142,8 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
     return element;
   }
 
-  async getChildren(element?: TaskTreeItem | WelcomeTreeItem): Promise<Array<TaskTreeItem | WelcomeTreeItem>> {
+  public async getChildren(element?: TaskTreeItem | WelcomeTreeItem): Promise<Array<TaskTreeItem | WelcomeTreeItem>> {
+    logWithChannel(LogLevel.DEBUG, '🌲 Getting children for TaskExplorer element:', element);
     // If this is a subtask request, handle it with existing logic
     if (element instanceof TaskTreeItem) {
       return this.getTaskChildren(element);

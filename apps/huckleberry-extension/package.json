@@ -21,8 +21,7 @@
   ],
   "tags": [
     "chat-participant"
-  ],
-  "activationEvents": [
+  ],  "activationEvents": [
     "onChatParticipant:huckleberry",
     "onLanguageModelTool:create_task",
     "onLanguageModelTool:initialize_tracking",
@@ -187,6 +186,13 @@
         "category": "Huckleberry",
         "icon": "$(check)",
         "description": "Toggle visibility of completed tasks"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
+        "title": "Mark Complete",
+        "category": "Huckleberry Task Explorer",
+        "icon": "$(check)",
+        "description": "Mark the selected task as complete"
       }
     ],
     "chatParticipants": [
@@ -505,10 +511,7 @@
         {
           "id": "huckleberryTaskExplorer",
           "title": "Huckleberry Tasks",
-          "icon": {
-            "light": "./resources/huckleberry-logo-light.svg",
-            "dark": "./resources/huckleberry-logo-dark.svg"
-          }
+          "icon": "resources/huckleberry-logo-dark.svg"
         }
       ]
     },
@@ -517,10 +520,7 @@
         {
           "id": "huckleberryTaskExplorer",
           "name": "Task Explorer",
-          "icon": {
-            "light": "./resources/huckleberry-logo-light.svg",
-            "dark": "./resources/huckleberry-logo-dark.svg"
-          },
+          "icon": "resources/huckleberry-logo-dark.svg",
           "contextualTitle": "Tasks"
         }
       ]
@@ -544,8 +544,7 @@
         }
       ],
       "view/item/context": [
-        {
-          "command": "vscode-copilot-huckleberry.markTaskComplete",
+        {          "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
           "when": "view == huckleberryTaskExplorer && viewItem == incompleteTask",
           "group": "1_modification"
         },

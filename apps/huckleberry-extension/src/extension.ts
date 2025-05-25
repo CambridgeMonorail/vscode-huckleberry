@@ -58,27 +58,41 @@ export function activate(context: vscode.ExtensionContext): void {
       treeDataProvider: taskExplorerProvider,
       showCollapseAll: true,
     });
-    
-    // Register Task Explorer related commands
+      // Register Task Explorer related commands
     const taskExplorerCommands = [
+      // Basic tree view commands
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.refresh', () => {
         taskExplorerProvider.refresh();
+        return Promise.resolve();
       }),
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.sortByPriority', () => {
         taskExplorerProvider.toggleSortByPriority();
+        return Promise.resolve();
       }),
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted', () => {
         taskExplorerProvider.toggleShowCompleted();
+        return Promise.resolve();
       }),
-      // Add handlers for task item actions
+      
+      // Task item action handlers
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.openTask', (item: TaskTreeItem) => {
-        // Open the task file when clicked
+        logWithChannel(LogLevel.DEBUG, '🎯 Opening task file for:', item.task.id);
         if (item.task.source?.file) {
-          vscode.commands.executeCommand('vscode.open', vscode.Uri.file(item.task.source.file));
+          return vscode.commands.executeCommand('vscode.open', vscode.Uri.file(item.task.source.file));
         }
+        return Promise.resolve();
       }),
-      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.markComplete', (item: TaskTreeItem) => {
-        commandHandlers.markTaskComplete(item.task.id);
+      
+      // Mark task complete command with proper async handling
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.markComplete', async (item: TaskTreeItem) => {
+        try {
+          logWithChannel(LogLevel.DEBUG, '🎯 Executing markComplete from TreeView for task:', item.task.id);
+          await commandHandlers.markTaskComplete(item.task.id);
+          return Promise.resolve();
+        } catch (error) {
+          logWithChannel(LogLevel.ERROR, '❌ Error marking task complete:', error);
+          throw error;
+        }
       }),
     ];
 
@@ -153,13 +167,35 @@ export function activate(context: vscode.ExtensionContext): void {
         'vscode-copilot-huckleberry.getHelp',
         commandHandlers.getHelp,
       ),
-      vscode.commands.registerCommand(
-        'vscode-copilot-huckleberry.initialiseTaskTracking',
-        commandHandlers.initialiseTaskTracking,
-      ),
+      // Initialize task tracking commands
+      logWithChannel(LogLevel.DEBUG, '🔄 Registering initialize/initialise task tracking commands...'),
       vscode.commands.registerCommand(
         'vscode-copilot-huckleberry.initializeTaskTracking',
-        commandHandlers.initializeTaskTracking,
+        async function(this: unknown, ...args: unknown[]) {
+          try {
+            logWithChannel(LogLevel.DEBUG, '🎯 Executing initializeTaskTracking command with args:', args);
+            logWithChannel(LogLevel.DEBUG, '🔍 Command context (this):', this);
+            await commandHandlers.initializeTaskTracking.call(this);
+            return Promise.resolve();
+          } catch (error) {
+            logWithChannel(LogLevel.ERROR, '❌ Error in initializeTaskTracking command:', error);
+            throw error;
+          }
+        },
+      ),
+      vscode.commands.registerCommand(
+        'vscode-copilot-huckleberry.initialiseTaskTracking',
+        async function(this: unknown, ...args: unknown[]) {
+          try {
+            logWithChannel(LogLevel.DEBUG, '🎯 Executing initialiseTaskTracking command with args:', args);
+            logWithChannel(LogLevel.DEBUG, '🔍 Command context (this):', this);
+            await commandHandlers.initialiseTaskTracking.call(this);
+            return Promise.resolve();
+          } catch (error) {
+            logWithChannel(LogLevel.ERROR, '❌ Error in initialiseTaskTracking command:', error);
+            throw error;
+          }
+        },
       ),
       vscode.commands.registerCommand(
         'vscode-copilot-huckleberry.createTask',
@@ -238,12 +274,12 @@ export function activate(context: vscode.ExtensionContext): void {
           logWithChannel(LogLevel.ERROR, 'Failed to refresh chat participants after workspace change:', error);
         }
       }
-    });
-
-    // Register all commands and listeners
-    commandDisposables.forEach(disposable => {
-      context.subscriptions.push(disposable);
-    });
+    });    // Register all commands and listeners
+    commandDisposables
+      .filter((disposable): disposable is vscode.Disposable => disposable !== undefined)
+      .forEach(disposable => {
+        context.subscriptions.push(disposable);
+      });
     context.subscriptions.push(workspaceFoldersChangeDisposable);
 
     // Register chat participants
