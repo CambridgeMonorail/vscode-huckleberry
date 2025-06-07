@@ -17,6 +17,8 @@ The repository is structured as follows:
 
 When making changes always check the editor for typescript errors before assuming the code is complete or trying to run it.
 
+After making a change always run: pnpm validate:affected
+
 ## Coding Standards
 
 ### TypeScript

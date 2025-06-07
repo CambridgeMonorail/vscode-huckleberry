@@ -8,21 +8,6 @@ import { priorityEmoji } from '../lib/tasks/taskUtils.lib';
 import { ToolManager } from '../services/toolManager';
 import { logWithChannel, LogLevel } from '../utils/debugUtils';
 
-class WelcomeTreeItem extends vscode.TreeItem {
-  constructor() {
-    super('Initialize Task Tracking', vscode.TreeItemCollapsibleState.None);
-    logWithChannel(LogLevel.DEBUG, '🎯 Constructing WelcomeTreeItem');
-    this.tooltip = 'Click to set up task tracking in your workspace';
-    this.iconPath = new vscode.ThemeIcon('gear');
-    this.command = {
-      title: 'Initialize Task Tracking',
-      command: 'vscode-copilot-huckleberry.initializeTaskTracking',
-      arguments: [],
-    };
-    logWithChannel(LogLevel.DEBUG, '✓ WelcomeTreeItem constructed with command:', this.command);
-  }
-}
-
 /**
  * Represents a task item in the TreeView
  */
@@ -48,12 +33,12 @@ export class TaskTreeItem extends vscode.TreeItem {
     ];
     return lines.filter(Boolean).join('\n');
   }
-
+  
   private getIconPath(task: Task): vscode.ThemeIcon {
     if (task.completed) {
       return new vscode.ThemeIcon('check');
     }
-    
+
     switch (task.status) {
       case 'in-progress':
         return new vscode.ThemeIcon('play');
@@ -70,52 +55,213 @@ export class TaskTreeItem extends vscode.TreeItem {
 /**
  * TreeDataProvider for task visualization
  */
-export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeItem | WelcomeTreeItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<TaskTreeItem | WelcomeTreeItem | undefined | null | void> = new vscode.EventEmitter<TaskTreeItem | WelcomeTreeItem | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<TaskTreeItem | WelcomeTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeItem> {
+  private _onDidChangeTreeData: vscode.EventEmitter<TaskTreeItem | undefined | null | void> = new vscode.EventEmitter<TaskTreeItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<TaskTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
   private _sortByPriority = false;
   private _showCompleted = false;
   private _filterPriority?: TaskPriority;
   private _filterStatus?: TaskStatus;
-
+  private _directoryStructureReady = false;  // Flag to track if directory structure is ready
+  
   constructor(private readonly toolManager: ToolManager) {
-    // Watch for changes to the tasks.json file
+    // Explicitly set context variables to undefined initially to ensure the viewsWelcome shows correctly
+    vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', undefined);
+    vscode.commands.executeCommand('setContext', 'huckleberry.hasTaskData', false);
+    
+    // Log initial context state
+    logWithChannel(LogLevel.INFO, '🔍 Initial context state set to undefined/false for viewsWelcome visibility');
+    
+    // Watch for changes to the tasks.json file and check directory structure
     this.setupFileWatcher();
+    
+    // Check for existing directory structure
+    this.checkDirectoryStructure().then(isReady => {
+      // The checkDirectoryStructure method already updates context state
+      logWithChannel(LogLevel.INFO, `Task explorer initialized with isReady=${isReady}`);
+    }).catch(error => {
+      logWithChannel(LogLevel.ERROR, 'Error checking task directory structure:', error);
+      this.updateContextState(false, false);
+    });
   }
 
+  /**
+   * Updates VS Code context variables to control welcome view visibility
+   * @param isInitialized Whether the task system is initialized
+   * @param hasData Whether there are any tasks available
+   */
+  private updateContextState(isInitialized: boolean, hasData?: boolean): void {
+    // Set context explicitly to control welcome view visibility
+    vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', isInitialized);
+    
+    // Only update hasData if it's provided, otherwise leave it as is
+    if (hasData !== undefined) {
+      vscode.commands.executeCommand('setContext', 'huckleberry.hasTaskData', hasData);
+    }
+    
+    // Log this with higher visibility to debug welcome view issues
+    logWithChannel(LogLevel.INFO, `🔍 Updated context state: isInitialized=${isInitialized}, hasData=${hasData !== undefined ? hasData : '(unchanged)'}`);
+  }
+
+  /**
+   * Sets up file watchers for task-related files
+   */
   private async setupFileWatcher(): Promise<void> {
     try {
-      const { tasksJsonPath } = await getWorkspacePaths();
-      const watcher = vscode.workspace.createFileSystemWatcher(tasksJsonPath);
+      const { tasksJsonPath, tasksDir } = await getWorkspacePaths();
+
+      // Create file watchers for both tasks.json and the tasks directory
+      logWithChannel(LogLevel.DEBUG, `Setting up file watcher for tasks.json at ${tasksJsonPath}`);
+      const tasksJsonWatcher = vscode.workspace.createFileSystemWatcher(tasksJsonPath);
+      const tasksDirWatcher = vscode.workspace.createFileSystemWatcher(`${tasksDir}/**`);
+
+      // Watch for tasks.json file changes
+      tasksJsonWatcher.onDidChange(() => {
+        logWithChannel(LogLevel.DEBUG, 'tasks.json changed, refreshing task explorer');
+        this.refresh();
+      });
       
-      watcher.onDidChange(() => this.refresh());
-      watcher.onDidCreate(() => this.refresh());
-      watcher.onDidDelete(() => this.refresh());
+      tasksJsonWatcher.onDidCreate(() => {
+        logWithChannel(LogLevel.INFO, 'tasks.json created, initializing task explorer');
+        this._directoryStructureReady = true;
+        this.updateContextState(true, false); // Initially no tasks
+        this.refresh();
+      });
+
+      tasksJsonWatcher.onDidDelete(() => {
+        logWithChannel(LogLevel.WARN, 'tasks.json deleted, marking directory structure as not ready');
+        this._directoryStructureReady = false;
+        this.updateContextState(false, false);
+        this.refresh();
+      });
+
+      // Watch for changes in the tasks directory
+      tasksDirWatcher.onDidCreate(uri => {
+        if (uri.fsPath === tasksJsonPath) {
+          logWithChannel(LogLevel.INFO, 'tasks.json created in tasks directory, initializing task explorer');
+          this._directoryStructureReady = true;
+          this.refresh();
+        }
+      });
     } catch (error) {
       logWithChannel(LogLevel.ERROR, 'Error setting up task file watcher:', error);
     }
   }
-
-  private async isInitialized(): Promise<boolean> {
+  
+  /**
+   * Checks if the directory structure for tasks is properly set up
+   * @returns Promise resolving to true if directory structure is ready
+   */
+  private async checkDirectoryStructure(): Promise<boolean> {
     try {
       const { tasksDir, tasksJsonPath } = await getWorkspacePaths();
-      
-      // Check if the files exist
+      let directoryExists = false;
+      let fileExists = false;      // Log detailed diagnostic information
+      logWithChannel(LogLevel.INFO, '🔍 Checking task directory structure', {
+        tasksDir,
+        tasksJsonPath,
+      });
+
+      // Check if the tasks directory exists
+      try {
+        await vscode.workspace.fs.stat(vscode.Uri.file(tasksDir));
+        logWithChannel(LogLevel.DEBUG, `Tasks directory exists at ${tasksDir}`);
+        directoryExists = true;
+      } catch {
+        // Error means directory doesn't exist
+        logWithChannel(LogLevel.INFO, `Tasks directory does not exist at ${tasksDir}`);
+        directoryExists = false;
+      }
+
+      // Check if the tasks.json file exists
       try {
         await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
-        await vscode.workspace.fs.stat(vscode.Uri.file(tasksDir));
-        return true;
+        logWithChannel(LogLevel.DEBUG, `tasks.json exists at ${tasksJsonPath}`);
+        fileExists = true;
       } catch {
+        // Error means file doesn't exist
+        logWithChannel(LogLevel.INFO, `tasks.json does not exist at ${tasksJsonPath}`);
+        fileExists = false;
+      }
+
+      // Determine initialization state based on both directory and file
+      if (directoryExists && fileExists) {
+        this._directoryStructureReady = true;
+
+        // Check if there are any tasks
+        const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
+        const hasTasks = !!(tasksData.tasks && tasksData.tasks.length > 0);
+        this.updateContextState(true, hasTasks);
+        logWithChannel(LogLevel.INFO, `🧩 Tasks found: ${hasTasks ? 'Yes' : 'No'}, displaying appropriate view`);
+
+        return true;
+      } else {
+        // Not initialized - directory or file missing
+        this._directoryStructureReady = false;
+        this.updateContextState(false, false);
+        logWithChannel(LogLevel.INFO, `⚠️ Task structure incomplete: directory=${directoryExists}, file=${fileExists}`);
         return false;
       }
-    } catch {
+    } catch (error) {
+      logWithChannel(LogLevel.ERROR, '❌ Error checking task directory structure:', error);
+      this._directoryStructureReady = false;
+      this.updateContextState(false, false);
       return false;
     }
   }
 
-  refresh(): void {
+  /**
+   * Checks if the tasks system is initialized with proper files
+   */
+  private async isInitialized(): Promise<boolean> {
+    if (this._directoryStructureReady) {
+      return true;
+    }
+
+    // Check the structure if we haven't confirmed it yet
+    return await this.checkDirectoryStructure();
+  }
+
+  /**
+   * Debug method to analyze why welcome view isn't showing
+   * Can be called from extension.ts or via a debug command
+   */
+  async debugWelcomeView(): Promise<void> {
+    const initialized = await this.isInitialized();
+    
+    logWithChannel(LogLevel.INFO, '🔍 DEBUG WELCOME VIEW STATE:', {
+      isInitialized: initialized,
+      directoryStructureReady: this._directoryStructureReady,
+      contextValues: {
+        isInitializedContext: 'Check Developer: Inspect Context Keys for huckleberry.isInitialized',
+        hasTaskDataContext: 'Check Developer: Inspect Context Keys for huckleberry.hasTaskData',
+      },
+      whenClauseForEmptyState: 'view == huckleberryTaskExplorer && huckleberry.isInitialized != true',
+      whenClauseForNoTasksState: 'view == huckleberryTaskExplorer && huckleberry.isInitialized && !huckleberry.hasTaskData',
+      tips: [
+        'Ensure getChildren() returns [] not undefined',
+        'Ensure treeView.message is not set (even to undefined)',
+        'Check context keys are properly set before first render',
+      ],
+    });
+
+    // Force-refresh tree to ensure we get a clean state
     this._onDidChangeTreeData.fire();
+  }
+
+  refresh(): void {
+    // Always reset tree view when refreshing to ensure empty states are properly detected
+    this._onDidChangeTreeData.fire();
+    
+    // Explicitly check if we have an empty state after refresh
+    this.isInitialized().then(initialized => {
+      if (!initialized) {
+        // Force context update to ensure welcome view conditions are met
+        this.updateContextState(false, false);
+        logWithChannel(LogLevel.INFO, '🔄 Refresh: Task explorer not initialized, ensuring welcome view visibility');
+      }
+    });
   }
 
   toggleSortByPriority(): void {
@@ -138,20 +284,35 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
     this.refresh();
   }
 
-  getTreeItem(element: TaskTreeItem | WelcomeTreeItem): vscode.TreeItem {
+  getTreeItem(element: TaskTreeItem): vscode.TreeItem {
     return element;
   }
 
-  public async getChildren(element?: TaskTreeItem | WelcomeTreeItem): Promise<Array<TaskTreeItem | WelcomeTreeItem>> {
-    logWithChannel(LogLevel.DEBUG, '🌲 Getting children for TaskExplorer element:', element);
+  public async getChildren(element?: TaskTreeItem): Promise<TaskTreeItem[]> {
+    logWithChannel(LogLevel.INFO, '🌲 Getting children for TaskExplorer element:', element ? 'TaskTreeItem' : 'undefined');
+
+    // Check if the tasks system is initialized
+    const initialized = await this.isInitialized();
+
+    if (!initialized) {
+      logWithChannel(LogLevel.INFO, '⚠️ Task directory structure not ready. Showing "Initialize" welcome view.');
+      
+      this.updateContextState(false, false);
+      // Log detailed context information
+      logWithChannel(LogLevel.INFO, '🔍 Context values during getChildren when not initialized:', {
+        currentContext_huckleberry_isInitialized: false, // Reflects the context just set
+        currentContext_huckleberry_hasTaskData: false,    // Reflects the context just set
+        elementType: element ? 'TaskTreeItem' : 'undefined',
+        // The actual 'when' clause is in package.json: "view == huckleberryTaskExplorer && huckleberry.isInitialized != true"
+      });
+      
+      // Return empty array - the welcome view for initialization in package.json will be shown
+      return [];
+    }
+
     // If this is a subtask request, handle it with existing logic
     if (element instanceof TaskTreeItem) {
       return this.getTaskChildren(element);
-    }
-
-    // For root level, first check if tasks are initialized
-    if (!await this.isInitialized()) {
-      return [new WelcomeTreeItem()];
     }
 
     // Tasks are initialized, get the regular task list
@@ -161,11 +322,30 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
   private async getTaskChildren(element?: TaskTreeItem): Promise<TaskTreeItem[]> {
     try {
       const { tasksJsonPath } = await getWorkspacePaths();
-      const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
 
-      if (!tasksData.tasks || tasksData.tasks.length === 0) {
+      // Check if tasks.json exists
+      try {
+        await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
+      } catch {
+        logWithChannel(LogLevel.INFO, `tasks.json does not exist at ${tasksJsonPath}`);
+        this._directoryStructureReady = false;
+        this.updateContextState(false, false); // Not initialized, explicitly set context
         return [];
       }
+
+      // Read the task data
+      const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
+
+      // Check if we have any tasks
+      if (!tasksData.tasks || tasksData.tasks.length === 0) {
+        logWithChannel(LogLevel.INFO, '📋 No tasks found in tasks.json - showing "Create Task" welcome view');
+        this.updateContextState(true, false); // Initialized but no tasks - will show the "Create Task" welcome view
+        return [];
+      }
+
+      // We have tasks, update context
+      logWithChannel(LogLevel.DEBUG, `📋 Found ${tasksData.tasks.length} tasks in tasks.json`);
+      this.updateContextState(true, true);
 
       let tasks = tasksData.tasks;
 
@@ -197,7 +377,7 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
       // Sort tasks
       tasks.sort((a, b) => {
         if (this._sortByPriority) {
-          const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+          const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
           const aPriority = a.priority ? priorityOrder[a.priority] : 4;
           const bPriority = b.priority ? priorityOrder[b.priority] : 4;
           if (aPriority !== bPriority) {
@@ -212,8 +392,8 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
       // Convert to TreeItems
       return tasks.map(task => {
         const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-        const state = hasSubtasks ? 
-          vscode.TreeItemCollapsibleState.Collapsed : 
+        const state = hasSubtasks ?
+          vscode.TreeItemCollapsibleState.Collapsed :
           vscode.TreeItemCollapsibleState.None;
         return new TaskTreeItem(task, state);
       });

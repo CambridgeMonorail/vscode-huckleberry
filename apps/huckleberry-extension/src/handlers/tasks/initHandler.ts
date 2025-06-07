@@ -24,22 +24,44 @@ export async function handleInitializeTaskTracking(
   stream: vscode.ChatResponseStream,
   toolManager: ToolManager,
 ): Promise<void> {
-  console.log('🎯 Processing initialize tracking request:', prompt);
+  logWithChannel(LogLevel.INFO, '🎯 Processing initialize tracking request:', prompt);
   await showProgress(stream);
 
   if (!isWorkspaceAvailable()) {
+    logWithChannel(LogLevel.WARN, '❌ No workspace available for task initialization');
     notifyNoWorkspace();
     return;
   }
 
   try {
-    const { tasksJsonPath, tasksDir } = await getWorkspacePaths();
+    // Get workspace paths first
+    let tasksJsonPath = '';
+    let tasksDir = '';
+    
+    try {
+      const paths = await getWorkspacePaths();
+      tasksJsonPath = paths.tasksJsonPath;
+      tasksDir = paths.tasksDir;
+      logWithChannel(LogLevel.DEBUG, `Tasks directory: ${tasksDir}, tasks.json path: ${tasksJsonPath}`);
+    } catch (error) {
+      logWithChannel(LogLevel.ERROR, 'Failed to get workspace paths:', error);
+      await streamMarkdown(stream, `
+**Error accessing workspace**
+
+I couldn't determine the paths for task files in your workspace. 
+${error instanceof Error ? error.message : String(error)}
+
+Please ensure you have a valid workspace folder open with write permissions.
+      `);
+      return;
+    }
 
     // Check if tasks.json already exists
     try {
       await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
 
       // If we get here, the file exists
+      logWithChannel(LogLevel.INFO, '✓ Tasks are already initialized in this workspace');
       await streamMarkdown(stream, `
 Task tracking is already initialized in this workspace. Your tasks are stored in:
 - \`tasks.json\`: ${tasksJsonPath}
@@ -53,24 +75,49 @@ You can:
 
       // Check and recommend agent mode if applicable
       await recommendAgentModeInChat(stream);
-      return;
-    } catch {
+      return;    } catch {
       // File doesn't exist, continue with initialization
+      logWithChannel(LogLevel.DEBUG, 'Tasks not yet initialized, will create new structure.');
     }
 
     // Create tasks directory if it doesn't exist
-    const { tasksDir: _tasksDir } = await getWorkspacePaths();
+    try {
+      await vscode.workspace.fs.createDirectory(vscode.Uri.file(tasksDir));
+      logWithChannel(LogLevel.DEBUG, `✓ Created tasks directory: ${tasksDir}`);
+    } catch (error) {
+      logWithChannel(LogLevel.ERROR, `Failed to create tasks directory at ${tasksDir}:`, error);
+      await streamMarkdown(stream, `
+**Error creating tasks directory**
+
+I couldn't create the tasks directory at \`${tasksDir}\`.
+${error instanceof Error ? error.message : String(error)}
+
+Please check your workspace permissions and try again.
+      `);
+      return;
+    }
 
     // Get the tools we need
     const writeFileTool = toolManager.getTool('writeFile');
     if (!writeFileTool) {
-      throw new Error('WriteFileTool not found');
+      const errorMsg = 'WriteFileTool not found. The extension may not be properly initialized.';
+      logWithChannel(LogLevel.ERROR, errorMsg);
+      await streamMarkdown(stream, `
+**Extension error**
+
+${errorMsg}
+
+Please try restarting VS Code and try again. If the problem persists, please report this issue.
+      `);
+      return;
     }
 
     // Create initial tasks.json with empty tasks array
     const initialTasksContent = {
       version: '1.0',
       lastUpdated: new Date().toISOString(),
+      name: 'Project Tasks',
+      description: 'Task collection for the project',
       tasks: [],
       metadata: {
         nextId: 1,
@@ -78,7 +125,21 @@ You can:
     };
 
     // Write initial tasks.json
-    await writeTasksJson(toolManager, tasksJsonPath, initialTasksContent);
+    try {
+      await writeTasksJson(toolManager, tasksJsonPath, initialTasksContent);
+      logWithChannel(LogLevel.DEBUG, `✓ Created tasks.json at ${tasksJsonPath}`);
+    } catch (error) {
+      logWithChannel(LogLevel.ERROR, `Failed to create tasks.json at ${tasksJsonPath}:`, error);
+      await streamMarkdown(stream, `
+**Error writing tasks.json**
+
+I couldn't create the tasks.json file at \`${tasksJsonPath}\`.
+${error instanceof Error ? error.message : String(error)}
+
+Please check your workspace permissions and try again.
+      `);
+      return;
+    }
 
     // Create example markdown task file to demonstrate the format
     const exampleTaskFilePath = path.join(tasksDir, 'TASK-0.md');
@@ -103,9 +164,10 @@ This is an example task to demonstrate the task file format.
         content: exampleTaskContent,
         createParentDirectories: true,
       });
-    } catch {
-      // If example task creation fails, just continue
-      console.log('Failed to create example task file, continuing...');
+      logWithChannel(LogLevel.DEBUG, `✓ Created example task file at ${exampleTaskFilePath}`);
+    } catch (error) {
+      // If example task creation fails, log but continue
+      logWithChannel(LogLevel.WARN, `Failed to create example task file at ${exampleTaskFilePath}, continuing:`, error);
     }
 
     // Send success message with Doc Holliday flair

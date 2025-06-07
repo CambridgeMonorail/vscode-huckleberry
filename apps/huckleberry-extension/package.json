@@ -21,7 +21,8 @@
   ],
   "tags": [
     "chat-participant"
-  ],  "activationEvents": [
+  ],
+  "activationEvents": [
     "onChatParticipant:huckleberry",
     "onLanguageModelTool:create_task",
     "onLanguageModelTool:initialize_tracking",
@@ -46,9 +47,14 @@
     "onCommand:vscode-copilot-huckleberry.getNextTask",
     "onCommand:github-copilot.show",
     "onView:huckleberryTaskExplorer"
-  ],
-  "contributes": {
+  ],  "contributes": {
     "commands": [
+      {
+        "command": "vscode-copilot-huckleberry.debugWelcomeView",
+        "title": "Huckleberry: Debug Welcome View",
+        "category": "Huckleberry",
+        "description": "Debug why the task explorer welcome view is not showing"
+      },
       {
         "command": "vscode-copilot-huckleberry.manageTasks",
         "title": "Huckleberry: Manage Tasks",
@@ -193,6 +199,13 @@
         "category": "Huckleberry Task Explorer",
         "icon": "$(check)",
         "description": "Mark the selected task as complete"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.taskExplorer.getNextTask",
+        "title": "Go to Next Task",
+        "category": "Huckleberry Task Explorer",
+        "icon": "$(arrow-right)",
+        "description": "Get the next task to work on"
       }
     ],
     "chatParticipants": [
@@ -506,7 +519,8 @@
           "description": "Number of days for custom due date setting (when defaultDueDate is set to 'custom')"
         }
       }
-    },    "viewsContainers": {
+    },
+    "viewsContainers": {
       "activitybar": [
         {
           "id": "huckleberryTaskExplorer",
@@ -541,20 +555,46 @@
           "command": "vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted",
           "when": "view == huckleberryTaskExplorer",
           "group": "1_filtering"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.getNextTask",
+          "when": "view == huckleberryTaskExplorer && huckleberry.hasTaskData",
+          "group": "2_tasks"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.initializeTaskTracking",
+          "when": "view == huckleberryTaskExplorer && !huckleberry.isInitialized",
+          "group": "2_tasks"
         }
       ],
       "view/item/context": [
-        {          "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
+        {
+          "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
           "when": "view == huckleberryTaskExplorer && viewItem == incompleteTask",
           "group": "1_modification"
         },
         {
-          "command": "vscode-copilot-huckleberry.createSubtasks",
-          "when": "view == huckleberryTaskExplorer",
+          "command": "vscode-copilot-huckleberry.taskExplorer.getNextTask",
+          "when": "view == huckleberryTaskExplorer && viewItem == completedTask",
           "group": "1_modification"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.createSubtasks",
+          "when": "view == huckleberryTaskExplorer",          "group": "1_modification"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "huckleberryTaskExplorer",
+        "contents": "$(notebook) No tasks yet in this workspace\n\nGet started by creating your first task or scanning the codebase for TODOs.\n\n[$(plus) Create Task](command:vscode-copilot-huckleberry.createTask)\n[$(search) Scan for TODOs](command:vscode-copilot-huckleberry.scanTodos)",
+        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized && !huckleberry.hasTaskData"
+      },
+      {
+        "view": "huckleberryTaskExplorer",
+        "contents": "$(warning) Task tracking not initialized\n\nYou need to initialize task tracking for this workspace first.\n\n[$(gear) Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized != true"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
@@ -573,8 +613,7 @@
     "@types/vscode": "^1.93.0",
     "@vscode/vsce": "^3.3.2",
     "typescript": "^5.6.3"
-  },
-  "dependencies": {
+  },  "dependencies": {
     "@vscode/chat-extension-utils": "0.0.0-alpha.5",
     "tslib": "^2.6.2"
   }

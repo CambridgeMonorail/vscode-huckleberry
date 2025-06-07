@@ -50,15 +50,24 @@ export function activate(context: vscode.ExtensionContext): void {
     toolManager.registerTool(readFileTool);
     toolManager.registerTool(writeFileTool);
     toolManager.registerTool(markDoneTool);
-    toolManager.registerTool(breakTaskTool);
-
-    // Register Task Explorer Provider
+    toolManager.registerTool(breakTaskTool);    // Register Task Explorer Provider
     const taskExplorerProvider = new TaskExplorerProvider(toolManager);
+
     const taskTreeView = vscode.window.createTreeView('huckleberryTaskExplorer', {
       treeDataProvider: taskExplorerProvider,
       showCollapseAll: true,
     });
-      // Register Task Explorer related commands
+
+    // Ensure the message is undefined initially to prevent blocking welcome content.
+    taskTreeView.message = undefined;
+
+    context.subscriptions.push(taskTreeView);
+
+    // Initialize the provider (which includes directory checks and context setting)
+    // AFTER the tree view is created and its message is cleared.
+    // No need to explicitly call taskExplorerProvider.refresh() here as the constructor handles initial checks.
+
+    // Register commands
     const taskExplorerCommands = [
       // Basic tree view commands
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.refresh', () => {
@@ -73,7 +82,7 @@ export function activate(context: vscode.ExtensionContext): void {
         taskExplorerProvider.toggleShowCompleted();
         return Promise.resolve();
       }),
-      
+
       // Task item action handlers
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.openTask', (item: TaskTreeItem) => {
         logWithChannel(LogLevel.DEBUG, '🎯 Opening task file for:', item.task.id);
@@ -82,7 +91,6 @@ export function activate(context: vscode.ExtensionContext): void {
         }
         return Promise.resolve();
       }),
-      
       // Mark task complete command with proper async handling
       vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.markComplete', async (item: TaskTreeItem) => {
         try {
@@ -91,6 +99,18 @@ export function activate(context: vscode.ExtensionContext): void {
           return Promise.resolve();
         } catch (error) {
           logWithChannel(LogLevel.ERROR, '❌ Error marking task complete:', error);
+          throw error;
+        }
+      }),
+
+      // Get next task command after marking current complete
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.taskExplorer.getNextTask', async (item: TaskTreeItem) => {
+        try {
+          logWithChannel(LogLevel.DEBUG, '🎯 Getting next task after completing:', item.task.id);
+          await commandHandlers.getNextTask();
+          return Promise.resolve();
+        } catch (error) {
+          logWithChannel(LogLevel.ERROR, '❌ Error getting next task:', error);
           throw error;
         }
       }),
@@ -171,7 +191,7 @@ export function activate(context: vscode.ExtensionContext): void {
       logWithChannel(LogLevel.DEBUG, '🔄 Registering initialize/initialise task tracking commands...'),
       vscode.commands.registerCommand(
         'vscode-copilot-huckleberry.initializeTaskTracking',
-        async function(this: unknown, ...args: unknown[]) {
+        async function (this: unknown, ...args: unknown[]) {
           try {
             logWithChannel(LogLevel.DEBUG, '🎯 Executing initializeTaskTracking command with args:', args);
             logWithChannel(LogLevel.DEBUG, '🔍 Command context (this):', this);
@@ -185,7 +205,7 @@ export function activate(context: vscode.ExtensionContext): void {
       ),
       vscode.commands.registerCommand(
         'vscode-copilot-huckleberry.initialiseTaskTracking',
-        async function(this: unknown, ...args: unknown[]) {
+        async function (this: unknown, ...args: unknown[]) {
           try {
             logWithChannel(LogLevel.DEBUG, '🎯 Executing initialiseTaskTracking command with args:', args);
             logWithChannel(LogLevel.DEBUG, '🔍 Command context (this):', this);
