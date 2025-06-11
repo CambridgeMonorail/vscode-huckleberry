@@ -83,7 +83,7 @@ jobs:
             echo "❌ Test failures detected in affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          - name: Build affected
+      - name: Build affected
         run: |
           echo "### 🏗️ Build Process" >> $GITHUB_STEP_SUMMARY
           
