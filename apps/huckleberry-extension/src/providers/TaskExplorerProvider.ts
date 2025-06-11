@@ -66,12 +66,13 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
   private _directoryStructureReady = false;  // Flag to track if directory structure is ready
   
   constructor(private readonly toolManager: ToolManager) {
-    // Explicitly set context variables to undefined initially to ensure the viewsWelcome shows correctly
-    vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', undefined);
+    // Explicitly set context variables for correct viewsWelcome visibility
+    // We need to be explicit about the state to avoid welcome view problems
+    vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', false);
     vscode.commands.executeCommand('setContext', 'huckleberry.hasTaskData', false);
     
     // Log initial context state
-    logWithChannel(LogLevel.INFO, '🔍 Initial context state set to undefined/false for viewsWelcome visibility');
+    logWithChannel(LogLevel.INFO, '🔍 Initial context state set to false/false for viewsWelcome visibility');
     
     // Watch for changes to the tasks.json file and check directory structure
     this.setupFileWatcher();
@@ -225,42 +226,86 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
 
   /**
    * Debug method to analyze why welcome view isn't showing
-   * Can be called from extension.ts or via a debug command
+   * This method logs detailed information about the current state
+   * and tries to fix welcome view visibility
    */
   async debugWelcomeView(): Promise<void> {
     const initialized = await this.isInitialized();
     
+    // Log current state
     logWithChannel(LogLevel.INFO, '🔍 DEBUG WELCOME VIEW STATE:', {
       isInitialized: initialized,
       directoryStructureReady: this._directoryStructureReady,
       contextValues: {
-        isInitializedContext: 'Check Developer: Inspect Context Keys for huckleberry.isInitialized',
-        hasTaskDataContext: 'Check Developer: Inspect Context Keys for huckleberry.hasTaskData',
+        isInitializedContext: 'Check with "Developer: Inspect Context Keys" for huckleberry.isInitialized',
+        hasTaskDataContext: 'Check with "Developer: Inspect Context Keys" for huckleberry.hasTaskData',
       },
-      whenClauseForEmptyState: 'view == huckleberryTaskExplorer && huckleberry.isInitialized != true',
-      whenClauseForNoTasksState: 'view == huckleberryTaskExplorer && huckleberry.isInitialized && !huckleberry.hasTaskData',
-      tips: [
-        'Ensure getChildren() returns [] not undefined',
-        'Ensure treeView.message is not set (even to undefined)',
-        'Check context keys are properly set before first render',
-      ],
+      whenClauseForEmptyState: 'view == huckleberryTaskExplorer && huckleberry.isInitialized == false',
+      whenClauseForNoTasksState: 'view == huckleberryTaskExplorer && huckleberry.isInitialized == true && huckleberry.hasTaskData == false',
     });
+    
+    // Try to fix context values for welcome view
+    if (!initialized) {
+      vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', false);
+      vscode.commands.executeCommand('setContext', 'huckleberry.hasTaskData', false);
+      
+      logWithChannel(LogLevel.INFO, '🔧 Context values explicitly reset for welcome view visibility');
+      
+      // Force treeview refresh
+      this._onDidChangeTreeData.fire();
+      
+      // Open the Command Palette for manually running commands
+      vscode.window.showInformationMessage('Debug: Welcome view should appear. Try the initialize command:', 'Initialize Task Tracking')
+        .then(selection => {
+          if (selection === 'Initialize Task Tracking') {
+            vscode.commands.executeCommand('vscode-copilot-huckleberry.initializeTaskTracking');
+          }
+        });
+    } else {
+      // Check if there are any tasks
+      try {
+        const { tasksJsonPath } = await getWorkspacePaths();
+        try {
+          await vscode.workspace.fs.stat(vscode.Uri.file(tasksJsonPath));
+          const tasksData = await readTasksJson(this.toolManager, tasksJsonPath);
+          const hasTasks = !!(tasksData.tasks && tasksData.tasks.length > 0);
+          vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', true);
+          vscode.commands.executeCommand('setContext', 'huckleberry.hasTaskData', hasTasks);
+          logWithChannel(LogLevel.INFO, `🔧 Context values reset for ${hasTasks ? 'has tasks' : 'no tasks'} state`);
+        } catch {
+          vscode.commands.executeCommand('setContext', 'huckleberry.isInitialized', true);
+          vscode.commands.executeCommand('setContext', 'huckleberry.hasTaskData', false);
+          logWithChannel(LogLevel.INFO, '🔧 Context values reset for initialized but no tasks.json');
+        }
+      } catch (error) {
+        logWithChannel(LogLevel.ERROR, '❌ Error during debug:', error);
+      }
+    }
 
-    // Force-refresh tree to ensure we get a clean state
+    // Force-refresh tree
     this._onDidChangeTreeData.fire();
+    
+    // Help message with additional diagnostics
+    vscode.window.showInformationMessage(
+      'Debug: Check VS Code output for detailed diagnostics.',
+    );
   }
 
   refresh(): void {
-    // Always reset tree view when refreshing to ensure empty states are properly detected
-    this._onDidChangeTreeData.fire();
-    
-    // Explicitly check if we have an empty state after refresh
+    // First, check if initialization state has changed
     this.isInitialized().then(initialized => {
+      // Always emit the change event to refresh the tree view
+      this._onDidChangeTreeData.fire();
+      
       if (!initialized) {
-        // Force context update to ensure welcome view conditions are met
+        // Force context update with false/false to ensure welcome view conditions are met
         this.updateContextState(false, false);
         logWithChannel(LogLevel.INFO, '🔄 Refresh: Task explorer not initialized, ensuring welcome view visibility');
       }
+    }).catch(error => {
+      // Even if there's an error, fire the data change event
+      this._onDidChangeTreeData.fire();
+      logWithChannel(LogLevel.ERROR, 'Error during refresh:', error);
     });
   }
 
@@ -297,16 +342,19 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
     if (!initialized) {
       logWithChannel(LogLevel.INFO, '⚠️ Task directory structure not ready. Showing "Initialize" welcome view.');
       
+      // CRITICAL: Always update context with false/false when not initialized
+      // This ensures the welcome view conditions are correctly met
       this.updateContextState(false, false);
+      
       // Log detailed context information
       logWithChannel(LogLevel.INFO, '🔍 Context values during getChildren when not initialized:', {
-        currentContext_huckleberry_isInitialized: false, // Reflects the context just set
-        currentContext_huckleberry_hasTaskData: false,    // Reflects the context just set
+        currentContext_huckleberry_isInitialized: false,
+        currentContext_huckleberry_hasTaskData: false,
         elementType: element ? 'TaskTreeItem' : 'undefined',
-        // The actual 'when' clause is in package.json: "view == huckleberryTaskExplorer && huckleberry.isInitialized != true"
+        whenClauseUsed: 'view == huckleberryTaskExplorer && huckleberry.isInitialized == false',
       });
       
-      // Return empty array - the welcome view for initialization in package.json will be shown
+      // IMPORTANT: Always return [] not undefined for empty state to work properly
       return [];
     }
 
@@ -330,6 +378,7 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
         logWithChannel(LogLevel.INFO, `tasks.json does not exist at ${tasksJsonPath}`);
         this._directoryStructureReady = false;
         this.updateContextState(false, false); // Not initialized, explicitly set context
+        // IMPORTANT: Always return [] not undefined for empty state
         return [];
       }
 
@@ -340,6 +389,7 @@ export class TaskExplorerProvider implements vscode.TreeDataProvider<TaskTreeIte
       if (!tasksData.tasks || tasksData.tasks.length === 0) {
         logWithChannel(LogLevel.INFO, '📋 No tasks found in tasks.json - showing "Create Task" welcome view');
         this.updateContextState(true, false); // Initialized but no tasks - will show the "Create Task" welcome view
+        // IMPORTANT: Always return [] not undefined for empty state
         return [];
       }
 

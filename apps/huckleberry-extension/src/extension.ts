@@ -53,13 +53,24 @@ export function activate(context: vscode.ExtensionContext): void {
     toolManager.registerTool(breakTaskTool);    // Register Task Explorer Provider
     const taskExplorerProvider = new TaskExplorerProvider(toolManager);
 
-    const taskTreeView = vscode.window.createTreeView('huckleberryTaskExplorer', {
+    // Create TreeView with no message property
+    const taskTreeViewOptions: vscode.TreeViewOptions<TaskTreeItem> = {
       treeDataProvider: taskExplorerProvider,
       showCollapseAll: true,
+    };
+    
+    const taskTreeView = vscode.window.createTreeView('huckleberryTaskExplorer', taskTreeViewOptions);
+    
+    // CRITICAL: Ensure message property doesn't exist to allow welcome view to show
+    // See https://github.com/microsoft/vscode/issues/193435
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (taskTreeView as any).message;
+    
+    // Log exact TreeView state for debugging
+    logWithChannel(LogLevel.INFO, '🔍 TreeView created with options:', {
+      showCollapseAll: taskTreeViewOptions.showCollapseAll,
+      hasMessageProperty: Object.prototype.hasOwnProperty.call(taskTreeView, 'message'),
     });
-
-    // Ensure the message is undefined initially to prevent blocking welcome content.
-    taskTreeView.message = undefined;
 
     context.subscriptions.push(taskTreeView);
 
@@ -113,6 +124,46 @@ export function activate(context: vscode.ExtensionContext): void {
           logWithChannel(LogLevel.ERROR, '❌ Error getting next task:', error);
           throw error;
         }
+      }),
+
+      // Debug command for the welcome view
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.debugWelcomeView', () => {
+        return taskExplorerProvider.debugWelcomeView();
+      }),
+      
+      // Debug command to check tree view properties
+      vscode.commands.registerCommand('vscode-copilot-huckleberry.debugTreeViewProperties', () => {
+        const treeViewProps = Object.getOwnPropertyNames(taskTreeView);
+        const hasMessageProperty = treeViewProps.includes('message');
+        const hasVisibleProperty = treeViewProps.includes('visible');
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const messageValue = hasMessageProperty ? (taskTreeView as any).message : 'Not present';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const visibleValue = hasVisibleProperty ? (taskTreeView as any).visible : 'Not present';
+        
+        logWithChannel(LogLevel.INFO, '🔍 TreeView properties:', {
+          allProperties: treeViewProps,
+          hasMessageProperty,
+          hasVisibleProperty,
+          messageValue,
+          visibleValue,
+        });
+        
+        if (hasMessageProperty) {
+          logWithChannel(LogLevel.WARN, '⚠️ TreeView still has message property! Attempting to remove it...');
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          delete (taskTreeView as any).message;
+          
+          // Force refresh
+          taskExplorerProvider.refresh();
+          
+          vscode.window.showInformationMessage('TreeView message property deleted. Check if welcome view appears now.');
+        } else {
+          vscode.window.showInformationMessage('TreeView has no message property, which is good for welcome view visibility.');
+        }
+        
+        return Promise.resolve();
       }),
     ];
 
