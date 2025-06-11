@@ -83,27 +83,27 @@ jobs:
             echo "❌ Test failures detected in affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-        
-      - name: Build affected
+          - name: Build affected
         run: |
           echo "### 🏗️ Build Process" >> $GITHUB_STEP_SUMMARY
-          set -o pipefail
-          pnpm run build:affected -- --base=${{ steps.base-branch.outputs.base-branch }} 2>&1 | tee build.log
-          BUILD_EXIT_CODE=${PIPESTATUS[0]}
-          if [ $BUILD_EXIT_CODE -eq 0 ]; then
+          
+          # First check if there are any affected projects to build
+          if pnpm exec nx print-affected --base=${{ steps.base-branch.outputs.base-branch }} --type=app | grep -q "No projects were affected"; then
+            echo "ℹ️ No projects were affected (docs-only or non-buildable changes)" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          # Run the build if there are affected projects
+          if pnpm run build:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
             echo "✅ Build completed successfully for affected projects" >> $GITHUB_STEP_SUMMARY
             echo "Affected projects:" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             pnpm exec nx print-affected --base=${{ steps.base-branch.outputs.base-branch }} --type=app >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            exit 0
           else
-            if grep -q 'No tasks were run' build.log; then
-              echo "ℹ️ No build tasks were run (docs-only or non-buildable changes). Treating as success." >> $GITHUB_STEP_SUMMARY
-              exit 0
-            else
-              echo "❌ Build failed for affected projects" >> $GITHUB_STEP_SUMMARY
-              exit 1
-            fi
+            echo "❌ Build failed for affected projects" >> $GITHUB_STEP_SUMMARY
+            exit 1
           fi
           
       - name: Validation Summary

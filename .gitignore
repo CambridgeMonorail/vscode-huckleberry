@@ -52,3 +52,6 @@ apps/huckleberry-extension/*.vsix
 apps/huckleberry-extension/coverage
 .cursor\rules\nx-rules.mdc
 .github\instructions\nx.instructions.md
+
+.cursor\rules\nx-rules.mdc
+.github\instructions\nx.instructions.md

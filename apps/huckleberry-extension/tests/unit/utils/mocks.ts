@@ -16,6 +16,7 @@ export function createMockToolManager(): ToolManager {
     invokeTool: vi.fn(),
     isRegistered: vi.fn().mockReturnValue(true),
     getRegistrationInfo: vi.fn(),
+    getAllTools: vi.fn().mockReturnValue([]),
   } as unknown as ToolManager;
 }
 

@@ -1,6 +1,8 @@
 # Pre-Publishing Checklist
 
-Use this checklist to verify that your extension is ready for publishing. It’s organised by topic (AI ethics, testing, docs, etc.) so you can systematically review each area. Ensuring each item is checked off will increase the likelihood of a smooth publication and a successful, compliant extension.
+Use this checklist to verify that your extension is ready for publishing.
+
+- [x] **Screenshots/Examples:** Where useful, screenshots or GIFs demonstrate the extension in action. All embedded images use HTTPS links and no untrusted SVGs. Each image has descriptive alt text.It’s organised by topic (AI ethics, testing, docs, etc.) so you can systematically review each area. Ensuring each item is checked off will increase the likelihood of a smooth publication and a successful, compliant extension.
 
 ## ✅ Responsible AI and Ethics
 
@@ -27,7 +29,7 @@ Use this checklist to verify that your extension is ready for publishing. It’s
 
 - [ ] **README Created:** A README.md is included and provides clear instructions on installation, usage, and features. It’s written in Markdown and ready to display on the Marketplace.
 - [ ] **Features Listed:** All major features and commands of the extension are documented. Users know what to expect and how to activate each feature.
-- [ ] **Screenshots/Examples:** Where useful, screenshots or GIFs demonstrate the extension in action. All embedded images use HTTPS links and no untrusted SVGs. Each image has descriptive alt text.
+- [x] **Screenshots/Examples:** Where useful, screenshots or GIFs demonstrate the extension in action. All embedded images use HTTPS links and no untrusted SVGs. Each image has descriptive alt text.
 - [ ] **AI Disclosure:** The README has a section explaining that the extension uses GitHub Copilot (AI) to generate code suggestions. It clearly states that code/content will be sent to an AI service and that AI-generated outputs should be reviewed by the user.
 - [ ] **Privacy Notice:** The documentation includes a privacy notice. It either explicitly states that the extension does not collect personal data, or if it does collect data (telemetry or otherwise), it explains what is collected and provides a link to a full privacy policy. Users have been informed how their data is handled in compliance with privacy laws.
 - [ ] **Limitations Disclosed:** Any important limitations or potential issues are openly disclosed (e.g., “This extension requires an internet connection and a GitHub Copilot account”, “AI suggestions may contain errors – use at your own risk”, “Not tested on XYZ language”).
