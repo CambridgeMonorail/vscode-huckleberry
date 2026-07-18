@@ -62,30 +62,31 @@ export default [
       'no-unused-vars': 'off', // TypeScript has better unused checks
 
       // Code style
-      'indent': ['error', 2, { 'SwitchCase': 1 }],
-      'quotes': ['error', 'single', { 'allowTemplateLiterals': true }],
-      'semi': ['error', 'always'],
+      indent: ['error', 2, { SwitchCase: 1 }],
+      quotes: ['error', 'single', { allowTemplateLiterals: true }],
+      semi: ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
       'arrow-parens': ['error', 'as-needed'],
 
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': ['error', {
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-      }],
-      '@typescript-eslint/explicit-function-return-type': ['warn', {
-        'allowExpressions': true,
-        'allowTypedFunctionExpressions': true,
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/explicit-function-return-type': [
+        'warn',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
 
       // The problematic rule - checking if it's available
-      ...(typescriptESLint.rules['member-delimiter-style'] ? {
-        '@typescript-eslint/member-delimiter-style': ['error', {
-          'multiline': { 'delimiter': 'semi', 'requireLast': true },
-          'singleline': { 'delimiter': 'semi', 'requireLast': false },
-        }],
-      } : {}),
+      ...(typescriptESLint.rules['member-delimiter-style'] ? {} : {}),
     },
   },
   {

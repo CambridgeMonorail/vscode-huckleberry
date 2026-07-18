@@ -132,11 +132,9 @@ describe('taskUtils.lib', () => {
   });
   describe('createTaskObject', () => {
     it('should create a new task object with default values', () => {
-      const now = new Date();
-      // Replace the real Date with a mock
-      const dateSpy = vi
-        .spyOn(global, 'Date')
-        .mockImplementation(() => now as unknown as Date);
+      const now = new Date('2026-01-01T00:00:00.000Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
 
       const task = createTaskObject('TASK-123', 'Test Task', 'high');
 
@@ -151,7 +149,7 @@ describe('taskUtils.lib', () => {
         tags: [],
       });
 
-      dateSpy.mockRestore();
+      vi.useRealTimers();
     });
     it('should override default values with additional properties', () => {
       const additionalProps = {
