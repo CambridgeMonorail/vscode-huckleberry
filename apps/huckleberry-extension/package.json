@@ -56,6 +56,12 @@
         "description": "Debug why the task explorer welcome view is not showing"
       },
       {
+        "command": "vscode-copilot-huckleberry.debugTreeViewProperties",
+        "title": "Huckleberry: Debug TreeView Properties",
+        "category": "Huckleberry",
+        "description": "Inspect TreeView properties to troubleshoot welcome view issues"
+      },
+      {
         "command": "vscode-copilot-huckleberry.manageTasks",
         "title": "Huckleberry: Manage Tasks",
         "category": "Huckleberry",
@@ -535,7 +541,8 @@
           "id": "huckleberryTaskExplorer",
           "name": "Task Explorer",
           "icon": "resources/huckleberry-logo-dark.svg",
-          "contextualTitle": "Tasks"
+          "contextualTitle": "Tasks",
+          "type": "tree"
         }
       ]
     },
@@ -580,7 +587,8 @@
         },
         {
           "command": "vscode-copilot-huckleberry.createSubtasks",
-          "when": "view == huckleberryTaskExplorer",          "group": "1_modification"
+          "when": "view == huckleberryTaskExplorer",
+          "group": "1_modification"
         }
       ]
     },
@@ -588,11 +596,17 @@
       {
         "view": "huckleberryTaskExplorer",
         "contents": "$(notebook) No tasks yet in this workspace\n\nGet started by creating your first task or scanning the codebase for TODOs.\n\n[$(plus) Create Task](command:vscode-copilot-huckleberry.createTask)\n[$(search) Scan for TODOs](command:vscode-copilot-huckleberry.scanTodos)",
-        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized && !huckleberry.hasTaskData"
+        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized == true && huckleberry.hasTaskData == false"
       },
       {
         "view": "huckleberryTaskExplorer",
-        "contents": "$(warning) Task tracking not initialized\n\nYou need to initialize task tracking for this workspace first.\n\n[$(gear) Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized != true"
+        "contents": "$(warning) Task tracking not initialized\n\nYou need to initialize task tracking for this workspace first.\n\n[$(gear) Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
+        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized == false"
+      },
+      {
+        "view": "huckleberryTaskExplorer",
+        "contents": "$(gear) Huckleberry Task Management\n\nGet started by initializing task tracking.\n\n[Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
+        "when": "view == huckleberryTaskExplorer"
       }
     ]
   },

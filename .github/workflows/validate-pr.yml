@@ -53,20 +53,36 @@ jobs:
           echo "base-branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
           echo "### 🔍 NX Configuration" >> $GITHUB_STEP_SUMMARY
           echo "Base branch for affected commands: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
-      
+          
       - name: Lint affected
         run: |
           echo "### 🔍 Linting Results" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if there are any affected projects to lint
+          AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected --base=${{ steps.base-branch.outputs.base-branch }} --target=lint)
+          if [ -z "$AFFECTED_PROJECTS" ]; then
+            echo "ℹ️ No projects to lint (no affected projects)" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
           if pnpm run lint:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
             echo "✅ No linting issues found in affected projects" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Linting issues detected in affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-        
+          
       - name: Type check affected
         run: |
           echo "### 📘 TypeScript Type Checking" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if there are any affected projects to typecheck
+          AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected --base=${{ steps.base-branch.outputs.base-branch }} --target=typecheck)
+          if [ -z "$AFFECTED_PROJECTS" ]; then
+            echo "ℹ️ No projects to typecheck (no affected projects)" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
           if pnpm run typecheck:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
             echo "✅ No type errors found in affected projects" >> $GITHUB_STEP_SUMMARY
           else
@@ -77,18 +93,28 @@ jobs:
       - name: Test affected
         run: |
           echo "### 🧪 Running tests" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if there are any affected projects to test
+          AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected --base=${{ steps.base-branch.outputs.base-branch }} --target=test)
+          if [ -z "$AFFECTED_PROJECTS" ]; then
+            echo "ℹ️ No projects to test (no affected projects)" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
           if pnpm run test:affected -- --base=${{ steps.base-branch.outputs.base-branch }}; then
             echo "✅ All tests passed for affected projects" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Test failures detected in affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
+          
       - name: Build affected
         run: |
           echo "### 🏗️ Build Process" >> $GITHUB_STEP_SUMMARY
           
           # First check if there are any affected projects to build
-          if pnpm exec nx print-affected --base=${{ steps.base-branch.outputs.base-branch }} --type=app | grep -q "No projects were affected"; then
+          AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected --base=${{ steps.base-branch.outputs.base-branch }} --target=build)
+          if [ -z "$AFFECTED_PROJECTS" ]; then
             echo "ℹ️ No projects were affected (docs-only or non-buildable changes)" >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
@@ -98,9 +124,8 @@ jobs:
             echo "✅ Build completed successfully for affected projects" >> $GITHUB_STEP_SUMMARY
             echo "Affected projects:" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            pnpm exec nx print-affected --base=${{ steps.base-branch.outputs.base-branch }} --type=app >> $GITHUB_STEP_SUMMARY
+            echo "$AFFECTED_PROJECTS" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            exit 0
           else
             echo "❌ Build failed for affected projects" >> $GITHUB_STEP_SUMMARY
             exit 1
