@@ -67,10 +67,14 @@ jobs:
             BASE_BRANCH=$(git rev-list --max-parents=0 HEAD)
             echo "Using first commit as base: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
           fi
-          
-          echo "Running with base: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
-          if pnpm exec nx affected --base=$BASE_BRANCH --target=lint --dry-run; then
-            echo "✅ NX affected command ran successfully" >> $GITHUB_STEP_SUMMARY
+            echo "Running with base: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+          AFFECTED_PROJECTS=$(pnpm exec nx show projects --affected --base=$BASE_BRANCH --target=lint)
+          if [ -z "$AFFECTED_PROJECTS" ]; then
+            echo "✅ No projects affected for lint target" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ NX affected command failed" >> $GITHUB_STEP_SUMMARY
+            if pnpm exec nx affected --base=$BASE_BRANCH --target=lint --dry-run; then
+              echo "✅ NX affected command ran successfully" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ NX affected command failed" >> $GITHUB_STEP_SUMMARY
+            fi
           fi
