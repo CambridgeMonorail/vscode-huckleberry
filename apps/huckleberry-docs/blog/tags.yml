@@ -167,3 +167,68 @@ prompts:
   label: Prompts
   permalink: /prompts
   description: Topics related to prompt engineering, prompt files, and custom instructions for AI assistants
+
+vs-code:
+  label: VS Code
+  permalink: /vs-code
+  description: Alternate tag for VS Code content used in legacy blog posts
+
+ai-development:
+  label: AI Development
+  permalink: /ai-development
+  description: AI-assisted software development practices and workflows
+
+development-practices:
+  label: Development Practices
+  permalink: /development-practices
+  description: Practical software engineering approaches and team habits
+
+context-window:
+  label: Context Window
+  permalink: /context-window
+  description: Managing LLM context limits and strategies for effective prompts
+
+publishing:
+  label: Publishing
+  permalink: /publishing
+  description: Release, packaging, and publishing workflows for software projects
+
+journey:
+  label: Journey
+  permalink: /journey
+  description: Project progress stories, milestones, and lessons learned
+
+checklist:
+  label: Checklist
+  permalink: /checklist
+  description: Practical checklists for development and release readiness
+
+naming:
+  label: Naming
+  permalink: /naming
+  description: Naming decisions and conventions in product and engineering
+
+philosophy:
+  label: Philosophy
+  permalink: /philosophy
+  description: Product and engineering philosophy behind design decisions
+
+tasks:
+  label: Tasks
+  permalink: /tasks
+  description: Task organization, planning, and execution in development
+
+ui:
+  label: UI
+  permalink: /ui
+  description: User interface design and implementation topics
+
+explorer:
+  label: Explorer
+  permalink: /explorer
+  description: Content related to explorer-style interfaces and task navigation
+
+spaghetti-western:
+  label: Spaghetti Western
+  permalink: /spaghetti-western
+  description: Western-themed storytelling tag used in Huckleberry blog content

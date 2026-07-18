@@ -89,7 +89,7 @@ For Huckleberry users, named prompt files bring an extra layer of efficiency to 
 
 The combination of Huckleberry's task management capabilities with VS Code's named prompts creates a powerful workflow that ensures consistency across your entire development process.
 
-*Docs: [Huckleberry Task Management](/features/task-management) | [VS Code Named Prompts](https://code.visualstudio.com/docs/editor/artificial-intelligence#_named-prompts)*
+*Docs: [Huckleberry Task Management](/features) | [VS Code Named Prompts](https://code.visualstudio.com/docs/editor/artificial-intelligence#_named-prompts)*
 
 ## Quick-Draw Setup Guide
 
