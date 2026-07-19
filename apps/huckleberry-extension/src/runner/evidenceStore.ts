@@ -13,6 +13,7 @@ export interface PersistStepEvidenceRequest {
   durationMs: number;
   exitCode: number | null;
   timedOut: boolean;
+  cancelled?: boolean;
   stdout: string;
   stderr: string;
 }
@@ -45,6 +46,7 @@ export async function persistStepEvidence(request: PersistStepEvidenceRequest): 
     durationMs: request.durationMs,
     exitCode: request.exitCode,
     timedOut: request.timedOut,
+    cancelled: request.cancelled ?? false,
     stdoutArtifactPath,
     stderrArtifactPath,
   };
@@ -62,6 +64,7 @@ export async function persistStepEvidence(request: PersistStepEvidenceRequest): 
     durationMs: request.durationMs,
     exitCode: request.exitCode,
     timedOut: request.timedOut,
+    cancelled: request.cancelled ?? false,
     stdoutArtifactPath,
     stderrArtifactPath,
     metadataArtifactPath,

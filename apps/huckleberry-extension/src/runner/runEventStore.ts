@@ -142,9 +142,8 @@ function toRunRecord(runId: string, events: RunnerEvent[]): RunnerRunRecord | un
 
   if (isTerminalStatus(last.status)) {
     record.completedAt = last.timestamp;
-    if (last.message) {
-      record.stopReason = last.message;
-    }
+    record.stopReasonCode = last.stopReason?.code;
+    record.stopReason = last.stopReason?.message ?? last.message;
   }
 
   return record;

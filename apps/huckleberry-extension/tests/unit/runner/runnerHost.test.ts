@@ -193,8 +193,208 @@ describe('RunnerHost', () => {
       event => event.type === 'event' && event.payload.status === 'failed',
     );
     expect(failedEvent).toBeDefined();
+    if (failedEvent?.type === 'event') {
+      expect(failedEvent.payload.stopReason?.code).toBe('STEP_EXIT_NON_ZERO');
+      expect(failedEvent.payload.stopReason?.message).toContain("Step 'test' exited with code 2");
+    }
 
     expect(appendRunEventMock).toHaveBeenCalled();
+
+    host.dispose();
+  });
+
+  it('marks timed out command steps with timeout stop reason payload', async () => {
+    const host = new RunnerHost();
+    const events: RunnerResponse[] = [];
+
+    executeCommandStepMock.mockResolvedValue({
+      stdout: '',
+      stderr: '',
+      exitCode: null,
+      timedOut: true,
+      cancelled: false,
+      startedAt: 100,
+      completedAt: 500,
+      durationMs: 400,
+    });
+
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      startedAt: 100,
+      completedAt: 500,
+      durationMs: 400,
+      exitCode: null,
+      timedOut: true,
+      cancelled: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/metadata',
+    }));
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-timeout',
+        payload: {
+          loopId: 'timeout-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/timeout.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'timeout-loop',
+            name: 'Timeout',
+            steps: [
+              {
+                id: 'timeout-step',
+                type: 'command',
+                command: 'pnpm test:affected',
+              },
+            ],
+          },
+          execution: {
+            stepTimeoutMs: 400,
+          },
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const timeoutEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'step-timeout',
+    );
+    expect(timeoutEvent).toBeDefined();
+    if (timeoutEvent?.type === 'event') {
+      expect(timeoutEvent.payload.stopReason?.code).toBe('STEP_TIMEOUT');
+      expect(timeoutEvent.payload.stopReason?.message).toContain("Step 'timeout-step' timed out");
+    }
+
+    host.dispose();
+  });
+
+  it('cancels an in-flight command step and emits cancellation stop reason', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+    const events: RunnerResponse[] = [];
+
+    executeCommandStepMock.mockImplementation(({ abortSignal }) => {
+      return new Promise(resolve => {
+        if (abortSignal?.aborted) {
+          resolve({
+            stdout: '',
+            stderr: '',
+            exitCode: null,
+            timedOut: false,
+            cancelled: true,
+            startedAt: 100,
+            completedAt: 120,
+            durationMs: 20,
+          });
+          return;
+        }
+
+        abortSignal?.addEventListener('abort', () => {
+          resolve({
+            stdout: '',
+            stderr: '',
+            exitCode: null,
+            timedOut: false,
+            cancelled: true,
+            startedAt: 100,
+            completedAt: 140,
+            durationMs: 40,
+          });
+        });
+      });
+    });
+
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      startedAt: 100,
+      completedAt: 140,
+      durationMs: 40,
+      exitCode: null,
+      timedOut: false,
+      cancelled: true,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/metadata',
+    }));
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-cancel-start',
+        payload: {
+          loopId: 'cancel-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/cancel.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'cancel-loop',
+            name: 'Cancel',
+            steps: [
+              {
+                id: 'cancel-step',
+                type: 'command',
+                command: 'pnpm test:affected',
+              },
+            ],
+          },
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const startAck = replies.find(reply => reply.type === 'ack' && reply.requestId === 'req-cancel-start');
+    expect(startAck).toBeDefined();
+    if (startAck?.type !== 'ack' || !startAck.payload.runId) {
+      host.dispose();
+      throw new Error('Expected start ack run id');
+    }
+
+    host.handleMessage(
+      {
+        type: 'cancel',
+        requestId: 'req-cancel',
+        payload: {
+          runId: startAck.payload.runId,
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const cancelRequestedEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'run-cancel-requested',
+    );
+    expect(cancelRequestedEvent).toBeDefined();
+
+    const cancelledEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'run-cancelled',
+    );
+    expect(cancelledEvent).toBeDefined();
+    if (cancelledEvent?.type === 'event') {
+      expect(cancelledEvent.payload.stopReason?.code).toBe('CANCELLED_BY_USER');
+      expect(cancelledEvent.payload.stopReason?.message).toContain('Run cancelled while executing step');
+    }
 
     host.dispose();
   });

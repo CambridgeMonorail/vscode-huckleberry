@@ -6,6 +6,7 @@ export interface CommandExecutionRequest {
   timeoutMs: number;
   env?: Record<string, string>;
   shell?: boolean;
+  abortSignal?: AbortSignal;
 }
 
 export interface CommandExecutionResult {
@@ -13,6 +14,7 @@ export interface CommandExecutionResult {
   stderr: string;
   exitCode: number | null;
   timedOut: boolean;
+  cancelled: boolean;
   startedAt: number;
   completedAt: number;
   durationMs: number;
@@ -27,6 +29,7 @@ export async function executeCommandStep(request: CommandExecutionRequest): Prom
     let stdout = '';
     let stderr = '';
     let timedOut = false;
+    let cancelled = false;
 
     const child = spawn(request.command, {
       cwd: request.cwd,
@@ -43,6 +46,19 @@ export async function executeCommandStep(request: CommandExecutionRequest): Prom
       child.kill();
     }, request.timeoutMs);
 
+    const onAbort = (): void => {
+      cancelled = true;
+      child.kill();
+    };
+
+    if (request.abortSignal) {
+      if (request.abortSignal.aborted) {
+        onAbort();
+      } else {
+        request.abortSignal.addEventListener('abort', onAbort, { once: true });
+      }
+    }
+
     child.stdout.on('data', chunk => {
       stdout += chunk.toString();
     });
@@ -53,17 +69,24 @@ export async function executeCommandStep(request: CommandExecutionRequest): Prom
 
     child.on('error', error => {
       clearTimeout(timeout);
+      if (request.abortSignal) {
+        request.abortSignal.removeEventListener('abort', onAbort);
+      }
       reject(error);
     });
 
     child.on('close', code => {
       clearTimeout(timeout);
+      if (request.abortSignal) {
+        request.abortSignal.removeEventListener('abort', onAbort);
+      }
       const completedAt = Date.now();
       resolve({
         stdout,
         stderr,
         exitCode: code,
         timedOut,
+        cancelled,
         startedAt,
         completedAt,
         durationMs: completedAt - startedAt,

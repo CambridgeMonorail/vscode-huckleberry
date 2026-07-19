@@ -12,6 +12,7 @@ import {
   RunnerResponse,
   RunnerRunRecord,
   RunnerRunStatus,
+  RunnerStopReason,
   RunnerStepResult,
   RunnerTransition,
 } from './types';
@@ -25,6 +26,7 @@ type EmitEvent = (response: RunnerResponse) => void;
 export class RunnerHost {
   private readonly runs = new Map<string, RunnerRunRecord>();
   private readonly cancellationRequests = new Set<string>();
+  private readonly activeStepAbortControllers = new Map<string, AbortController>();
   private readonly persistenceQueue = new Map<string, Promise<void>>();
   private hydrationPromise?: Promise<void>;
 
@@ -58,6 +60,10 @@ export class RunnerHost {
   }
 
   dispose(): void {
+    for (const controller of this.activeStepAbortControllers.values()) {
+      controller.abort();
+    }
+    this.activeStepAbortControllers.clear();
     this.cancellationRequests.clear();
   }
 
@@ -169,8 +175,29 @@ export class RunnerHost {
 
     this.cancellationRequests.add(run.runId);
 
-    this.updateRunStatus(run, 'cancelled', 'Cancelled by extension request.');
-    this.emitRunEvent(run, 'cancelled', 'run-cancelled', 'Run cancelled.', emitEvent);
+    if (run.status === 'queued') {
+      this.cancellationRequests.delete(run.runId);
+      this.finishRun(
+        run,
+        'cancelled',
+        'run-cancelled',
+        'Run cancelled.',
+        {
+          code: 'CANCELLED_BY_USER',
+          message: 'Run cancelled by extension request.',
+        },
+        emitEvent,
+      );
+    } else if (run.status === 'running') {
+      this.activeStepAbortControllers.get(run.runId)?.abort();
+      this.emitRunEvent(
+        run,
+        'running',
+        'run-cancel-requested',
+        'Cancellation requested. Waiting for running step to stop.',
+        emitEvent,
+      );
+    }
 
     reply({
       type: 'ack',
@@ -201,6 +228,7 @@ export class RunnerHost {
     emitEvent: EmitEvent,
     transition?: RunnerTransition,
     stepResult?: RunnerStepResult,
+    stopReason?: RunnerStopReason,
   ): void {
     const event: RunnerEvent = {
       runId: run.runId,
@@ -212,6 +240,7 @@ export class RunnerHost {
       timestamp: Date.now(),
       transition,
       stepResult,
+      stopReason,
     };
 
     emitEvent({
@@ -227,13 +256,14 @@ export class RunnerHost {
     });
   }
 
-  private updateRunStatus(run: RunnerRunRecord, status: RunnerRunStatus, stopReason?: string): void {
+  private updateRunStatus(run: RunnerRunRecord, status: RunnerRunStatus, stopReason?: RunnerStopReason): void {
     run.status = status;
     run.updatedAt = Date.now();
 
     if (status === 'succeeded' || status === 'failed' || status === 'cancelled' || status === 'exhausted') {
       run.completedAt = run.updatedAt;
-      run.stopReason = stopReason;
+      run.stopReason = stopReason?.message;
+      run.stopReasonCode = stopReason?.code;
     }
   }
 
@@ -264,7 +294,17 @@ export class RunnerHost {
     while (currentStep) {
       if (this.cancellationRequests.has(run.runId)) {
         this.cancellationRequests.delete(run.runId);
-        this.finishRun(run, 'cancelled', 'run-cancelled', 'Run cancelled.', 'Cancelled by extension request.', emitEvent);
+        this.finishRun(
+          run,
+          'cancelled',
+          'run-cancelled',
+          'Run cancelled.',
+          {
+            code: 'CANCELLED_BY_USER',
+            message: 'Run cancelled by extension request.',
+          },
+          emitEvent,
+        );
         return;
       }
 
@@ -313,6 +353,8 @@ export class RunnerHost {
       );
 
       let stepResult: RunnerStepResult;
+      const stepAbortController = new AbortController();
+      this.activeStepAbortControllers.set(run.runId, stepAbortController);
       try {
         const commandResult = await executeCommandStep({
           command,
@@ -320,6 +362,7 @@ export class RunnerHost {
           timeoutMs: stepTimeoutMs,
           env: execution?.env,
           shell: execution?.shell,
+          abortSignal: stepAbortController.signal,
         });
 
         stepResult = await persistStepEvidence({
@@ -333,17 +376,40 @@ export class RunnerHost {
           durationMs: commandResult.durationMs,
           exitCode: commandResult.exitCode,
           timedOut: commandResult.timedOut,
+          cancelled: commandResult.cancelled,
           stdout: commandResult.stdout,
           stderr: commandResult.stderr,
         });
       } catch (error) {
+        this.activeStepAbortControllers.delete(run.runId);
         this.finishRun(
           run,
           'failed',
           'step-failed:executor-error',
           `Step ${currentStep.id} failed to execute.`,
-          error instanceof Error ? error.message : String(error),
+          {
+            code: 'STEP_EXECUTOR_ERROR',
+            message: error instanceof Error ? error.message : String(error),
+          },
           emitEvent,
+        );
+        return;
+      }
+      this.activeStepAbortControllers.delete(run.runId);
+
+      if (stepResult.cancelled || this.cancellationRequests.has(run.runId)) {
+        this.cancellationRequests.delete(run.runId);
+        this.finishRun(
+          run,
+          'cancelled',
+          'run-cancelled',
+          'Run cancelled.',
+          {
+            code: 'CANCELLED_BY_USER',
+            message: `Run cancelled while executing step '${currentStep.id}'.`,
+          },
+          emitEvent,
+          stepResult,
         );
         return;
       }
@@ -377,8 +443,14 @@ export class RunnerHost {
       }
 
       const stopReason = stepResult.timedOut
-        ? `Step '${currentStep.id}' timed out after ${stepTimeoutMs}ms.`
-        : `Step '${currentStep.id}' exited with code ${stepResult.exitCode ?? 'unknown'}.`;
+        ? {
+            code: 'STEP_TIMEOUT',
+            message: `Step '${currentStep.id}' timed out after ${stepTimeoutMs}ms.`,
+          }
+        : {
+            code: 'STEP_EXIT_NON_ZERO',
+            message: `Step '${currentStep.id}' exited with code ${stepResult.exitCode ?? 'unknown'}.`,
+          };
 
       this.finishRun(
         run,
@@ -400,7 +472,7 @@ export class RunnerHost {
     status: Extract<RunnerRunStatus, 'succeeded' | 'failed' | 'cancelled' | 'exhausted'>,
     reason: string,
     message: string,
-    stopReason: string | undefined,
+    stopReason: RunnerStopReason | undefined,
     emitEvent: EmitEvent,
     stepResult?: RunnerStepResult,
   ): void {
@@ -414,6 +486,7 @@ export class RunnerHost {
       emitEvent,
       { from: fromStatus, to: status, reason },
       stepResult,
+      stopReason,
     );
   }
 

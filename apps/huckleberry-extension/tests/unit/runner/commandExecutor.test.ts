@@ -42,4 +42,22 @@ describe('executeCommandStep', () => {
 
     expect(result.timedOut).toBe(true);
   });
+
+  it('marks commands as cancelled when abort signal is triggered', async () => {
+    const controller = new AbortController();
+
+    const resultPromise = executeCommandStep({
+      command: nodeEvalCommand('setTimeout(() => process.exit(0), 2000);'),
+      cwd: process.cwd(),
+      timeoutMs: 5_000,
+      abortSignal: controller.signal,
+    });
+
+    setTimeout(() => controller.abort(), 50);
+
+    const result = await resultPromise;
+
+    expect(result.cancelled).toBe(true);
+    expect(result.timedOut).toBe(false);
+  });
 });

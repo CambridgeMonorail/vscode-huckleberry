@@ -37,7 +37,7 @@ Priority values:
 | RIM-303 | 3 | Add command step executor | P0 | Docto | Done | RIM-301, RIM-302 | Added child-process command execution with timeout/exit capture, retry behavior, and per-step evidence artifacts under `.huckleberry/runs` |
 | RIM-304 | 3 | Persist runs/events/evidence metadata | P0 | Docto | Done | RIM-302 | Added append-only run event store, evidence metadata index, run reconstruction helpers, and Runs view hydration from persisted history |
 | RIM-305 | 3 | Build Runs UI timeline | P1 | Docto | Done | RIM-302, RIM-304 | Runs explorer now renders hierarchical event timeline with step status/timestamps/durations and evidence artifact links |
-| RIM-306 | 3 | Add cancellation and failure-stop reasons | P0 | Docto | Planned | RIM-302 | Clear terminal outcomes |
+| RIM-306 | 3 | Add cancellation and failure-stop reasons | P0 | Docto | Done | RIM-302 | Added abortable cancellation for running steps and structured stop reason codes/messages for non-success terminal outcomes |
 | RIM-401 | 4 | Introduce AgentAdapter abstraction | P0 | Docto | Planned | RIM-303 | Provider boundary |
 | RIM-402 | 4 | Implement Copilot adapter | P1 | Docto | Planned | RIM-401 | First provider |
 | RIM-403 | 4 | Add agent step node type | P0 | Docto | Planned | RIM-401, RIM-201 | Constrained agent execution |
@@ -79,7 +79,7 @@ Priority values:
 - [x] Command-only loops execute deterministically
 - [x] Full event trail persisted and inspectable
 - [x] Runs timeline surfaces step status, timestamps, durations, and evidence links
-- [ ] Cancel and timeout behavior reliable
+- [x] Cancel and timeout behavior reliable
 
 ### Stage 4
 - [ ] Agent steps bounded by explicit limits

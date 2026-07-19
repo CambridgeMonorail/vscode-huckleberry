@@ -7,6 +7,8 @@ export interface RunTimelineNodeModel {
   eventType: string;
   timestamp: number;
   message?: string;
+  stopReasonCode?: string;
+  stopReasonMessage?: string;
   status: RunnerRunRecord['status'];
   attempt?: number;
   durationMs?: number;
@@ -51,6 +53,10 @@ class RunTreeItem extends vscode.TreeItem {
 
     if (run.stopReason) {
       lines.push(`Stop reason: ${run.stopReason}`);
+    }
+
+    if (run.stopReasonCode) {
+      lines.push(`Stop reason code: ${run.stopReasonCode}`);
     }
 
     return lines.join('\n');
@@ -128,6 +134,14 @@ function buildTimelineTooltip(timeline: RunTimelineNodeModel): string {
 
   if (timeline.message) {
     lines.push(`Message: ${timeline.message}`);
+  }
+
+  if (timeline.stopReasonCode) {
+    lines.push(`Stop reason code: ${timeline.stopReasonCode}`);
+  }
+
+  if (timeline.stopReasonMessage) {
+    lines.push(`Stop reason: ${timeline.stopReasonMessage}`);
   }
 
   if (timeline.stepResult) {
@@ -301,6 +315,8 @@ function toTimelineNode(event: RunnerEvent): RunTimelineNodeModel {
     eventType: event.eventType,
     timestamp: event.timestamp,
     message: event.message,
+    stopReasonCode: event.stopReason?.code,
+    stopReasonMessage: event.stopReason?.message,
     status: event.status,
     attempt: event.transition?.attempt,
     durationMs: event.stepResult?.durationMs,

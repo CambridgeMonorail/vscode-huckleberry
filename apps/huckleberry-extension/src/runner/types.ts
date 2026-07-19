@@ -22,9 +22,15 @@ export interface RunnerStepResult {
   durationMs: number;
   exitCode: number | null;
   timedOut: boolean;
+  cancelled?: boolean;
   stdoutArtifactPath: string;
   stderrArtifactPath: string;
   metadataArtifactPath: string;
+}
+
+export interface RunnerStopReason {
+  code: string;
+  message: string;
 }
 
 export type RunnerRequest =
@@ -87,6 +93,7 @@ export interface RunnerRunRecord {
   startedAt: number;
   updatedAt: number;
   completedAt?: number;
+  stopReasonCode?: string;
   stopReason?: string;
 }
 
@@ -100,6 +107,7 @@ export interface RunnerEvent {
   message?: string;
   transition?: RunnerTransition;
   stepResult?: RunnerStepResult;
+  stopReason?: RunnerStopReason;
 }
 
 export interface RunnerTransition {
