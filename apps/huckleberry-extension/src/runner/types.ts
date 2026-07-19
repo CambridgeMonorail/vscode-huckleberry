@@ -6,6 +6,25 @@ export interface RunnerExecutionOptions {
   simulatedStepDurationMs?: number;
   failStepIds?: string[];
   conditionInputs?: Record<string, boolean>;
+  workingDirectory?: string;
+  env?: Record<string, string>;
+  shell?: boolean;
+}
+
+export interface RunnerStepResult {
+  runId: string;
+  stepId: string;
+  attempt: number;
+  command: string;
+  cwd: string;
+  startedAt: number;
+  completedAt: number;
+  durationMs: number;
+  exitCode: number | null;
+  timedOut: boolean;
+  stdoutArtifactPath: string;
+  stderrArtifactPath: string;
+  metadataArtifactPath: string;
 }
 
 export type RunnerRequest =
@@ -67,6 +86,7 @@ export interface RunnerEvent {
   eventType: string;
   message?: string;
   transition?: RunnerTransition;
+  stepResult?: RunnerStepResult;
 }
 
 export interface RunnerTransition {

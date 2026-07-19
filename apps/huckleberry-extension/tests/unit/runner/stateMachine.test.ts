@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runStateMachine } from '@huckleberry/extension/runner';
+import { runStateMachine } from '@huckleberry/extension/runner/stateMachine';
 import { WorkflowDefinition } from '@huckleberry/extension/workflows';
 
 function createWorkflow(): WorkflowDefinition {

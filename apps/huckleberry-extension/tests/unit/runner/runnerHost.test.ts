@@ -1,20 +1,60 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RunnerHost } from '@huckleberry/extension/runner';
-import { RunnerRequest, RunnerResponse } from '@huckleberry/extension/runner';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { RunnerHost } from '@huckleberry/extension/runner/runnerHost';
+import { RunnerRequest, RunnerResponse } from '@huckleberry/extension/runner/types';
+
+const { executeCommandStepMock, persistStepEvidenceMock } = vi.hoisted(() => ({
+  executeCommandStepMock: vi.fn(),
+  persistStepEvidenceMock: vi.fn(),
+}));
+
+vi.mock('@huckleberry/extension/runner/commandExecutor', () => ({
+  executeCommandStep: executeCommandStepMock,
+}));
+
+vi.mock('@huckleberry/extension/runner/evidenceStore', () => ({
+  persistStepEvidence: persistStepEvidenceMock,
+}));
+
+async function flushAsyncWork(): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise(resolve => setTimeout(resolve, 0));
+}
 
 describe('RunnerHost', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
   afterEach(() => {
-    vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
-  it('starts a run and emits queued/running/succeeded lifecycle events', () => {
+  it('starts a run and emits queued/running/succeeded lifecycle events', async () => {
     const host = new RunnerHost();
     const replies: RunnerResponse[] = [];
     const events: RunnerResponse[] = [];
+
+    executeCommandStepMock.mockResolvedValue({
+      stdout: 'ok',
+      stderr: '',
+      exitCode: 0,
+      timedOut: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+
+    persistStepEvidenceMock.mockResolvedValue({
+      runId: 'run-1',
+      stepId: 'lint',
+      attempt: 1,
+      command: 'pnpm lint:affected',
+      cwd: '/workspace/.huckleberry/loops',
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 0,
+      timedOut: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/metadata',
+    });
 
     const request: RunnerRequest = {
       type: 'start',
@@ -38,6 +78,7 @@ describe('RunnerHost', () => {
     };
 
     host.handleMessage(request, response => replies.push(response), event => events.push(event));
+    await flushAsyncWork();
 
     expect(replies).toHaveLength(1);
     expect(replies[0].type).toBe('ack');
@@ -48,8 +89,6 @@ describe('RunnerHost', () => {
       },
     });
 
-    vi.runAllTimers();
-
     const statuses = events
       .filter(event => event.type === 'event')
       .map(event => (event.type === 'event' ? event.payload.status : ''));
@@ -57,14 +96,42 @@ describe('RunnerHost', () => {
     expect(statuses).toContain('queued');
     expect(statuses).toContain('running');
     expect(statuses).toContain('succeeded');
+    expect(executeCommandStepMock).toHaveBeenCalledTimes(1);
+    expect(persistStepEvidenceMock).toHaveBeenCalledTimes(1);
 
     host.dispose();
   });
 
-  it('cancels a queued run', () => {
+  it('retries and fails when command step keeps failing', async () => {
     const host = new RunnerHost();
     const replies: RunnerResponse[] = [];
     const events: RunnerResponse[] = [];
+
+    executeCommandStepMock.mockResolvedValue({
+      stdout: '',
+      stderr: 'boom',
+      exitCode: 2,
+      timedOut: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 2,
+      timedOut: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/metadata',
+    }));
 
     host.handleMessage(
       {
@@ -85,33 +152,27 @@ describe('RunnerHost', () => {
               },
             ],
           },
+          execution: {
+            maxStepRetries: 1,
+          },
         },
       },
       response => replies.push(response),
       event => events.push(event),
     );
 
-    const startAck = replies.find(reply => reply.type === 'ack');
-    if (!startAck || startAck.type !== 'ack' || !startAck.payload.runId) {
-      throw new Error('Failed to start run in test setup.');
-    }
+    await flushAsyncWork();
 
-    host.handleMessage(
-      {
-        type: 'cancel',
-        requestId: 'req-cancel',
-        payload: {
-          runId: startAck.payload.runId,
-        },
-      },
-      response => replies.push(response),
-      event => events.push(event),
+    expect(executeCommandStepMock).toHaveBeenCalledTimes(2);
+    const retryEvents = events.filter(
+      event => event.type === 'event' && event.payload.eventType === 'step-retry',
     );
+    expect(retryEvents).toHaveLength(1);
 
-    const cancelEvent = events.find(
-      event => event.type === 'event' && event.payload.status === 'cancelled',
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.status === 'failed',
     );
-    expect(cancelEvent).toBeDefined();
+    expect(failedEvent).toBeDefined();
 
     host.dispose();
   });

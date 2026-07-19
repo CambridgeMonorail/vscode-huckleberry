@@ -9,8 +9,48 @@ vi.mock('child_process', () => {
   };
 });
 
-import { RunnerClient } from '@huckleberry/extension/runner';
-import { RunnerRequest, RunnerResponse } from '@huckleberry/extension/runner';
+vi.mock('vscode', () => {
+  class MockEventEmitter<T> {
+    private listeners: Array<(event: T) => void> = [];
+
+    event = (listener: (event: T) => void): { dispose: () => void } => {
+      this.listeners.push(listener);
+      return {
+        dispose: () => {
+          this.listeners = this.listeners.filter(existing => existing !== listener);
+        },
+      };
+    };
+
+    fire(event: T): void {
+      for (const listener of this.listeners) {
+        listener(event);
+      }
+    }
+
+    dispose(): void {
+      this.listeners = [];
+    }
+  }
+
+  return {
+    window: {
+      showInformationMessage: vi.fn(),
+      showErrorMessage: vi.fn(),
+      showQuickPick: vi.fn(),
+      showInputBox: vi.fn(),
+      showOpenDialog: vi.fn(),
+      createOutputChannel: vi.fn(() => ({ appendLine: vi.fn() })),
+    },
+    workspace: {
+      workspaceFolders: [],
+    },
+    EventEmitter: MockEventEmitter,
+  };
+});
+
+import { RunnerClient } from '@huckleberry/extension/runner/runnerClient';
+import { RunnerRequest, RunnerResponse } from '@huckleberry/extension/runner/types';
 
 class FakeChildProcess extends EventEmitter {
   connected = true;

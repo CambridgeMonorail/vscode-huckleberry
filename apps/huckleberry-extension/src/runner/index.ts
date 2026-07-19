@@ -1,5 +1,7 @@
 export { RunnerClient } from './runnerClient';
 export { RunnerHost } from './runnerHost';
+export { executeCommandStep, type CommandExecutionRequest, type CommandExecutionResult } from './commandExecutor';
+export { persistStepEvidence, type PersistStepEvidenceRequest } from './evidenceStore';
 export { runStateMachine, type RunnerStateMachineResult } from './stateMachine';
 export { loadWorkflowDefinition } from './workflowLoader';
 export {
@@ -10,4 +12,5 @@ export {
   type RunnerEvent,
   type RunnerExecutionOptions,
   type RunnerTransition,
+  type RunnerStepResult,
 } from './types';

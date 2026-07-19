@@ -1,19 +1,29 @@
 import { randomUUID } from 'crypto';
+import * as path from 'path';
+import { executeCommandStep } from './commandExecutor';
+import { persistStepEvidence } from './evidenceStore';
 import { loadWorkflowDefinition } from './workflowLoader';
-import { runStateMachine } from './stateMachine';
-import { RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord, RunnerRunStatus, RunnerTransition } from './types';
+import { WorkflowDefinition, WorkflowStep } from '../workflows';
+import {
+  RunnerEvent,
+  RunnerExecutionOptions,
+  RunnerRequest,
+  RunnerResponse,
+  RunnerRunRecord,
+  RunnerRunStatus,
+  RunnerStepResult,
+  RunnerTransition,
+} from './types';
 
 type Reply = (response: RunnerResponse) => void;
 type EmitEvent = (response: RunnerResponse) => void;
-
-const RUN_TRANSITION_DELAY_MS = 20;
 
 /**
  * Hosts in-memory run lifecycle state for the lightweight command-only runner process.
  */
 export class RunnerHost {
   private readonly runs = new Map<string, RunnerRunRecord>();
-  private readonly runTimers = new Map<string, NodeJS.Timeout>();
+  private readonly cancellationRequests = new Set<string>();
 
   handleMessage(message: RunnerRequest, reply: Reply, emitEvent: EmitEvent): void {
     switch (message.type) {
@@ -39,10 +49,7 @@ export class RunnerHost {
   }
 
   dispose(): void {
-    for (const timer of this.runTimers.values()) {
-      clearTimeout(timer);
-    }
-    this.runTimers.clear();
+    this.cancellationRequests.clear();
   }
 
   private async handleStart(
@@ -89,8 +96,7 @@ export class RunnerHost {
       },
     });
 
-    const stateMachineResult = runStateMachine(workflow, message.payload.execution);
-    this.scheduleTransitions(runRecord, stateMachineResult.transitions, stateMachineResult.stopReason, emitEvent);
+    void this.executeWorkflow(runRecord, workflow, message.payload.execution, emitEvent);
   }
 
   private handleStatus(message: Extract<RunnerRequest, { type: 'status' }>, reply: Reply): void {
@@ -122,10 +128,7 @@ export class RunnerHost {
       return;
     }
 
-    if (this.runTimers.has(run.runId)) {
-      clearTimeout(this.runTimers.get(run.runId));
-      this.runTimers.delete(run.runId);
-    }
+    this.cancellationRequests.add(run.runId);
 
     this.updateRunStatus(run, 'cancelled', 'Cancelled by extension request.');
     this.emitRunEvent(run, 'cancelled', 'run-cancelled', 'Run cancelled.', emitEvent);
@@ -158,6 +161,7 @@ export class RunnerHost {
     message: string,
     emitEvent: EmitEvent,
     transition?: RunnerTransition,
+    stepResult?: RunnerStepResult,
   ): void {
     const event: RunnerEvent = {
       runId: run.runId,
@@ -167,6 +171,7 @@ export class RunnerHost {
       message,
       timestamp: Date.now(),
       transition,
+      stepResult,
     };
 
     emitEvent({
@@ -185,50 +190,206 @@ export class RunnerHost {
     }
   }
 
-  private scheduleTransitions(
+  private async executeWorkflow(
     run: RunnerRunRecord,
-    transitions: RunnerTransition[],
-    stopReason: string | undefined,
+    workflow: WorkflowDefinition,
+    execution: RunnerExecutionOptions | undefined,
     emitEvent: EmitEvent,
-  ): void {
-    const queue = [...transitions];
+  ): Promise<void> {
+    const stepById = new Map(workflow.steps.map(step => [step.id, step]));
+    const stepAttempts = new Map<string, number>();
+    const maxStepRetries = execution?.maxStepRetries ?? 0;
+    const stepTimeoutMs = execution?.stepTimeoutMs ?? 5_000;
+    const conditionInputs = execution?.conditionInputs ?? {};
 
-    const tick = (): void => {
-      const currentRun = this.runs.get(run.runId);
-      if (!currentRun || currentRun.status === 'cancelled') {
-        this.runTimers.delete(run.runId);
+    this.updateRunStatus(run, 'running');
+    this.emitRunEvent(
+      run,
+      'running',
+      'run-started',
+      'Run started.',
+      emitEvent,
+      { from: 'queued', to: 'running', reason: 'run-started' },
+    );
+
+    let currentStep: WorkflowStep | undefined = workflow.steps[0];
+
+    while (currentStep) {
+      if (this.cancellationRequests.has(run.runId)) {
+        this.cancellationRequests.delete(run.runId);
+        this.finishRun(run, 'cancelled', 'run-cancelled', 'Run cancelled.', 'Cancelled by extension request.', emitEvent);
         return;
       }
 
-      const transition = queue.shift();
-      if (!transition) {
-        this.runTimers.delete(run.runId);
-        return;
+      const attempt = (stepAttempts.get(currentStep.id) ?? 0) + 1;
+      stepAttempts.set(currentStep.id, attempt);
+
+      if (currentStep.type === 'condition') {
+        const nextId = this.evaluateCondition(currentStep.expression, conditionInputs)
+          ? currentStep.true
+          : currentStep.false;
+        this.emitRunEvent(
+          run,
+          'running',
+          'step-succeeded:condition',
+          `Condition step ${currentStep.id} routed to ${nextId}.`,
+          emitEvent,
+          { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:condition' },
+        );
+        currentStep = stepById.get(nextId);
+        continue;
       }
 
-      const eventType = transition.reason ?? `transition-${transition.to}`;
-      this.updateRunStatus(
-        currentRun,
-        transition.to,
-        transition.to === 'failed' || transition.to === 'cancelled' || transition.to === 'exhausted'
-          ? (stopReason ?? transition.reason)
-          : undefined,
-      );
+      if (currentStep.type === 'approval') {
+        this.emitRunEvent(
+          run,
+          'running',
+          'step-succeeded:approval',
+          `Approval step ${currentStep.id} auto-completed in command-only mode.`,
+          emitEvent,
+          { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:approval' },
+        );
+        currentStep = this.getNextSequentialStep(workflow.steps, currentStep.id);
+        continue;
+      }
+
+      const command = currentStep.command;
+      const cwd = execution?.workingDirectory ?? path.dirname(run.loopFilePath);
 
       this.emitRunEvent(
-        currentRun,
-        transition.to,
-        eventType,
-        `State transition ${transition.from} -> ${transition.to}`,
+        run,
+        'running',
+        'step-started',
+        `Executing step ${currentStep.id}.`,
         emitEvent,
-        transition,
+        { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-started' },
       );
 
-      const timer = setTimeout(tick, RUN_TRANSITION_DELAY_MS);
-      this.runTimers.set(run.runId, timer);
-    };
+      let stepResult: RunnerStepResult;
+      try {
+        const commandResult = await executeCommandStep({
+          command,
+          cwd,
+          timeoutMs: stepTimeoutMs,
+          env: execution?.env,
+          shell: execution?.shell,
+        });
 
-    const initialTimer = setTimeout(tick, RUN_TRANSITION_DELAY_MS);
-    this.runTimers.set(run.runId, initialTimer);
+        stepResult = await persistStepEvidence({
+          runId: run.runId,
+          stepId: currentStep.id,
+          attempt,
+          command,
+          cwd,
+          startedAt: commandResult.startedAt,
+          completedAt: commandResult.completedAt,
+          durationMs: commandResult.durationMs,
+          exitCode: commandResult.exitCode,
+          timedOut: commandResult.timedOut,
+          stdout: commandResult.stdout,
+          stderr: commandResult.stderr,
+        });
+      } catch (error) {
+        this.finishRun(
+          run,
+          'failed',
+          'step-failed:executor-error',
+          `Step ${currentStep.id} failed to execute.`,
+          error instanceof Error ? error.message : String(error),
+          emitEvent,
+        );
+        return;
+      }
+
+      const stepFailed = stepResult.timedOut || stepResult.exitCode !== 0;
+      if (!stepFailed) {
+        this.emitRunEvent(
+          run,
+          'running',
+          'step-succeeded:command',
+          `Step ${currentStep.id} completed.`,
+          emitEvent,
+          { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:command' },
+          stepResult,
+        );
+        currentStep = this.getNextSequentialStep(workflow.steps, currentStep.id);
+        continue;
+      }
+
+      if (attempt <= maxStepRetries) {
+        this.emitRunEvent(
+          run,
+          'running',
+          'step-retry',
+          `Retrying step ${currentStep.id} (attempt ${attempt + 1}).`,
+          emitEvent,
+          { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-retry' },
+          stepResult,
+        );
+        continue;
+      }
+
+      const stopReason = stepResult.timedOut
+        ? `Step '${currentStep.id}' timed out after ${stepTimeoutMs}ms.`
+        : `Step '${currentStep.id}' exited with code ${stepResult.exitCode ?? 'unknown'}.`;
+
+      this.finishRun(
+        run,
+        'failed',
+        stepResult.timedOut ? 'step-timeout' : 'step-failed',
+        `Step ${currentStep.id} failed.`,
+        stopReason,
+        emitEvent,
+        stepResult,
+      );
+      return;
+    }
+
+    this.finishRun(run, 'succeeded', 'all-steps-succeeded', 'Run completed successfully.', undefined, emitEvent);
+  }
+
+  private finishRun(
+    run: RunnerRunRecord,
+    status: Extract<RunnerRunStatus, 'succeeded' | 'failed' | 'cancelled' | 'exhausted'>,
+    reason: string,
+    message: string,
+    stopReason: string | undefined,
+    emitEvent: EmitEvent,
+    stepResult?: RunnerStepResult,
+  ): void {
+    const fromStatus = run.status;
+    this.updateRunStatus(run, status, stopReason);
+    this.emitRunEvent(
+      run,
+      status,
+      reason,
+      message,
+      emitEvent,
+      { from: fromStatus, to: status, reason },
+      stepResult,
+    );
+  }
+
+  private getNextSequentialStep(steps: WorkflowStep[], stepId: string): WorkflowStep | undefined {
+    const currentIndex = steps.findIndex(step => step.id === stepId);
+    if (currentIndex < 0) {
+      return undefined;
+    }
+
+    return steps[currentIndex + 1];
+  }
+
+  private evaluateCondition(expression: string, conditionInputs: Record<string, boolean>): boolean {
+    const normalized = expression.trim();
+
+    if (normalized === 'true') {
+      return true;
+    }
+
+    if (normalized === 'false') {
+      return false;
+    }
+
+    return conditionInputs[normalized] ?? false;
   }
 }
