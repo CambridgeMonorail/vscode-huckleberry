@@ -7,10 +7,11 @@ const { executeCommandStepMock, persistStepEvidenceMock } = vi.hoisted(() => ({
   persistStepEvidenceMock: vi.fn(),
 }));
 
-const { appendRunEventMock, appendEvidenceIndexMock, reconstructRunsFromEventsMock } = vi.hoisted(() => ({
+const { appendRunEventMock, appendEvidenceIndexMock, reconstructRunsFromEventsMock, getRunEventsMock } = vi.hoisted(() => ({
   appendRunEventMock: vi.fn(),
   appendEvidenceIndexMock: vi.fn(),
   reconstructRunsFromEventsMock: vi.fn(),
+  getRunEventsMock: vi.fn(),
 }));
 
 vi.mock('@huckleberry/extension/runner/commandExecutor', () => ({
@@ -25,6 +26,7 @@ vi.mock('@huckleberry/extension/runner/runEventStore', () => ({
   appendRunEvent: appendRunEventMock,
   appendEvidenceIndex: appendEvidenceIndexMock,
   reconstructRunsFromEvents: reconstructRunsFromEventsMock,
+  getRunEvents: getRunEventsMock,
 }));
 
 async function flushAsyncWork(): Promise<void> {
@@ -231,6 +233,47 @@ describe('RunnerHost', () => {
     if (runsResponse?.type === 'runs') {
       expect(runsResponse.payload.runs).toHaveLength(1);
       expect(runsResponse.payload.runs[0].runId).toBe('historic-1');
+    }
+
+    host.dispose();
+  });
+
+  it('returns persisted timeline events for a run', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    getRunEventsMock.mockResolvedValue([
+      {
+        runId: 'historic-1',
+        loopId: 'lint',
+        loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+        status: 'queued',
+        eventType: 'run-queued',
+        timestamp: 1,
+        message: 'queued',
+      },
+    ]);
+
+    host.handleMessage(
+      {
+        type: 'events',
+        requestId: 'req-events',
+        payload: {
+          runId: 'historic-1',
+        },
+      },
+      response => replies.push(response),
+      () => undefined,
+    );
+
+    await flushAsyncWork();
+
+    const eventsResponse = replies.find(reply => reply.type === 'events');
+    expect(eventsResponse).toBeDefined();
+    if (eventsResponse?.type === 'events') {
+      expect(eventsResponse.payload.events).toHaveLength(1);
+      expect(eventsResponse.payload.events[0].eventType).toBe('run-queued');
     }
 
     host.dispose();

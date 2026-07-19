@@ -1,13 +1,59 @@
 import * as vscode from 'vscode';
-import { RunnerClient, RunnerRunRecord } from '../runner';
+import { RunnerClient, RunnerEvent, RunnerRunRecord, RunnerStepResult } from '../runner';
+
+export interface RunTimelineNodeModel {
+  runId: string;
+  stepId: string;
+  eventType: string;
+  timestamp: number;
+  message?: string;
+  status: RunnerRunRecord['status'];
+  attempt?: number;
+  durationMs?: number;
+  stepResult?: RunnerStepResult;
+}
+
+interface RunTreeNodeModel {
+  run: RunnerRunRecord;
+  timeline: RunTimelineNodeModel[];
+}
 
 class RunTreeItem extends vscode.TreeItem {
-  constructor(public readonly run: RunnerRunRecord) {
-    super(`${run.loopId} (${run.status})`, vscode.TreeItemCollapsibleState.None);
-    this.description = run.runId;
-    this.tooltip = `${run.loopFilePath}\nStatus: ${run.status}\nRun ID: ${run.runId}`;
+  constructor(public readonly node: RunTreeNodeModel) {
+    const run = node.run;
+    super(`${run.loopId} (${run.status})`, vscode.TreeItemCollapsibleState.Collapsed);
+    this.description = this.buildDescription(run);
+    this.tooltip = this.buildTooltip(run, node.timeline.length);
     this.contextValue = `run-${run.status}`;
     this.iconPath = this.getIconForStatus(run.status);
+  }
+
+  private buildDescription(run: RunnerRunRecord): string {
+    const completedSuffix = run.completedAt ? ` in ${formatDuration(run.completedAt - run.startedAt)}` : '';
+    return `${run.runId}${completedSuffix}`;
+  }
+
+  private buildTooltip(run: RunnerRunRecord, timelineCount: number): string {
+    const lines: string[] = [
+      `Run ID: ${run.runId}`,
+      `Loop: ${run.loopId}`,
+      `Status: ${run.status}`,
+      `Started: ${formatTimestamp(run.startedAt)}`,
+      `Updated: ${formatTimestamp(run.updatedAt)}`,
+      `Events: ${timelineCount}`,
+      `Path: ${run.loopFilePath}`,
+    ];
+
+    if (run.completedAt) {
+      lines.push(`Completed: ${formatTimestamp(run.completedAt)}`);
+      lines.push(`Duration: ${formatDuration(run.completedAt - run.startedAt)}`);
+    }
+
+    if (run.stopReason) {
+      lines.push(`Stop reason: ${run.stopReason}`);
+    }
+
+    return lines.join('\n');
   }
 
   private getIconForStatus(status: RunnerRunRecord['status']): vscode.ThemeIcon {
@@ -30,23 +76,138 @@ class RunTreeItem extends vscode.TreeItem {
   }
 }
 
+class RunTimelineTreeItem extends vscode.TreeItem {
+  constructor(public readonly timeline: RunTimelineNodeModel) {
+    super(buildTimelineLabel(timeline), vscode.TreeItemCollapsibleState.None);
+
+    this.description = `${formatTimestamp(timeline.timestamp)}${timeline.durationMs !== undefined ? ` • ${formatDuration(timeline.durationMs)}` : ''}`;
+    this.tooltip = buildTimelineTooltip(timeline);
+    this.contextValue = timeline.stepResult ? 'run-step-with-evidence' : 'run-step';
+    this.iconPath = getTimelineIcon(timeline);
+
+    if (timeline.stepResult) {
+      this.command = {
+        command: 'vscode-copilot-huckleberry.runs.openStepEvidence',
+        title: 'Open Step Evidence',
+        arguments: [timeline],
+      };
+    }
+  }
+}
+
+function buildTimelineLabel(timeline: RunTimelineNodeModel): string {
+  const base = timeline.stepId
+    ? `${timeline.stepId} • ${timeline.eventType}`
+    : `${timeline.eventType}`;
+
+  if (timeline.attempt !== undefined) {
+    return `${base} (attempt ${timeline.attempt})`;
+  }
+
+  return base;
+}
+
+function buildTimelineTooltip(timeline: RunTimelineNodeModel): string {
+  const lines: string[] = [
+    `Event: ${timeline.eventType}`,
+    `Status: ${timeline.status}`,
+    `Timestamp: ${formatTimestamp(timeline.timestamp)}`,
+  ];
+
+  if (timeline.stepId) {
+    lines.push(`Step: ${timeline.stepId}`);
+  }
+
+  if (timeline.attempt !== undefined) {
+    lines.push(`Attempt: ${timeline.attempt}`);
+  }
+
+  if (timeline.durationMs !== undefined) {
+    lines.push(`Duration: ${formatDuration(timeline.durationMs)}`);
+  }
+
+  if (timeline.message) {
+    lines.push(`Message: ${timeline.message}`);
+  }
+
+  if (timeline.stepResult) {
+    lines.push(`Exit code: ${timeline.stepResult.exitCode}`);
+    lines.push(`Stdout: ${timeline.stepResult.stdoutArtifactPath}`);
+    lines.push(`Stderr: ${timeline.stepResult.stderrArtifactPath}`);
+    lines.push(`Metadata: ${timeline.stepResult.metadataArtifactPath}`);
+  }
+
+  return lines.join('\n');
+}
+
+function getTimelineIcon(timeline: RunTimelineNodeModel): vscode.ThemeIcon {
+  if (timeline.eventType.startsWith('step-failed') || timeline.eventType === 'step-timeout') {
+    return new vscode.ThemeIcon('warning');
+  }
+
+  if (timeline.eventType === 'step-retry') {
+    return new vscode.ThemeIcon('history');
+  }
+
+  if (timeline.eventType.startsWith('step-started')) {
+    return new vscode.ThemeIcon('loading~spin');
+  }
+
+  if (timeline.eventType.startsWith('step-succeeded')) {
+    return new vscode.ThemeIcon('pass');
+  }
+
+  switch (timeline.status) {
+    case 'queued':
+      return new vscode.ThemeIcon('clock');
+    case 'running':
+      return new vscode.ThemeIcon('loading~spin');
+    case 'succeeded':
+      return new vscode.ThemeIcon('pass');
+    case 'cancelled':
+    case 'failed':
+    case 'exhausted':
+      return new vscode.ThemeIcon('warning');
+    case 'paused':
+      return new vscode.ThemeIcon('debug-pause');
+    default:
+      return new vscode.ThemeIcon('circle-outline');
+  }
+}
+
+function formatTimestamp(timestamp: number): string {
+  return new Date(timestamp).toLocaleString();
+}
+
+function formatDuration(durationMs: number): string {
+  if (durationMs < 1_000) {
+    return `${durationMs}ms`;
+  }
+
+  const seconds = durationMs / 1_000;
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)}s`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60);
+  return `${minutes}m ${remainder}s`;
+}
+
 /**
  * Run explorer provider backed by runner events.
  */
 export class RunExplorerProvider implements vscode.TreeDataProvider<vscode.TreeItem>, vscode.Disposable {
   private readonly onDidChangeEmitter = new vscode.EventEmitter<vscode.TreeItem | undefined | void>();
-  private readonly runs = new Map<string, RunnerRunRecord>();
+  private readonly runs = new Map<string, RunTreeNodeModel>();
   private readonly runnerEventSubscription: vscode.Disposable;
 
   constructor(private readonly runnerClient: RunnerClient) {
     void this.hydrateRuns();
 
     this.runnerEventSubscription = this.runnerClient.onRunEvent(async event => {
-      const latestStatus = await this.runnerClient.getStatus(event.runId);
-      if (latestStatus) {
-        this.runs.set(event.runId, latestStatus);
-        this.refresh();
-      }
+      await this.upsertRunNode(event.runId, event);
+      this.refresh();
     });
   }
 
@@ -56,10 +217,14 @@ export class RunExplorerProvider implements vscode.TreeDataProvider<vscode.TreeI
     return element;
   }
 
-  getChildren(): vscode.ProviderResult<vscode.TreeItem[]> {
+  getChildren(element?: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem[]> {
+    if (element instanceof RunTreeItem) {
+      return element.node.timeline.map(entry => new RunTimelineTreeItem(entry));
+    }
+
     return [...this.runs.values()]
-      .sort((left, right) => right.startedAt - left.startedAt)
-      .map(run => new RunTreeItem(run));
+      .sort((left, right) => right.run.startedAt - left.run.startedAt)
+      .map(node => new RunTreeItem(node));
   }
 
   refresh(): void {
@@ -70,7 +235,11 @@ export class RunExplorerProvider implements vscode.TreeDataProvider<vscode.TreeI
     try {
       const runs = await this.runnerClient.listRuns();
       for (const run of runs) {
-        this.runs.set(run.runId, run);
+        const events = await this.runnerClient.getRunEvents(run.runId);
+        this.runs.set(run.runId, {
+          run,
+          timeline: events.map(toTimelineNode),
+        });
       }
       this.refresh();
     } catch {
@@ -78,8 +247,63 @@ export class RunExplorerProvider implements vscode.TreeDataProvider<vscode.TreeI
     }
   }
 
+  private async upsertRunNode(runId: string, event?: RunnerEvent): Promise<void> {
+    const [latestStatus, events] = await Promise.all([
+      this.runnerClient.getStatus(runId),
+      this.runnerClient.getRunEvents(runId),
+    ]);
+
+    if (!latestStatus) {
+      if (event) {
+        const existing = this.runs.get(runId);
+        const fallbackRun: RunnerRunRecord = existing?.run ?? {
+          runId: event.runId,
+          loopId: event.loopId,
+          loopFilePath: event.loopFilePath ?? '',
+          status: event.status,
+          startedAt: event.timestamp,
+          updatedAt: event.timestamp,
+          completedAt: undefined,
+        };
+
+        fallbackRun.status = event.status;
+        fallbackRun.updatedAt = event.timestamp;
+        if (event.status === 'succeeded' || event.status === 'failed' || event.status === 'cancelled' || event.status === 'exhausted') {
+          fallbackRun.completedAt = event.timestamp;
+          fallbackRun.stopReason = event.message;
+        }
+
+        this.runs.set(runId, {
+          run: fallbackRun,
+          timeline: [...(existing?.timeline ?? []), toTimelineNode(event)],
+        });
+      }
+
+      return;
+    }
+
+    this.runs.set(runId, {
+      run: latestStatus,
+      timeline: events.map(toTimelineNode),
+    });
+  }
+
   dispose(): void {
     this.runnerEventSubscription.dispose();
     this.onDidChangeEmitter.dispose();
   }
+}
+
+function toTimelineNode(event: RunnerEvent): RunTimelineNodeModel {
+  return {
+    runId: event.runId,
+    stepId: event.transition?.stepId ?? '',
+    eventType: event.eventType,
+    timestamp: event.timestamp,
+    message: event.message,
+    status: event.status,
+    attempt: event.transition?.attempt,
+    durationMs: event.stepResult?.durationMs,
+    stepResult: event.stepResult,
+  };
 }

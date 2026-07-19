@@ -51,6 +51,13 @@ export type RunnerRequest =
       payload: Record<string, never>;
     }
   | {
+      type: 'events';
+      requestId: string;
+      payload: {
+        runId: string;
+      };
+    }
+  | {
       type: 'cancel';
       requestId: string;
       payload: {
@@ -124,6 +131,13 @@ export type RunnerResponse =
       requestId: string;
       payload: {
         runs: RunnerRunRecord[];
+      };
+    }
+  | {
+      type: 'events';
+      requestId: string;
+      payload: {
+        events: RunnerEvent[];
       };
     }
   | {

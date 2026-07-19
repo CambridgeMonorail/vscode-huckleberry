@@ -84,6 +84,24 @@ class FakeChildProcess extends EventEmitter {
                 ],
               },
             }
+        : request.type === 'events'
+          ? {
+              type: 'events',
+              requestId: request.requestId,
+              payload: {
+                events: [
+                  {
+                    runId: request.payload.runId,
+                    loopId: 'lint',
+                    loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+                    status: 'running',
+                    eventType: 'step-started',
+                    timestamp: Date.now(),
+                    message: 'step started',
+                  },
+                ],
+              },
+            }
         : {
             type: 'status',
             requestId: request.requestId,
@@ -140,5 +158,11 @@ describe('RunnerClient', () => {
     const runs = await client.listRuns();
     expect(runs).toHaveLength(1);
     expect(runs[0].status).toBe('succeeded');
+  });
+
+  it('fetches run events through IPC', async () => {
+    const events = await client.getRunEvents('run-1');
+    expect(events).toHaveLength(1);
+    expect(events[0].eventType).toBe('step-started');
   });
 });

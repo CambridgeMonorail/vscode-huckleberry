@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { logWithChannel, LogLevel } from '../utils';
 import { LoopExplorerProvider, LoopViewItemModel } from '../providers/LoopExplorerProvider';
-import { RunExplorerProvider } from '../providers/RunExplorerProvider';
+import { RunExplorerProvider, RunTimelineNodeModel } from '../providers/RunExplorerProvider';
 import { WorkflowTemplateService } from '../services';
 import { RunnerClient } from '../runner';
 
@@ -42,6 +42,22 @@ function extractRunId(input: unknown): string | undefined {
 
     if (typeof value['description'] === 'string') {
       return value['description'];
+    }
+  }
+
+  return undefined;
+}
+
+function extractTimelineNode(input: unknown): RunTimelineNodeModel | undefined {
+  if (input && typeof input === 'object') {
+    const value = input as Record<string, unknown>;
+
+    if (typeof value['runId'] === 'string' && typeof value['eventType'] === 'string') {
+      return input as RunTimelineNodeModel;
+    }
+
+    if ('timeline' in value && value['timeline'] && typeof value['timeline'] === 'object') {
+      return value['timeline'] as RunTimelineNodeModel;
     }
   }
 
@@ -105,6 +121,44 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
 
       await runnerClient.cancelRun(runId);
       vscode.window.showInformationMessage(`Cancellation requested for run '${runId}'.`);
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openStepEvidence', async (input: unknown) => {
+      const timelineNode = extractTimelineNode(input);
+      if (!timelineNode || !timelineNode.stepResult) {
+        vscode.window.showWarningMessage('No step evidence is available for this timeline entry.');
+        return Promise.resolve();
+      }
+
+      const quickPick = await vscode.window.showQuickPick(
+        [
+          {
+            label: 'Stdout',
+            description: timelineNode.stepResult.stdoutArtifactPath,
+            path: timelineNode.stepResult.stdoutArtifactPath,
+          },
+          {
+            label: 'Stderr',
+            description: timelineNode.stepResult.stderrArtifactPath,
+            path: timelineNode.stepResult.stderrArtifactPath,
+          },
+          {
+            label: 'Metadata',
+            description: timelineNode.stepResult.metadataArtifactPath,
+            path: timelineNode.stepResult.metadataArtifactPath,
+          },
+        ],
+        {
+          title: `Open evidence for ${timelineNode.stepId || timelineNode.eventType}`,
+          placeHolder: 'Select artifact to open',
+        },
+      );
+
+      if (!quickPick) {
+        return Promise.resolve();
+      }
+
+      await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(quickPick.path));
       return Promise.resolve();
     }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.loops.runLoop', async (input: unknown) => {

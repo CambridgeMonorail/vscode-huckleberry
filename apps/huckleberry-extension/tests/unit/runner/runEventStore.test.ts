@@ -6,6 +6,7 @@ import {
   appendEvidenceIndex,
   appendRunEvent,
   getEvidenceIndex,
+  getRunEvents,
   reconstructRunsFromEvents,
 } from '@huckleberry/extension/runner/runEventStore';
 import { RunnerEvent, RunnerStepResult } from '@huckleberry/extension/runner/types';
@@ -123,5 +124,33 @@ describe('runEventStore', () => {
     expect(byStep).toHaveLength(1);
     expect(byStep[0].stepId).toBe('lint');
     expect(missingStep).toHaveLength(0);
+  });
+
+  it('returns timeline events in timestamp order for a run', async () => {
+    await appendRunEvent({
+      runId: 'run-4',
+      loopId: 'lint',
+      loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+      status: 'running',
+      eventType: 'step-started',
+      timestamp: 200,
+      message: 'Step started.',
+    });
+
+    await appendRunEvent({
+      runId: 'run-4',
+      loopId: 'lint',
+      loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+      status: 'queued',
+      eventType: 'run-queued',
+      timestamp: 100,
+      message: 'Queued.',
+    });
+
+    const events = await getRunEvents('run-4');
+
+    expect(events).toHaveLength(2);
+    expect(events[0].eventType).toBe('run-queued');
+    expect(events[1].eventType).toBe('step-started');
   });
 });

@@ -31,6 +31,7 @@
     "onCommand:vscode-copilot-huckleberry.loops.runLoop",
     "onCommand:vscode-copilot-huckleberry.runs.cancel",
     "onCommand:vscode-copilot-huckleberry.runs.getStatus",
+    "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
     "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
     "onCommand:vscode-copilot-huckleberry.debugWelcomeView",
     "onCommand:vscode-copilot-huckleberry.debugTreeViewProperties"
@@ -78,6 +79,13 @@
         "category": "Huckleberry",
         "icon": "$(pulse)",
         "description": "Query run status by run ID"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.openStepEvidence",
+        "title": "Open Step Evidence",
+        "category": "Huckleberry",
+        "icon": "$(go-to-file)",
+        "description": "Open stdout, stderr, or metadata artifacts for a run step"
       },
       {
         "command": "vscode-copilot-huckleberry.debugWelcomeView",
@@ -150,6 +158,11 @@
         {
           "command": "vscode-copilot-huckleberry.runs.cancel",
           "when": "view == huckleberryRunsView && viewItem == run-running",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.openStepEvidence",
+          "when": "view == huckleberryRunsView && viewItem == run-step-with-evidence",
           "group": "inline"
         }
       ]

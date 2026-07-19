@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import * as path from 'path';
 import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
-import { appendEvidenceIndex, appendRunEvent, reconstructRunsFromEvents } from './runEventStore';
+import { appendEvidenceIndex, appendRunEvent, getRunEvents, reconstructRunsFromEvents } from './runEventStore';
 import { loadWorkflowDefinition } from './workflowLoader';
 import { WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
@@ -38,6 +38,9 @@ export class RunnerHost {
         return;
       case 'listRuns':
         void this.handleListRuns(message, reply);
+        return;
+      case 'events':
+        void this.handleEvents(message, reply);
         return;
       case 'cancel':
         void this.handleCancel(message, reply, emitEvent);
@@ -127,6 +130,18 @@ export class RunnerHost {
       requestId: message.requestId,
       payload: {
         runs: [...this.runs.values()].sort((left, right) => right.startedAt - left.startedAt),
+      },
+    });
+  }
+
+  private async handleEvents(message: Extract<RunnerRequest, { type: 'events' }>, reply: Reply): Promise<void> {
+    await this.ensureHydrated();
+
+    reply({
+      type: 'events',
+      requestId: message.requestId,
+      payload: {
+        events: await getRunEvents(message.payload.runId),
       },
     });
   }

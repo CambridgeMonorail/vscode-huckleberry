@@ -89,6 +89,20 @@ export async function reconstructRunsFromEvents(): Promise<RunnerRunRecord[]> {
   return records.sort((left, right) => right.startedAt - left.startedAt);
 }
 
+/**
+ * Reads and returns lifecycle events for a specific run.
+ */
+export async function getRunEvents(runId: string): Promise<RunnerEvent[]> {
+  const eventsPath = path.join(getRunsRoot(), runId, EVENTS_FILE);
+
+  try {
+    const content = await fs.readFile(eventsPath, 'utf8');
+    return parseEvents(content).sort((left, right) => left.timestamp - right.timestamp);
+  } catch {
+    return [];
+  }
+}
+
 function parseEvents(content: string): RunnerEvent[] {
   const events: RunnerEvent[] = [];
   const lines = content.split(/\r?\n/).filter(Boolean);
