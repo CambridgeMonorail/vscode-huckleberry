@@ -11,7 +11,8 @@ export interface LoopViewItemModel {
  * Tree item representing a discovered workflow loop file.
  */
 class LoopTreeItem extends vscode.TreeItem {
-  constructor(item: LoopViewItemModel) {
+  constructor(public readonly loopItem: LoopViewItemModel) {
+    const item = loopItem;
     super(item.loopFile.id, vscode.TreeItemCollapsibleState.None);
     const statusText = item.validation.valid ? 'valid' : `invalid (${item.validation.errors.length})`;
 

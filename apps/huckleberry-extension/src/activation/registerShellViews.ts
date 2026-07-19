@@ -3,13 +3,58 @@ import { logWithChannel, LogLevel } from '../utils';
 import { LoopExplorerProvider, LoopViewItemModel } from '../providers/LoopExplorerProvider';
 import { RunExplorerProvider } from '../providers/RunExplorerProvider';
 import { WorkflowTemplateService } from '../services';
+import { RunnerClient } from '../runner';
+
+function extractLoopViewItemModel(input: unknown): LoopViewItemModel | undefined {
+  if (input && typeof input === 'object') {
+    const value = input as Record<string, unknown>;
+
+    if ('loopFile' in value && 'validation' in value) {
+      return input as LoopViewItemModel;
+    }
+
+    if ('loopItem' in value && value['loopItem'] && typeof value['loopItem'] === 'object') {
+      return value['loopItem'] as LoopViewItemModel;
+    }
+  }
+
+  return undefined;
+}
+
+function extractRunId(input: unknown): string | undefined {
+  if (typeof input === 'string') {
+    return input;
+  }
+
+  if (input && typeof input === 'object') {
+    const value = input as Record<string, unknown>;
+
+    if (typeof value['runId'] === 'string') {
+      return value['runId'];
+    }
+
+    if ('run' in value && value['run'] && typeof value['run'] === 'object') {
+      const runRecord = value['run'] as Record<string, unknown>;
+      if (typeof runRecord['runId'] === 'string') {
+        return runRecord['runId'];
+      }
+    }
+
+    if (typeof value['description'] === 'string') {
+      return value['description'];
+    }
+  }
+
+  return undefined;
+}
 
 /**
  * Registers shell tree views and commands for the Loops and Runs explorers.
  */
 export function registerShellViews(context: vscode.ExtensionContext): void {
+  const runnerClient = new RunnerClient();
   const loopExplorerProvider = new LoopExplorerProvider();
-  const runExplorerProvider = new RunExplorerProvider();
+  const runExplorerProvider = new RunExplorerProvider(runnerClient);
   const workflowTemplateService = new WorkflowTemplateService();
 
   const loopsTreeView = vscode.window.createTreeView('huckleberryLoopsView', {
@@ -31,6 +76,51 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.refresh', () => {
       runExplorerProvider.refresh();
       logWithChannel(LogLevel.DEBUG, 'Runs view refreshed');
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.getStatus', async (runInput: unknown) => {
+      const runId = extractRunId(runInput);
+      if (!runId) {
+        vscode.window.showWarningMessage('Run ID is required to query status.');
+        return Promise.resolve();
+      }
+
+      const runStatus = await runnerClient.getStatus(runId);
+      if (!runStatus) {
+        vscode.window.showWarningMessage(`Run '${runId}' was not found.`);
+        return Promise.resolve();
+      }
+
+      vscode.window.showInformationMessage(
+        `Run '${runStatus.runId}' for loop '${runStatus.loopId}' is currently '${runStatus.status}'.`,
+      );
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.cancel', async (runInput: unknown) => {
+      const runId = extractRunId(runInput);
+      if (!runId) {
+        vscode.window.showWarningMessage('Run ID is required to cancel a run.');
+        return Promise.resolve();
+      }
+
+      await runnerClient.cancelRun(runId);
+      vscode.window.showInformationMessage(`Cancellation requested for run '${runId}'.`);
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.loops.runLoop', async (input: unknown) => {
+      const item = extractLoopViewItemModel(input);
+      if (!item) {
+        vscode.window.showWarningMessage('Loop selection is required to start a run.');
+        return Promise.resolve();
+      }
+
+      if (!item.validation.valid) {
+        vscode.window.showWarningMessage('Only valid loops can be started.');
+        return Promise.resolve();
+      }
+
+      const runId = await runnerClient.startRun(item.loopFile.id, item.loopFile.uri.fsPath);
+      vscode.window.showInformationMessage(`Started run '${runId}' for loop '${item.loopFile.id}'.`);
       return Promise.resolve();
     }),
     vscode.commands.registerCommand(
@@ -82,5 +172,5 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
     }),
   ];
 
-  context.subscriptions.push(loopExplorerProvider, loopsTreeView, runsTreeView, ...viewCommands);
+  context.subscriptions.push(runnerClient, loopExplorerProvider, runExplorerProvider, loopsTreeView, runsTreeView, ...viewCommands);
 }

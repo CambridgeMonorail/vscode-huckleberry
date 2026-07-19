@@ -32,7 +32,7 @@ Priority values:
 | RIM-203 | 2 | Build workflow validator service | P0 | Docto | Done | RIM-201 | Added parse+validate pipeline (JSON/YAML) with clear parse/semantic errors |
 | RIM-204 | 2 | Implement LoopExplorerProvider | P1 | Docto | Done | RIM-202, RIM-203 | Loops view now lists files with valid/invalid badges; opening a loop shows validation summary |
 | RIM-205 | 2 | Add starter workflow templates | P2 | Docto | Done | RIM-201, RIM-203 | Added scaffold command for lint/typecheck/test templates under `.huckleberry/loops` with validation coverage |
-| RIM-301 | 3 | Implement runner process and IPC contract | P0 | Docto | Planned | RIM-201 | Runner foundation |
+| RIM-301 | 3 | Implement runner process and IPC contract | P0 | Docto | Done | RIM-201 | Added runner host/process/client IPC for start/status/cancel/events with Runs view integration and tests |
 | RIM-302 | 3 | Implement state-machine engine | P0 | Docto | Planned | RIM-301 | Deterministic transitions |
 | RIM-303 | 3 | Add command step executor | P0 | Docto | Planned | RIM-301, RIM-302 | Command-only vertical slice |
 | RIM-304 | 3 | Persist runs/events/evidence metadata | P0 | Docto | Planned | RIM-302 | Recovery and inspectability |

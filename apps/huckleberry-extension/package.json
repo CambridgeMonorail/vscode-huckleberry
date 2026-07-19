@@ -28,6 +28,9 @@
     "onView:huckleberryRunsView",
     "onCommand:vscode-copilot-huckleberry.loops.refresh",
     "onCommand:vscode-copilot-huckleberry.runs.refresh",
+    "onCommand:vscode-copilot-huckleberry.loops.runLoop",
+    "onCommand:vscode-copilot-huckleberry.runs.cancel",
+    "onCommand:vscode-copilot-huckleberry.runs.getStatus",
     "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
     "onCommand:vscode-copilot-huckleberry.debugWelcomeView",
     "onCommand:vscode-copilot-huckleberry.debugTreeViewProperties"
@@ -54,6 +57,27 @@
         "category": "Huckleberry",
         "icon": "$(new-file)",
         "description": "Scaffold starter loop definitions under .huckleberry/loops"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.loops.runLoop",
+        "title": "Run Loop",
+        "category": "Huckleberry",
+        "icon": "$(play)",
+        "description": "Start a runner process for the selected loop"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.cancel",
+        "title": "Cancel Run",
+        "category": "Huckleberry",
+        "icon": "$(debug-stop)",
+        "description": "Cancel an active run by run ID"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.getStatus",
+        "title": "Get Run Status",
+        "category": "Huckleberry",
+        "icon": "$(pulse)",
+        "description": "Query run status by run ID"
       },
       {
         "command": "vscode-copilot-huckleberry.debugWelcomeView",
@@ -115,6 +139,18 @@
           "command": "vscode-copilot-huckleberry.runs.refresh",
           "when": "view == huckleberryRunsView",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscode-copilot-huckleberry.loops.runLoop",
+          "when": "view == huckleberryLoopsView && viewItem == loopValid",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.cancel",
+          "when": "view == huckleberryRunsView && viewItem == run-running",
+          "group": "inline"
         }
       ]
     },
