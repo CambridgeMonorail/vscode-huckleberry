@@ -62,6 +62,49 @@ export interface RunnerDeepLink {
   description?: string;
 }
 
+export interface RunnerSummaryStepAttempt {
+  stepId: string;
+  attempts: number;
+}
+
+export interface RunnerSummaryEvidenceRef {
+  stepId: string;
+  attempt: number;
+  kind: 'stdout' | 'stderr' | 'metadata';
+  path: string;
+}
+
+export interface RunnerUnresolvedItem {
+  code: string;
+  message: string;
+  stepId?: string;
+  eventType?: string;
+  timestamp: number;
+}
+
+export interface RunnerRunSummary {
+  runId: string;
+  loopId: string;
+  status: RunnerRunStatus;
+  startedAt: number;
+  updatedAt: number;
+  completedAt?: number;
+  eventCount: number;
+  terminalEventType: string;
+  stopReasonCode?: string;
+  stopReason?: string;
+  attempts: RunnerSummaryStepAttempt[];
+  attemptTotal: number;
+  keyEvidence: RunnerSummaryEvidenceRef[];
+  unresolvedItems: RunnerUnresolvedItem[];
+}
+
+export interface RunnerSummaryArtifacts {
+  summary: RunnerRunSummary;
+  jsonPath: string;
+  markdownPath: string;
+}
+
 export type RunnerRequest =
   | {
       type: 'start';
@@ -87,6 +130,13 @@ export type RunnerRequest =
     }
   | {
       type: 'events';
+      requestId: string;
+      payload: {
+        runId: string;
+      };
+    }
+  | {
+      type: 'summary';
       requestId: string;
       payload: {
         runId: string;
@@ -189,6 +239,13 @@ export type RunnerResponse =
       requestId: string;
       payload: {
         events: RunnerEvent[];
+      };
+    }
+  | {
+      type: 'summary';
+      requestId: string;
+      payload: {
+        artifacts?: RunnerSummaryArtifacts;
       };
     }
   | {

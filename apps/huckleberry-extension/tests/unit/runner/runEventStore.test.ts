@@ -5,9 +5,13 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   appendEvidenceIndex,
   appendRunEvent,
+  buildRunSummaryFromEvents,
   getEvidenceIndex,
   getRunEvents,
+  getRunSummaryArtifacts,
+  renderRunSummaryMarkdown,
   reconstructRunsFromEvents,
+  writeRunSummaryArtifacts,
 } from '@huckleberry/extension/runner/runEventStore';
 import { RunnerEvent, RunnerStepResult } from '@huckleberry/extension/runner/types';
 
@@ -193,5 +197,118 @@ describe('runEventStore', () => {
     expect(events).toHaveLength(1);
     expect(events[0].agentClaim?.summary).toBe('I fixed the test failures.');
     expect(events[0].stepResult?.stdoutArtifactPath).toBe('/artifacts/stdout.txt');
+  });
+
+  it('builds deterministic summaries and renders markdown output', () => {
+    const events: RunnerEvent[] = [
+      {
+        runId: 'run-summary',
+        loopId: 'tests',
+        loopFilePath: '/workspace/.huckleberry/loops/tests.yaml',
+        status: 'queued',
+        eventType: 'run-queued',
+        timestamp: 100,
+        message: 'queued',
+      },
+      {
+        runId: 'run-summary',
+        loopId: 'tests',
+        loopFilePath: '/workspace/.huckleberry/loops/tests.yaml',
+        status: 'running',
+        eventType: 'step-failed',
+        timestamp: 150,
+        message: 'Step tests failed.',
+        transition: {
+          from: 'running',
+          to: 'running',
+          stepId: 'tests',
+          attempt: 2,
+          reason: 'step-failed',
+        },
+        stopReason: {
+          code: 'STEP_EXIT_NON_ZERO',
+          message: 'Step tests exited with code 1.',
+        },
+        stepResult: {
+          runId: 'run-summary',
+          stepId: 'tests',
+          attempt: 2,
+          command: 'pnpm test:affected',
+          cwd: '/workspace',
+          startedAt: 130,
+          completedAt: 150,
+          durationMs: 20,
+          exitCode: 1,
+          timedOut: false,
+          stdoutArtifactPath: '/artifacts/stdout.txt',
+          stderrArtifactPath: '/artifacts/stderr.txt',
+          metadataArtifactPath: '/artifacts/metadata.json',
+        },
+      },
+      {
+        runId: 'run-summary',
+        loopId: 'tests',
+        loopFilePath: '/workspace/.huckleberry/loops/tests.yaml',
+        status: 'failed',
+        eventType: 'step-failed',
+        timestamp: 200,
+        message: 'Run failed.',
+        stopReason: {
+          code: 'STEP_EXIT_NON_ZERO',
+          message: 'Step tests exited with code 1.',
+        },
+      },
+    ];
+
+    const summary = buildRunSummaryFromEvents(events);
+    expect(summary).toBeDefined();
+    expect(summary).toMatchObject({
+      runId: 'run-summary',
+      loopId: 'tests',
+      status: 'failed',
+      terminalEventType: 'step-failed',
+      stopReasonCode: 'STEP_EXIT_NON_ZERO',
+      attemptTotal: 2,
+      attempts: [{ stepId: 'tests', attempts: 2 }],
+    });
+
+    const markdown = renderRunSummaryMarkdown(summary!);
+    expect(markdown).toContain('# Run Summary: run-summary');
+    expect(markdown).toContain('## Unresolved Items');
+    expect(markdown).toContain('STEP_EXIT_NON_ZERO');
+  });
+
+  it('writes and re-reads summary artifacts from persisted events', async () => {
+    const eventBase: Omit<RunnerEvent, 'status' | 'eventType' | 'timestamp' | 'message'> = {
+      runId: 'run-6',
+      loopId: 'lint',
+      loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+    };
+
+    await appendRunEvent({
+      ...eventBase,
+      status: 'queued',
+      eventType: 'run-queued',
+      timestamp: 100,
+      message: 'queued',
+    });
+
+    await appendRunEvent({
+      ...eventBase,
+      status: 'succeeded',
+      eventType: 'all-steps-succeeded',
+      timestamp: 200,
+      message: 'done',
+    });
+
+    const written = await writeRunSummaryArtifacts('run-6');
+    expect(written).toBeDefined();
+    expect(written?.summary.status).toBe('succeeded');
+
+    const loaded = await getRunSummaryArtifacts('run-6');
+    expect(loaded).toBeDefined();
+    expect(loaded?.summary.runId).toBe('run-6');
+    expect(loaded?.jsonPath.endsWith('summary.json')).toBe(true);
+    expect(loaded?.markdownPath.endsWith('summary.md')).toBe(true);
   });
 });

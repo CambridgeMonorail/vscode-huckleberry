@@ -1,6 +1,15 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { RunnerEvent, RunnerRunRecord, RunnerRunStatus, RunnerStepResult } from './types';
+import {
+  RunnerEvent,
+  RunnerRunRecord,
+  RunnerRunStatus,
+  RunnerStepResult,
+  RunnerRunSummary,
+  RunnerSummaryArtifacts,
+  RunnerSummaryEvidenceRef,
+  RunnerUnresolvedItem,
+} from './types';
 
 interface EvidenceIndex {
   runId: string;
@@ -9,6 +18,8 @@ interface EvidenceIndex {
 
 const EVENTS_FILE = 'events.ndjson';
 const EVIDENCE_INDEX_FILE = 'evidence-index.json';
+const SUMMARY_JSON_FILE = 'summary.json';
+const SUMMARY_MARKDOWN_FILE = 'summary.md';
 
 function getRunsRoot(): string {
   return path.join(process.cwd(), '.huckleberry', 'runs');
@@ -103,6 +114,205 @@ export async function getRunEvents(runId: string): Promise<RunnerEvent[]> {
   }
 }
 
+/**
+ * Builds deterministic run summary files and returns their artifact references.
+ */
+export async function writeRunSummaryArtifacts(runId: string): Promise<RunnerSummaryArtifacts | undefined> {
+  const events = await getRunEvents(runId);
+  const summary = buildRunSummaryFromEvents(events);
+  if (!summary) {
+    return undefined;
+  }
+
+  const runDirectory = path.join(getRunsRoot(), runId);
+  await fs.mkdir(runDirectory, { recursive: true });
+
+  const jsonPath = path.join(runDirectory, SUMMARY_JSON_FILE);
+  const markdownPath = path.join(runDirectory, SUMMARY_MARKDOWN_FILE);
+
+  await fs.writeFile(jsonPath, JSON.stringify(summary, null, 2), 'utf8');
+  await fs.writeFile(markdownPath, renderRunSummaryMarkdown(summary), 'utf8');
+
+  return {
+    summary,
+    jsonPath,
+    markdownPath,
+  };
+}
+
+/**
+ * Returns cached summary artifacts if present, otherwise generates them from events.
+ */
+export async function getRunSummaryArtifacts(runId: string): Promise<RunnerSummaryArtifacts | undefined> {
+  const runDirectory = path.join(getRunsRoot(), runId);
+  const jsonPath = path.join(runDirectory, SUMMARY_JSON_FILE);
+  const markdownPath = path.join(runDirectory, SUMMARY_MARKDOWN_FILE);
+
+  try {
+    const jsonText = await fs.readFile(jsonPath, 'utf8');
+    const summary = JSON.parse(jsonText) as RunnerRunSummary;
+    await fs.stat(markdownPath);
+
+    return {
+      summary,
+      jsonPath,
+      markdownPath,
+    };
+  } catch {
+    return writeRunSummaryArtifacts(runId);
+  }
+}
+
+/**
+ * Derives a stable summary object from a run event stream.
+ */
+export function buildRunSummaryFromEvents(events: RunnerEvent[]): RunnerRunSummary | undefined {
+  if (events.length === 0) {
+    return undefined;
+  }
+
+  const sorted = [...events].sort((left, right) => left.timestamp - right.timestamp);
+  const first = sorted[0];
+  const last = sorted[sorted.length - 1];
+
+  const attemptsMap = new Map<string, number>();
+  const evidence: RunnerSummaryEvidenceRef[] = [];
+  const unresolvedItems: RunnerUnresolvedItem[] = [];
+
+  for (const event of sorted) {
+    const stepId = event.transition?.stepId;
+    const attempt = event.transition?.attempt;
+
+    if (stepId) {
+      const current = attemptsMap.get(stepId) ?? 0;
+      attemptsMap.set(stepId, Math.max(current, attempt ?? 1));
+    }
+
+    if (event.stepResult) {
+      evidence.push({
+        stepId: event.stepResult.stepId,
+        attempt: event.stepResult.attempt,
+        kind: 'stdout',
+        path: event.stepResult.stdoutArtifactPath,
+      });
+      evidence.push({
+        stepId: event.stepResult.stepId,
+        attempt: event.stepResult.attempt,
+        kind: 'stderr',
+        path: event.stepResult.stderrArtifactPath,
+      });
+      evidence.push({
+        stepId: event.stepResult.stepId,
+        attempt: event.stepResult.attempt,
+        kind: 'metadata',
+        path: event.stepResult.metadataArtifactPath,
+      });
+    }
+
+    const isFailureLike = event.eventType.includes('failed') || event.eventType.includes('timeout');
+    if (isFailureLike || event.status === 'cancelled' || event.status === 'exhausted') {
+      unresolvedItems.push({
+        code: event.stopReason?.code ?? event.eventType.toUpperCase().replace(/[^A-Z0-9]+/g, '_'),
+        message: event.stopReason?.message ?? event.message ?? 'Run ended with unresolved diagnostics.',
+        stepId,
+        eventType: event.eventType,
+        timestamp: event.timestamp,
+      });
+    }
+  }
+
+  const attempts = [...attemptsMap.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([stepId, attemptCount]) => ({
+      stepId,
+      attempts: attemptCount,
+    }));
+
+  const attemptTotal = attempts.reduce((sum, item) => sum + item.attempts, 0);
+  const dedupedEvidence = dedupeEvidenceReferences(evidence).sort((left, right) => {
+    if (left.stepId !== right.stepId) {
+      return left.stepId.localeCompare(right.stepId);
+    }
+
+    if (left.attempt !== right.attempt) {
+      return left.attempt - right.attempt;
+    }
+
+    return left.kind.localeCompare(right.kind);
+  });
+
+  const dedupedUnresolved = dedupeUnresolvedItems(unresolvedItems).sort((left, right) => left.timestamp - right.timestamp);
+
+  return {
+    runId: first.runId,
+    loopId: first.loopId,
+    status: last.status,
+    startedAt: first.timestamp,
+    updatedAt: last.timestamp,
+    completedAt: isTerminalStatus(last.status) ? last.timestamp : undefined,
+    eventCount: sorted.length,
+    terminalEventType: last.eventType,
+    stopReasonCode: last.stopReason?.code,
+    stopReason: last.stopReason?.message ?? last.message,
+    attempts,
+    attemptTotal,
+    keyEvidence: dedupedEvidence,
+    unresolvedItems: dedupedUnresolved,
+  };
+}
+
+/**
+ * Renders human-readable markdown report from summary data.
+ */
+export function renderRunSummaryMarkdown(summary: RunnerRunSummary): string {
+  const lines: string[] = [
+    `# Run Summary: ${summary.runId}`,
+    '',
+    `- Loop: ${summary.loopId}`,
+    `- Status: ${summary.status}`,
+    `- Terminal event: ${summary.terminalEventType}`,
+    `- Started: ${new Date(summary.startedAt).toISOString()}`,
+    `- Updated: ${new Date(summary.updatedAt).toISOString()}`,
+    `- Completed: ${summary.completedAt ? new Date(summary.completedAt).toISOString() : 'n/a'}`,
+    `- Events: ${summary.eventCount}`,
+    `- Total attempts: ${summary.attemptTotal}`,
+  ];
+
+  if (summary.stopReasonCode || summary.stopReason) {
+    lines.push(`- Stop reason: ${summary.stopReasonCode ?? 'UNKNOWN'}${summary.stopReason ? ` (${summary.stopReason})` : ''}`);
+  }
+
+  lines.push('', '## Attempts by Step', '');
+  if (summary.attempts.length === 0) {
+    lines.push('- None');
+  } else {
+    for (const attempt of summary.attempts) {
+      lines.push(`- ${attempt.stepId}: ${attempt.attempts}`);
+    }
+  }
+
+  lines.push('', '## Key Evidence', '');
+  if (summary.keyEvidence.length === 0) {
+    lines.push('- None');
+  } else {
+    for (const evidenceRef of summary.keyEvidence) {
+      lines.push(`- ${evidenceRef.stepId} (attempt ${evidenceRef.attempt}) [${evidenceRef.kind}]: ${evidenceRef.path}`);
+    }
+  }
+
+  lines.push('', '## Unresolved Items', '');
+  if (summary.unresolvedItems.length === 0) {
+    lines.push('- None');
+  } else {
+    for (const unresolvedItem of summary.unresolvedItems) {
+      const prefix = unresolvedItem.stepId ? `${unresolvedItem.stepId}: ` : '';
+      lines.push(`- ${prefix}${unresolvedItem.code} - ${unresolvedItem.message}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
 function parseEvents(content: string): RunnerEvent[] {
   const events: RunnerEvent[] = [];
   const lines = content.split(/\r?\n/).filter(Boolean);
@@ -151,6 +361,38 @@ function toRunRecord(runId: string, events: RunnerEvent[]): RunnerRunRecord | un
 
 function isTerminalStatus(status: RunnerRunStatus): boolean {
   return status === 'succeeded' || status === 'failed' || status === 'cancelled' || status === 'exhausted';
+}
+
+function dedupeEvidenceReferences(entries: RunnerSummaryEvidenceRef[]): RunnerSummaryEvidenceRef[] {
+  const seen = new Set<string>();
+  const deduped: RunnerSummaryEvidenceRef[] = [];
+
+  for (const entry of entries) {
+    const key = `${entry.stepId}:${entry.attempt}:${entry.kind}:${entry.path}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    deduped.push(entry);
+  }
+
+  return deduped;
+}
+
+function dedupeUnresolvedItems(items: RunnerUnresolvedItem[]): RunnerUnresolvedItem[] {
+  const seen = new Set<string>();
+  const deduped: RunnerUnresolvedItem[] = [];
+
+  for (const item of items) {
+    const key = `${item.code}:${item.stepId ?? ''}:${item.eventType ?? ''}:${item.message}:${item.timestamp}`;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    deduped.push(item);
+  }
+
+  return deduped;
 }
 
 async function readEvidenceIndex(indexPath: string, runId: string): Promise<EvidenceIndex> {

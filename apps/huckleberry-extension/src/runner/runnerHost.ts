@@ -3,7 +3,14 @@ import * as path from 'path';
 import { AgentAdapterRegistry, AgentStepExecutionResult } from './agentAdapter';
 import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
-import { appendEvidenceIndex, appendRunEvent, getRunEvents, reconstructRunsFromEvents } from './runEventStore';
+import {
+  appendEvidenceIndex,
+  appendRunEvent,
+  getRunEvents,
+  getRunSummaryArtifacts,
+  reconstructRunsFromEvents,
+  writeRunSummaryArtifacts,
+} from './runEventStore';
 import { loadWorkflowDefinition } from './workflowLoader';
 import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
@@ -66,6 +73,9 @@ export class RunnerHost {
         return;
       case 'events':
         void this.handleEvents(message, reply);
+        return;
+      case 'summary':
+        void this.handleSummary(message, reply);
         return;
       case 'cancel':
         void this.handleCancel(message, reply, emitEvent);
@@ -188,6 +198,18 @@ export class RunnerHost {
       requestId: message.requestId,
       payload: {
         events: await getRunEvents(message.payload.runId),
+      },
+    });
+  }
+
+  private async handleSummary(message: Extract<RunnerRequest, { type: 'summary' }>, reply: Reply): Promise<void> {
+    await this.ensureHydrated();
+
+    reply({
+      type: 'summary',
+      requestId: message.requestId,
+      payload: {
+        artifacts: await getRunSummaryArtifacts(message.payload.runId),
       },
     });
   }
@@ -440,6 +462,10 @@ export class RunnerHost {
       await appendRunEvent(event);
       if (stepResult) {
         await appendEvidenceIndex(run.runId, stepResult);
+      }
+
+      if (isTerminalStatus(status)) {
+        await writeRunSummaryArtifacts(run.runId);
       }
     });
   }
@@ -1077,4 +1103,8 @@ export class RunnerHost {
 
     this.persistenceQueue.set(runId, next);
   }
+}
+
+function isTerminalStatus(status: RunnerRunStatus): boolean {
+  return status === 'succeeded' || status === 'failed' || status === 'cancelled' || status === 'exhausted';
 }

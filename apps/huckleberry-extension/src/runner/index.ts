@@ -16,7 +16,11 @@ export {
   appendEvidenceIndex,
   getEvidenceIndex,
   getRunEvents,
+  getRunSummaryArtifacts,
   reconstructRunsFromEvents,
+  buildRunSummaryFromEvents,
+  renderRunSummaryMarkdown,
+  writeRunSummaryArtifacts,
 } from './runEventStore';
 export { runStateMachine, type RunnerStateMachineResult } from './stateMachine';
 export { loadWorkflowDefinition } from './workflowLoader';
@@ -32,6 +36,11 @@ export {
   type RunnerApprovalDecision,
   type RunnerDeepLink,
   type RunnerDeepLinkKind,
+  type RunnerRunSummary,
+  type RunnerSummaryArtifacts,
+  type RunnerSummaryEvidenceRef,
+  type RunnerSummaryStepAttempt,
+  type RunnerUnresolvedItem,
   type RunnerTransition,
   type RunnerStepResult,
 } from './types';

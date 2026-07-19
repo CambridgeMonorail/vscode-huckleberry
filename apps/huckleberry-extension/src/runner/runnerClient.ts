@@ -2,7 +2,7 @@ import * as path from 'path';
 import { fork, ChildProcess } from 'child_process';
 import * as vscode from 'vscode';
 import { logWithChannel, LogLevel } from '../utils';
-import { RunnerApprovalAction, RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord } from './types';
+import { RunnerApprovalAction, RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord, RunnerSummaryArtifacts } from './types';
 
 interface PendingRequest {
   resolve: (response: RunnerResponse) => void;
@@ -77,6 +77,20 @@ export class RunnerClient implements vscode.Disposable {
     }
 
     return response.payload.events;
+  }
+
+  async getRunSummary(runId: string): Promise<RunnerSummaryArtifacts | undefined> {
+    const response = await this.sendRequest({
+      type: 'summary',
+      requestId: this.nextRequestId(),
+      payload: { runId },
+    });
+
+    if (response.type !== 'summary') {
+      throw new Error(`Unexpected runner response type: ${response.type}`);
+    }
+
+    return response.payload.artifacts;
   }
 
   async cancelRun(runId: string): Promise<void> {

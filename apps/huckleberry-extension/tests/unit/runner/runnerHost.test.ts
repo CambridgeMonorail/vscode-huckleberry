@@ -8,11 +8,20 @@ const { executeCommandStepMock, persistStepEvidenceMock } = vi.hoisted(() => ({
   persistStepEvidenceMock: vi.fn(),
 }));
 
-const { appendRunEventMock, appendEvidenceIndexMock, reconstructRunsFromEventsMock, getRunEventsMock } = vi.hoisted(() => ({
+const {
+  appendRunEventMock,
+  appendEvidenceIndexMock,
+  reconstructRunsFromEventsMock,
+  getRunEventsMock,
+  getRunSummaryArtifactsMock,
+  writeRunSummaryArtifactsMock,
+} = vi.hoisted(() => ({
   appendRunEventMock: vi.fn(),
   appendEvidenceIndexMock: vi.fn(),
   reconstructRunsFromEventsMock: vi.fn(),
   getRunEventsMock: vi.fn(),
+  getRunSummaryArtifactsMock: vi.fn(),
+  writeRunSummaryArtifactsMock: vi.fn(),
 }));
 
 vi.mock('@huckleberry/extension/runner/commandExecutor', () => ({
@@ -28,6 +37,8 @@ vi.mock('@huckleberry/extension/runner/runEventStore', () => ({
   appendEvidenceIndex: appendEvidenceIndexMock,
   reconstructRunsFromEvents: reconstructRunsFromEventsMock,
   getRunEvents: getRunEventsMock,
+  getRunSummaryArtifacts: getRunSummaryArtifactsMock,
+  writeRunSummaryArtifacts: writeRunSummaryArtifactsMock,
 }));
 
 async function flushAsyncWork(): Promise<void> {
@@ -479,6 +490,56 @@ describe('RunnerHost', () => {
     if (eventsResponse?.type === 'events') {
       expect(eventsResponse.payload.events).toHaveLength(1);
       expect(eventsResponse.payload.events[0].eventType).toBe('run-queued');
+    }
+
+    host.dispose();
+  });
+
+  it('returns run summary artifacts for a run', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    getRunSummaryArtifactsMock.mockResolvedValue({
+      summary: {
+        runId: 'historic-1',
+        loopId: 'lint',
+        status: 'failed',
+        startedAt: 1,
+        updatedAt: 2,
+        completedAt: 2,
+        eventCount: 3,
+        terminalEventType: 'step-failed',
+        stopReasonCode: 'STEP_EXIT_NON_ZERO',
+        stopReason: 'Step lint failed.',
+        attempts: [{ stepId: 'lint', attempts: 1 }],
+        attemptTotal: 1,
+        keyEvidence: [],
+        unresolvedItems: [],
+      },
+      jsonPath: '/workspace/.huckleberry/runs/historic-1/summary.json',
+      markdownPath: '/workspace/.huckleberry/runs/historic-1/summary.md',
+    });
+
+    host.handleMessage(
+      {
+        type: 'summary',
+        requestId: 'req-summary',
+        payload: {
+          runId: 'historic-1',
+        },
+      },
+      response => replies.push(response),
+      () => undefined,
+    );
+
+    await flushAsyncWork();
+
+    const summaryResponse = replies.find(reply => reply.type === 'summary');
+    expect(summaryResponse).toBeDefined();
+    if (summaryResponse?.type === 'summary') {
+      expect(summaryResponse.payload.artifacts?.summary.runId).toBe('historic-1');
+      expect(summaryResponse.payload.artifacts?.markdownPath).toContain('summary.md');
     }
 
     host.dispose();

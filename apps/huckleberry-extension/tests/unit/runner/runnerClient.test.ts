@@ -102,6 +102,33 @@ class FakeChildProcess extends EventEmitter {
                 ],
               },
             }
+          : request.type === 'summary'
+            ? {
+                type: 'summary',
+                requestId: request.requestId,
+                payload: {
+                  artifacts: {
+                    summary: {
+                      runId: request.payload.runId,
+                      loopId: 'lint',
+                      status: 'failed',
+                      startedAt: 100,
+                      updatedAt: 200,
+                      completedAt: 200,
+                      eventCount: 4,
+                      terminalEventType: 'step-failed',
+                      stopReasonCode: 'STEP_EXIT_NON_ZERO',
+                      stopReason: 'Step failed.',
+                      attempts: [{ stepId: 'lint', attempts: 2 }],
+                      attemptTotal: 2,
+                      keyEvidence: [],
+                      unresolvedItems: [],
+                    },
+                    jsonPath: '/workspace/.huckleberry/runs/run-1/summary.json',
+                    markdownPath: '/workspace/.huckleberry/runs/run-1/summary.md',
+                  },
+                },
+              }
           : request.type === 'approvalAction'
             ? {
                 type: 'ack',
@@ -173,6 +200,13 @@ describe('RunnerClient', () => {
     const events = await client.getRunEvents('run-1');
     expect(events).toHaveLength(1);
     expect(events[0].eventType).toBe('step-started');
+  });
+
+  it('fetches run summary artifacts through IPC', async () => {
+    const artifacts = await client.getRunSummary('run-1');
+    expect(artifacts?.summary.runId).toBe('run-1');
+    expect(artifacts?.summary.status).toBe('failed');
+    expect(artifacts?.markdownPath).toContain('summary.md');
   });
 
   it('submits approval actions through IPC', async () => {

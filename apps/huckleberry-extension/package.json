@@ -34,6 +34,7 @@
     "onCommand:vscode-copilot-huckleberry.runs.cancel",
     "onCommand:vscode-copilot-huckleberry.runs.approvalAction",
     "onCommand:vscode-copilot-huckleberry.runs.getStatus",
+    "onCommand:vscode-copilot-huckleberry.runs.openSummary",
     "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
     "onCommand:vscode-copilot-huckleberry.runs.openDeepLink",
     "onCommand:vscode-copilot-huckleberry.runs.openTimelineDeepLink",
@@ -100,6 +101,13 @@
         "category": "Huckleberry",
         "icon": "$(pulse)",
         "description": "Query run status by run ID"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.openSummary",
+        "title": "Open Run Summary",
+        "category": "Huckleberry",
+        "icon": "$(notebook)",
+        "description": "Open machine and human-readable summary reports for a run"
       },
       {
         "command": "vscode-copilot-huckleberry.runs.openStepEvidence",
@@ -222,6 +230,11 @@
         {
           "command": "vscode-copilot-huckleberry.runs.approvalAction",
           "when": "view == huckleberryRunsView && viewItem == run-paused",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.openSummary",
+          "when": "view == huckleberryRunsView && (viewItem == run-succeeded || viewItem == run-failed || viewItem == run-cancelled || viewItem == run-exhausted)",
           "group": "inline"
         },
         {

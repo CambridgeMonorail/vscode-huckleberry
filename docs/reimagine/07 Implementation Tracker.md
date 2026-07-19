@@ -46,7 +46,7 @@ Priority values:
 | RIM-501 | 5 | Implement approval gate step | P0 | Docto | Done | RIM-302, RIM-304 | Added paused approval gates with explicit approve/reject/defer actions, auditable decision metadata, branch-aware resume semantics, and Runs UI command wiring |
 | RIM-502 | 5 | Build Evidence Explorer | P1 | Docto | Done | RIM-304 | Added Evidence Explorer tree grouped by run/step/category with artifact open/reveal actions, category inference, and missing/stale artifact marking |
 | RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Done | RIM-305 | Added run timeline deep-link actions to Problems/Test Explorer/logs/diffs with resilient fallback messaging and tests |
-| RIM-504 | 5 | Add run summary report generation | P2 | Docto | Planned | RIM-304 | End-of-run reporting |
+| RIM-504 | 5 | Add run summary report generation | P2 | Docto | Done | RIM-304 | Added deterministic run summary artifacts (JSON + Markdown) generated from persisted event streams with unresolved item/evidence extraction and Runs command access |
 | RIM-601 | 6 | Implement worktree lifecycle service | P0 | Docto | Planned | RIM-303 | Isolation base |
 | RIM-602 | 6 | Route steps through isolation context | P0 | Docto | Planned | RIM-601, RIM-403 | Workspace/worktree parity |
 | RIM-603 | 6 | Add isolation visibility in UI | P1 | Docto | Planned | RIM-602, RIM-305 | Transparency in run details |
@@ -89,7 +89,7 @@ Priority values:
 ### Stage 5
 - [x] Human approval gates pause/resume correctly
 - [x] Evidence is easy to inspect and trace
-- [ ] Summaries are reproducible from event data
+- [x] Summaries are reproducible from event data
 
 ### Stage 6
 - [ ] Worktree lifecycle stable

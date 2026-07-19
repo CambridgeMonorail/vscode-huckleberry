@@ -255,6 +255,45 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
       await executeDeepLink(action.link);
       return Promise.resolve();
     }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openSummary', async (runInput: unknown) => {
+      const runId = extractRunId(runInput);
+      if (!runId) {
+        vscode.window.showWarningMessage('Run ID is required to open a summary report.');
+        return Promise.resolve();
+      }
+
+      const artifacts = await runnerClient.getRunSummary(runId);
+      if (!artifacts) {
+        vscode.window.showWarningMessage(`No summary data is available for run '${runId}'.`);
+        return Promise.resolve();
+      }
+
+      const selection = await vscode.window.showQuickPick(
+        [
+          {
+            label: 'Open Markdown Summary',
+            description: 'Human-readable report',
+            path: artifacts.markdownPath,
+          },
+          {
+            label: 'Open JSON Summary',
+            description: 'Machine-readable report',
+            path: artifacts.jsonPath,
+          },
+        ],
+        {
+          title: `Run summary for ${runId}`,
+          placeHolder: 'Choose report format',
+        },
+      );
+
+      if (!selection) {
+        return Promise.resolve();
+      }
+
+      await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(selection.path));
+      return Promise.resolve();
+    }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openTimelineDeepLink', async (input: unknown) => {
       const deepLink = extractTimelineDeepLink(input);
       if (!deepLink) {
