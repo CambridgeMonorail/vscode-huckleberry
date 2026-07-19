@@ -8,6 +8,7 @@ export {
   type AgentStepExecutionRequest,
   type AgentStepExecutionResult,
 } from './agentAdapter';
+export { CopilotAgentAdapter, type CopilotAgentAdapterOptions } from './copilotAgentAdapter';
 export { executeCommandStep, type CommandExecutionRequest, type CommandExecutionResult } from './commandExecutor';
 export { persistStepEvidence, type PersistStepEvidenceRequest } from './evidenceStore';
 export {

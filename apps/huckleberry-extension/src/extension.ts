@@ -3,6 +3,7 @@
  */
 import * as vscode from 'vscode';
 import { isWorkspaceAvailable } from './handlers/chatHandler';
+import { CopilotAgentAdapter } from './runner';
 import { initDebugChannel, logWithChannel, LogLevel } from './utils';
 import { ExtensionStateService } from './services/extensionStateService';
 import {
@@ -29,6 +30,7 @@ export function activate(context: vscode.ExtensionContext): void {
     registerCoreCommands(context);
     registerWorkspaceLifecycle(context, services);
     registerChatParticipants(context, services);
+    void probeCopilotAgentAvailability();
 
     // Display debug info about the current workspace
     const workspaceInfo = {
@@ -70,4 +72,19 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {
   logWithChannel(LogLevel.INFO, '👋 Deactivating Huckleberry extension');
   ExtensionStateService.getStaticInstance().reset();
+}
+
+async function probeCopilotAgentAvailability(): Promise<void> {
+  const adapter = new CopilotAgentAdapter();
+  const availability = await adapter.isAvailable();
+
+  if (availability.available) {
+    logWithChannel(LogLevel.INFO, 'Copilot agent adapter is available for future workflow agent steps.');
+    return;
+  }
+
+  logWithChannel(
+    LogLevel.WARN,
+    `Copilot agent adapter unavailable: ${availability.reason ?? 'unknown reason'}`,
+  );
 }

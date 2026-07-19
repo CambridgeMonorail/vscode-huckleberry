@@ -1,5 +1,3 @@
-import * as vscode from 'vscode';
-
 export interface AgentAdapterAvailability {
   available: boolean;
   reason?: string;
@@ -33,10 +31,14 @@ export interface AgentAdapterResolution {
   availability: AgentAdapterAvailability;
 }
 
+interface DisposableLike {
+  dispose(): void;
+}
+
 /**
  * Runtime registry for agent adapters.
  */
-export class AgentAdapterRegistry implements vscode.Disposable {
+export class AgentAdapterRegistry implements DisposableLike {
   private readonly adapters = new Map<string, AgentAdapter>();
 
   registerAdapter(adapter: AgentAdapter): void {
