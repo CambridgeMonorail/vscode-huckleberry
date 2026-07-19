@@ -9,6 +9,7 @@ import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../wor
 import {
   RunnerEvent,
   RunnerExecutionOptions,
+  RunnerAgentClaim,
   RunnerRequest,
   RunnerResponse,
   RunnerRunRecord,
@@ -231,6 +232,7 @@ export class RunnerHost {
     message: string,
     emitEvent: EmitEvent,
     transition?: RunnerTransition,
+    agentClaim?: RunnerAgentClaim,
     stepResult?: RunnerStepResult,
     stopReason?: RunnerStopReason,
   ): void {
@@ -243,6 +245,7 @@ export class RunnerHost {
       message,
       timestamp: Date.now(),
       transition,
+      agentClaim,
       stepResult,
       stopReason,
     };
@@ -359,6 +362,13 @@ export class RunnerHost {
           agentExecution.result.summary,
           emitEvent,
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:agent' },
+          {
+            stepId: currentStep.id,
+            attempt,
+            source: 'agent',
+            summary: agentExecution.result.summary,
+            adapterId: agentExecution.result.adapterId,
+          },
         );
 
         const retryPolicy = currentStep.retry;
@@ -505,6 +515,7 @@ export class RunnerHost {
           `Step ${currentStep.id} completed.`,
           emitEvent,
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:command' },
+          undefined,
           stepResult,
         );
         currentStep = nextStep;
@@ -530,6 +541,7 @@ export class RunnerHost {
               attempt: repairAttempt,
               reason: 'repair-attempt',
             },
+            undefined,
             stepResult,
           );
           currentStep = repairDecision.step;
@@ -559,6 +571,7 @@ export class RunnerHost {
           `Retrying step ${currentStep.id} (attempt ${attempt + 1}).`,
           emitEvent,
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-retry' },
+          undefined,
           stepResult,
         );
         continue;
@@ -607,6 +620,7 @@ export class RunnerHost {
       message,
       emitEvent,
       { from: fromStatus, to: status, reason },
+      undefined,
       stepResult,
       stopReason,
     );
@@ -710,7 +724,12 @@ export class RunnerHost {
         maxTurns: step.maxTurns,
       });
 
-      const constraintViolation = this.getAgentConstraintViolation(run.loopFilePath, step, result);
+      const normalizedResult: AgentStepExecutionResult = {
+        ...result,
+        adapterId: result.adapterId ?? resolution.adapter.id,
+      };
+
+      const constraintViolation = this.getAgentConstraintViolation(run.loopFilePath, step, normalizedResult);
       if (constraintViolation) {
         this.finishRun(
           run,
@@ -723,7 +742,7 @@ export class RunnerHost {
         return { ok: false };
       }
 
-      return { ok: true, result };
+      return { ok: true, result: normalizedResult };
     } catch (error) {
       this.finishRun(
         run,

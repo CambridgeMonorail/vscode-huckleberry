@@ -84,6 +84,7 @@ export class CopilotAgentAdapter implements AgentAdapter {
         summary: normalizedSummary.length > 0 ? normalizedSummary : 'Copilot agent step completed with no textual summary.',
         turnsUsed: 1,
         changedFiles: [],
+        adapterId: this.id,
       };
     } catch (error) {
       throw new Error(this.toErrorMessage(error, 'Copilot agent step execution failed.'));

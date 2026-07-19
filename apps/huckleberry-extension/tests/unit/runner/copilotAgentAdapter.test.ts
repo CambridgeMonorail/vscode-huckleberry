@@ -78,6 +78,7 @@ describe('CopilotAgentAdapter', () => {
     expect(result.summary).toContain('Applied the requested fix.');
     expect(result.turnsUsed).toBe(1);
     expect(result.changedFiles).toEqual([]);
+    expect(result.adapterId).toBe('copilot');
   });
 
   it('maps provider runtime failures to explicit adapter errors', async () => {

@@ -1,18 +1,13 @@
 import * as vscode from 'vscode';
-import { RunnerClient, RunnerEvent, RunnerRunRecord, RunnerStepResult } from '../runner';
+import { RunnerClient, RunnerEvent, RunnerRunRecord } from '../runner';
+import {
+  buildTimelineLabel,
+  buildTimelineTooltip,
+  type RunTimelinePresentationModel,
+} from './runTimelinePresentation';
 
-export interface RunTimelineNodeModel {
+export interface RunTimelineNodeModel extends RunTimelinePresentationModel {
   runId: string;
-  stepId: string;
-  eventType: string;
-  timestamp: number;
-  message?: string;
-  stopReasonCode?: string;
-  stopReasonMessage?: string;
-  status: RunnerRunRecord['status'];
-  attempt?: number;
-  durationMs?: number;
-  stepResult?: RunnerStepResult;
 }
 
 interface RunTreeNodeModel {
@@ -88,7 +83,7 @@ class RunTimelineTreeItem extends vscode.TreeItem {
 
     this.description = `${formatTimestamp(timeline.timestamp)}${timeline.durationMs !== undefined ? ` • ${formatDuration(timeline.durationMs)}` : ''}`;
     this.tooltip = buildTimelineTooltip(timeline);
-    this.contextValue = timeline.stepResult ? 'run-step-with-evidence' : 'run-step';
+    this.contextValue = timeline.stepResult ? 'run-step-with-evidence' : timeline.agentClaim ? 'run-step-with-claim' : 'run-step';
     this.iconPath = getTimelineIcon(timeline);
 
     if (timeline.stepResult) {
@@ -99,59 +94,6 @@ class RunTimelineTreeItem extends vscode.TreeItem {
       };
     }
   }
-}
-
-function buildTimelineLabel(timeline: RunTimelineNodeModel): string {
-  const base = timeline.stepId
-    ? `${timeline.stepId} • ${timeline.eventType}`
-    : `${timeline.eventType}`;
-
-  if (timeline.attempt !== undefined) {
-    return `${base} (attempt ${timeline.attempt})`;
-  }
-
-  return base;
-}
-
-function buildTimelineTooltip(timeline: RunTimelineNodeModel): string {
-  const lines: string[] = [
-    `Event: ${timeline.eventType}`,
-    `Status: ${timeline.status}`,
-    `Timestamp: ${formatTimestamp(timeline.timestamp)}`,
-  ];
-
-  if (timeline.stepId) {
-    lines.push(`Step: ${timeline.stepId}`);
-  }
-
-  if (timeline.attempt !== undefined) {
-    lines.push(`Attempt: ${timeline.attempt}`);
-  }
-
-  if (timeline.durationMs !== undefined) {
-    lines.push(`Duration: ${formatDuration(timeline.durationMs)}`);
-  }
-
-  if (timeline.message) {
-    lines.push(`Message: ${timeline.message}`);
-  }
-
-  if (timeline.stopReasonCode) {
-    lines.push(`Stop reason code: ${timeline.stopReasonCode}`);
-  }
-
-  if (timeline.stopReasonMessage) {
-    lines.push(`Stop reason: ${timeline.stopReasonMessage}`);
-  }
-
-  if (timeline.stepResult) {
-    lines.push(`Exit code: ${timeline.stepResult.exitCode}`);
-    lines.push(`Stdout: ${timeline.stepResult.stdoutArtifactPath}`);
-    lines.push(`Stderr: ${timeline.stepResult.stderrArtifactPath}`);
-    lines.push(`Metadata: ${timeline.stepResult.metadataArtifactPath}`);
-  }
-
-  return lines.join('\n');
 }
 
 function getTimelineIcon(timeline: RunTimelineNodeModel): vscode.ThemeIcon {
@@ -320,6 +262,7 @@ function toTimelineNode(event: RunnerEvent): RunTimelineNodeModel {
     status: event.status,
     attempt: event.transition?.attempt,
     durationMs: event.stepResult?.durationMs,
+    agentClaim: event.agentClaim,
     stepResult: event.stepResult,
   };
 }

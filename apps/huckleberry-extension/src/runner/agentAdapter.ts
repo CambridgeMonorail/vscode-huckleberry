@@ -19,6 +19,7 @@ export interface AgentStepExecutionResult {
   summary: string;
   turnsUsed: number;
   changedFiles: string[];
+  adapterId?: string;
 }
 
 /**

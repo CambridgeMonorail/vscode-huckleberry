@@ -153,4 +153,45 @@ describe('runEventStore', () => {
     expect(events[0].eventType).toBe('run-queued');
     expect(events[1].eventType).toBe('step-started');
   });
+
+  it('persists agent claims separately from deterministic evidence payloads', async () => {
+    const claimEvent: RunnerEvent = {
+      runId: 'run-5',
+      loopId: 'repair-loop',
+      loopFilePath: '/workspace/.huckleberry/loops/repair.yaml',
+      status: 'running',
+      eventType: 'step-succeeded:agent',
+      timestamp: 300,
+      message: 'Agent repair completed.',
+      agentClaim: {
+        stepId: 'repair',
+        attempt: 1,
+        source: 'agent',
+        summary: 'I fixed the test failures.',
+        adapterId: 'copilot',
+      },
+      stepResult: {
+        runId: 'run-5',
+        stepId: 'tests',
+        attempt: 2,
+        command: 'pnpm test:affected',
+        cwd: '/workspace',
+        startedAt: 260,
+        completedAt: 290,
+        durationMs: 30,
+        exitCode: 0,
+        timedOut: false,
+        stdoutArtifactPath: '/artifacts/stdout.txt',
+        stderrArtifactPath: '/artifacts/stderr.txt',
+        metadataArtifactPath: '/artifacts/metadata.json',
+      },
+    };
+
+    await appendRunEvent(claimEvent);
+
+    const events = await getRunEvents('run-5');
+    expect(events).toHaveLength(1);
+    expect(events[0].agentClaim?.summary).toBe('I fixed the test failures.');
+    expect(events[0].stepResult?.stdoutArtifactPath).toBe('/artifacts/stdout.txt');
+  });
 });

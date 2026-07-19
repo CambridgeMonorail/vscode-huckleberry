@@ -27,6 +27,7 @@ export {
   type RunnerRunStatus,
   type RunnerEvent,
   type RunnerExecutionOptions,
+  type RunnerAgentClaim,
   type RunnerTransition,
   type RunnerStepResult,
 } from './types';

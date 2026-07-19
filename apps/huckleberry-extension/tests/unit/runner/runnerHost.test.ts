@@ -580,6 +580,10 @@ describe('RunnerHost', () => {
       event => event.type === 'event' && event.payload.eventType === 'step-succeeded:agent',
     );
     expect(successEvent).toBeDefined();
+    if (successEvent?.type === 'event') {
+      expect(successEvent.payload.agentClaim?.source).toBe('agent');
+      expect(successEvent.payload.agentClaim?.summary).toBe('Agent step completed.');
+    }
 
     host.dispose();
   });

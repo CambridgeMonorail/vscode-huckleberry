@@ -42,7 +42,7 @@ Priority values:
 | RIM-402 | 4 | Implement Copilot adapter | P1 | Docto | Done | RIM-401 | Added preview-safe Copilot-backed adapter with availability probing and explicit provider failure mapping behind the AgentAdapter boundary |
 | RIM-403 | 4 | Add agent step node type | P0 | Docto | Done | RIM-401, RIM-201 | Added first-class agent step schema with allowed paths, max files changed, and max turns, enforced at validation and runner execution boundaries |
 | RIM-404 | 4 | Implement repair loop semantics | P0 | Docto | Done | RIM-403, RIM-303 | Added deterministic check-fail-repair-recheck orchestration with bounded repair attempts, exhaustion outcomes, and repair-attempt timeline metadata |
-| RIM-405 | 4 | Capture agent claims separately from evidence | P1 | Docto | Planned | RIM-304, RIM-403 | Claims vs facts |
+| RIM-405 | 4 | Capture agent claims separately from evidence | P1 | Docto | Done | RIM-304, RIM-403 | Added dedicated `agentClaim` event payloads with adapter provenance and explicit Runs timeline Claim vs Evidence labeling |
 | RIM-501 | 5 | Implement approval gate step | P0 | Docto | Planned | RIM-302, RIM-304 | Explicit human decision |
 | RIM-502 | 5 | Build Evidence Explorer | P1 | Docto | Planned | RIM-304 | Evidence navigation |
 | RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Planned | RIM-305 | Better triage flow |

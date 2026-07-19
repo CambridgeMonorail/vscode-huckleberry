@@ -33,6 +33,14 @@ export interface RunnerStopReason {
   message: string;
 }
 
+export interface RunnerAgentClaim {
+  stepId: string;
+  attempt: number;
+  source: 'agent';
+  summary: string;
+  adapterId?: string;
+}
+
 export type RunnerRequest =
   | {
       type: 'start';
@@ -106,6 +114,7 @@ export interface RunnerEvent {
   eventType: string;
   message?: string;
   transition?: RunnerTransition;
+  agentClaim?: RunnerAgentClaim;
   stepResult?: RunnerStepResult;
   stopReason?: RunnerStopReason;
 }
