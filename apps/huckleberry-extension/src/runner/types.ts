@@ -1,3 +1,13 @@
+import { WorkflowDefinition } from '../workflows';
+
+export interface RunnerExecutionOptions {
+  maxStepRetries?: number;
+  stepTimeoutMs?: number;
+  simulatedStepDurationMs?: number;
+  failStepIds?: string[];
+  conditionInputs?: Record<string, boolean>;
+}
+
 export type RunnerRequest =
   | {
       type: 'start';
@@ -5,6 +15,8 @@ export type RunnerRequest =
       payload: {
         loopId: string;
         loopFilePath: string;
+        workflow?: WorkflowDefinition;
+        execution?: RunnerExecutionOptions;
       };
     }
   | {
@@ -54,6 +66,15 @@ export interface RunnerEvent {
   timestamp: number;
   eventType: string;
   message?: string;
+  transition?: RunnerTransition;
+}
+
+export interface RunnerTransition {
+  from: RunnerRunStatus;
+  to: RunnerRunStatus;
+  stepId?: string;
+  attempt?: number;
+  reason?: string;
 }
 
 export type RunnerResponse =

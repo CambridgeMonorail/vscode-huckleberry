@@ -22,6 +22,18 @@ describe('RunnerHost', () => {
       payload: {
         loopId: 'lint',
         loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+        workflow: {
+          schemaVersion: 1,
+          id: 'lint',
+          name: 'Lint',
+          steps: [
+            {
+              id: 'lint',
+              type: 'command',
+              command: 'pnpm lint:affected',
+            },
+          ],
+        },
       },
     };
 
@@ -61,6 +73,18 @@ describe('RunnerHost', () => {
         payload: {
           loopId: 'test',
           loopFilePath: '/workspace/.huckleberry/loops/test.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'test',
+            name: 'Test',
+            steps: [
+              {
+                id: 'test',
+                type: 'command',
+                command: 'pnpm test:affected',
+              },
+            ],
+          },
         },
       },
       response => replies.push(response),

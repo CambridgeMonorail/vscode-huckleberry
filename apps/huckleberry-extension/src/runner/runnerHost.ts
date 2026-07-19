@@ -1,10 +1,12 @@
 import { randomUUID } from 'crypto';
-import { RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord, RunnerRunStatus } from './types';
+import { loadWorkflowDefinition } from './workflowLoader';
+import { runStateMachine } from './stateMachine';
+import { RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord, RunnerRunStatus, RunnerTransition } from './types';
 
 type Reply = (response: RunnerResponse) => void;
 type EmitEvent = (response: RunnerResponse) => void;
 
-const RUN_SETTLE_DELAY_MS = 300;
+const RUN_TRANSITION_DELAY_MS = 20;
 
 /**
  * Hosts in-memory run lifecycle state for the lightweight command-only runner process.
@@ -16,7 +18,7 @@ export class RunnerHost {
   handleMessage(message: RunnerRequest, reply: Reply, emitEvent: EmitEvent): void {
     switch (message.type) {
       case 'start':
-        this.handleStart(message, reply, emitEvent);
+        void this.handleStart(message, reply, emitEvent);
         return;
       case 'status':
         this.handleStatus(message, reply);
@@ -43,9 +45,28 @@ export class RunnerHost {
     this.runTimers.clear();
   }
 
-  private handleStart(message: Extract<RunnerRequest, { type: 'start' }>, reply: Reply, emitEvent: EmitEvent): void {
+  private async handleStart(
+    message: Extract<RunnerRequest, { type: 'start' }>,
+    reply: Reply,
+    emitEvent: EmitEvent,
+  ): Promise<void> {
     const now = Date.now();
     const runId = randomUUID();
+
+    let workflow = message.payload.workflow;
+    try {
+      workflow = workflow ?? await loadWorkflowDefinition(message.payload.loopFilePath);
+    } catch (error) {
+      reply({
+        type: 'error',
+        requestId: message.requestId,
+        payload: {
+          code: 'WORKFLOW_LOAD_FAILED',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+      return;
+    }
 
     const runRecord: RunnerRunRecord = {
       runId,
@@ -68,30 +89,8 @@ export class RunnerHost {
       },
     });
 
-    const runTimer = setTimeout(() => {
-      const latestRun = this.runs.get(runId);
-      if (!latestRun || latestRun.status === 'cancelled') {
-        return;
-      }
-
-      this.updateRunStatus(latestRun, 'running');
-      this.emitRunEvent(latestRun, 'running', 'run-started', 'Run started.', emitEvent);
-
-      const completeTimer = setTimeout(() => {
-        const currentRun = this.runs.get(runId);
-        if (!currentRun || currentRun.status === 'cancelled') {
-          return;
-        }
-
-        this.updateRunStatus(currentRun, 'succeeded', 'Command-only runner handshake completed.');
-        this.emitRunEvent(currentRun, 'succeeded', 'run-succeeded', 'Run completed successfully.', emitEvent);
-        this.runTimers.delete(runId);
-      }, RUN_SETTLE_DELAY_MS);
-
-      this.runTimers.set(runId, completeTimer);
-    }, 10);
-
-    this.runTimers.set(runId, runTimer);
+    const stateMachineResult = runStateMachine(workflow, message.payload.execution);
+    this.scheduleTransitions(runRecord, stateMachineResult.transitions, stateMachineResult.stopReason, emitEvent);
   }
 
   private handleStatus(message: Extract<RunnerRequest, { type: 'status' }>, reply: Reply): void {
@@ -158,6 +157,7 @@ export class RunnerHost {
     eventType: string,
     message: string,
     emitEvent: EmitEvent,
+    transition?: RunnerTransition,
   ): void {
     const event: RunnerEvent = {
       runId: run.runId,
@@ -166,6 +166,7 @@ export class RunnerHost {
       eventType,
       message,
       timestamp: Date.now(),
+      transition,
     };
 
     emitEvent({
@@ -182,5 +183,52 @@ export class RunnerHost {
       run.completedAt = run.updatedAt;
       run.stopReason = stopReason;
     }
+  }
+
+  private scheduleTransitions(
+    run: RunnerRunRecord,
+    transitions: RunnerTransition[],
+    stopReason: string | undefined,
+    emitEvent: EmitEvent,
+  ): void {
+    const queue = [...transitions];
+
+    const tick = (): void => {
+      const currentRun = this.runs.get(run.runId);
+      if (!currentRun || currentRun.status === 'cancelled') {
+        this.runTimers.delete(run.runId);
+        return;
+      }
+
+      const transition = queue.shift();
+      if (!transition) {
+        this.runTimers.delete(run.runId);
+        return;
+      }
+
+      const eventType = transition.reason ?? `transition-${transition.to}`;
+      this.updateRunStatus(
+        currentRun,
+        transition.to,
+        transition.to === 'failed' || transition.to === 'cancelled' || transition.to === 'exhausted'
+          ? (stopReason ?? transition.reason)
+          : undefined,
+      );
+
+      this.emitRunEvent(
+        currentRun,
+        transition.to,
+        eventType,
+        `State transition ${transition.from} -> ${transition.to}`,
+        emitEvent,
+        transition,
+      );
+
+      const timer = setTimeout(tick, RUN_TRANSITION_DELAY_MS);
+      this.runTimers.set(run.runId, timer);
+    };
+
+    const initialTimer = setTimeout(tick, RUN_TRANSITION_DELAY_MS);
+    this.runTimers.set(run.runId, initialTimer);
   }
 }
