@@ -18,9 +18,9 @@ Priority values:
 
 | Task ID | Stage | Title | Priority | Owner | Status | Depends On | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| RIM-001 | 0 | Create migration branch and lock initial scope | P0 | TBD | Planned | None | Branch and scope lock |
-| RIM-002 | 0 | Record architecture decision log (ADRs) | P0 | TBD | Planned | RIM-001 | Initial ADR set |
-| RIM-003 | 0 | Define run-state vocabulary and terminal statuses | P0 | TBD | Planned | RIM-001 | Shared contract input |
+| RIM-001 | 0 | Create migration branch and lock initial scope | P0 | TBD | Done | None | Branch `feat/huckleberry-reimagination` created and active |
+| RIM-002 | 0 | Record architecture decision log (ADRs) | P0 | TBD | Done | RIM-001 | Initial ADR set drafted under `docs/reimagine/adrs` |
+| RIM-003 | 0 | Define run-state vocabulary and terminal statuses | P0 | TBD | Done | RIM-001 | Canonical status vocabulary added in schema/types artifacts |
 | RIM-004 | 0 | Add implementation tracker doc | P0 | TBD | Done | RIM-001 | This file |
 | RIM-101 | 1 | Rename user-facing product surfaces | P0 | TBD | Planned | RIM-001 | Product rename pass |
 | RIM-102 | 1 | Remove task-domain commands and providers | P0 | TBD | Planned | RIM-101 | Runtime cleanup |
