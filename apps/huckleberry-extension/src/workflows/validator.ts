@@ -1,12 +1,10 @@
 import {
-  WorkflowDefinition,
   WorkflowValidationError,
   WorkflowValidationResult,
-  WorkflowStep,
 } from './types';
 
 const WORKFLOW_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const SUPPORTED_STEP_TYPES = new Set(['command', 'condition', 'approval', 'artifact']);
+const SUPPORTED_STEP_TYPES = new Set(['command', 'condition', 'approval', 'agent', 'artifact']);
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -101,10 +99,81 @@ function validateWorkflowSteps(steps: unknown[]): WorkflowValidationError[] {
 
     if (stepType === 'condition') {
       errors.push(...validateConditionStepReferences(stepRecord, index, stepIds));
+      continue;
+    }
+
+    if (stepType === 'agent') {
+      errors.push(...validateAgentStep(stepRecord, index));
     }
   }
 
   return errors;
+}
+
+function validateAgentStep(
+  step: Record<string, unknown>,
+  index: number,
+): WorkflowValidationError[] {
+  const errors: WorkflowValidationError[] = [];
+  const stepId = typeof step['id'] === 'string' ? step['id'] : '(unknown-step)';
+
+  if (typeof step['prompt'] !== 'string' || step['prompt'].trim().length === 0) {
+    errors.push({
+      code: 'AGENT_PROMPT_INVALID',
+      message: `Agent step '${stepId}' must define a non-empty prompt string.`,
+      path: `steps[${index}].prompt`,
+    });
+  }
+
+  const allowedPaths = step['allowedPaths'];
+  if (!Array.isArray(allowedPaths) || allowedPaths.length === 0) {
+    errors.push({
+      code: 'AGENT_ALLOWED_PATHS_INVALID',
+      message: `Agent step '${stepId}' must define at least one allowed path.`,
+      path: `steps[${index}].allowedPaths`,
+    });
+  } else {
+    for (let pathIndex = 0; pathIndex < allowedPaths.length; pathIndex += 1) {
+      const allowedPath = allowedPaths[pathIndex];
+      if (typeof allowedPath !== 'string' || allowedPath.trim().length === 0) {
+        errors.push({
+          code: 'AGENT_ALLOWED_PATH_INVALID',
+          message: `Agent step '${stepId}' contains an invalid allowed path entry.`,
+          path: `steps[${index}].allowedPaths[${pathIndex}]`,
+        });
+      }
+    }
+  }
+
+  if (!isPositiveInteger(step['maxFilesChanged'])) {
+    errors.push({
+      code: 'AGENT_MAX_FILES_CHANGED_INVALID',
+      message: `Agent step '${stepId}' must define a positive integer maxFilesChanged value.`,
+      path: `steps[${index}].maxFilesChanged`,
+    });
+  }
+
+  if (!isPositiveInteger(step['maxTurns'])) {
+    errors.push({
+      code: 'AGENT_MAX_TURNS_INVALID',
+      message: `Agent step '${stepId}' must define a positive integer maxTurns value.`,
+      path: `steps[${index}].maxTurns`,
+    });
+  }
+
+  if (step['adapter'] !== undefined && typeof step['adapter'] !== 'string') {
+    errors.push({
+      code: 'AGENT_ADAPTER_INVALID',
+      message: `Agent step '${stepId}' adapter must be a string when provided.`,
+      path: `steps[${index}].adapter`,
+    });
+  }
+
+  return errors;
+}
+
+function isPositiveInteger(value: unknown): boolean {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
 }
 
 function validateConditionStepReferences(

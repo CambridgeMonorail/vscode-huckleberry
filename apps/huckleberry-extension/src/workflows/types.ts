@@ -37,12 +37,21 @@ export interface ApprovalStep extends StepBase {
   type: 'approval';
 }
 
+export interface AgentStep extends StepBase {
+  type: 'agent';
+  prompt: string;
+  adapter?: string;
+  allowedPaths: string[];
+  maxFilesChanged: number;
+  maxTurns: number;
+}
+
 export interface ArtifactStep extends StepBase {
   type: 'artifact';
   command: string;
 }
 
-export type WorkflowStep = CommandStep | ConditionStep | ApprovalStep | ArtifactStep;
+export type WorkflowStep = CommandStep | ConditionStep | ApprovalStep | AgentStep | ArtifactStep;
 
 export interface WorkflowValidationError {
   code: string;

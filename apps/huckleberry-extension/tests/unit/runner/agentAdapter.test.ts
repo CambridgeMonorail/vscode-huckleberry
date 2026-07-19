@@ -8,7 +8,7 @@ function createAdapter(overrides?: Partial<AgentAdapter>): AgentAdapter {
   return {
     id: 'fake-adapter',
     isAvailable: vi.fn().mockResolvedValue({ available: true }),
-    executeAgentStep: vi.fn().mockResolvedValue({ summary: 'done' }),
+    executeAgentStep: vi.fn().mockResolvedValue({ summary: 'done', turnsUsed: 1, changedFiles: [] }),
     ...overrides,
   };
 }

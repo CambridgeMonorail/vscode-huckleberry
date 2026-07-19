@@ -10,10 +10,15 @@ export interface AgentStepExecutionRequest {
   prompt: string;
   cwd: string;
   attempt: number;
+  allowedPaths: string[];
+  maxFilesChanged: number;
+  maxTurns: number;
 }
 
 export interface AgentStepExecutionResult {
   summary: string;
+  turnsUsed: number;
+  changedFiles: string[];
 }
 
 /**

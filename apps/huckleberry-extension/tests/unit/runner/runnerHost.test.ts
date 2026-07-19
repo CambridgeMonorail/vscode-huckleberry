@@ -502,6 +502,9 @@ describe('RunnerHost', () => {
                 id: 'repair',
                 type: 'agent',
                 prompt: 'Fix the failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
               },
             ],
           } as unknown as RunnerRequest['payload']['workflow'],
@@ -526,7 +529,11 @@ describe('RunnerHost', () => {
 
   it('routes agent steps through the adapter contract when available', async () => {
     const adapterRegistry = new AgentAdapterRegistry();
-    const executeAgentStep = vi.fn().mockResolvedValue({ summary: 'Agent step completed.' });
+    const executeAgentStep = vi.fn().mockResolvedValue({
+      summary: 'Agent step completed.',
+      turnsUsed: 1,
+      changedFiles: ['src/fix.ts'],
+    });
     adapterRegistry.registerAdapter({
       id: 'fake-adapter',
       isAvailable: vi.fn().mockResolvedValue({ available: true }),
@@ -554,6 +561,9 @@ describe('RunnerHost', () => {
                 id: 'repair',
                 type: 'agent',
                 prompt: 'Fix the failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
               },
             ],
           } as unknown as RunnerRequest['payload']['workflow'],
@@ -570,6 +580,168 @@ describe('RunnerHost', () => {
       event => event.type === 'event' && event.payload.eventType === 'step-succeeded:agent',
     );
     expect(successEvent).toBeDefined();
+
+    host.dispose();
+  });
+
+  it('fails agent steps when max turns are exceeded', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep: vi.fn().mockResolvedValue({
+        summary: 'Too many turns used.',
+        turnsUsed: 4,
+        changedFiles: [],
+      }),
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-agent-turns',
+        payload: {
+          loopId: 'agent-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/agent.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'agent-loop',
+            name: 'Agent Loop',
+            steps: [
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Fix the failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.stopReason?.code === 'AGENT_MAX_TURNS_EXCEEDED',
+    );
+    expect(failedEvent).toBeDefined();
+
+    host.dispose();
+  });
+
+  it('fails agent steps when max files changed is exceeded', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep: vi.fn().mockResolvedValue({
+        summary: 'Changed too many files.',
+        turnsUsed: 1,
+        changedFiles: ['src/one.ts', 'src/two.ts', 'src/three.ts'],
+      }),
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-agent-files',
+        payload: {
+          loopId: 'agent-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/agent.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'agent-loop',
+            name: 'Agent Loop',
+            steps: [
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Fix the failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.stopReason?.code === 'AGENT_MAX_FILES_CHANGED_EXCEEDED',
+    );
+    expect(failedEvent).toBeDefined();
+
+    host.dispose();
+  });
+
+  it('fails agent steps when changed files are outside allowed paths', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep: vi.fn().mockResolvedValue({
+        summary: 'Changed disallowed path.',
+        turnsUsed: 1,
+        changedFiles: ['../outside.ts'],
+      }),
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-agent-path',
+        payload: {
+          loopId: 'agent-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/agent.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'agent-loop',
+            name: 'Agent Loop',
+            steps: [
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Fix the failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.stopReason?.code === 'AGENT_PATH_SCOPE_VIOLATION',
+    );
+    expect(failedEvent).toBeDefined();
 
     host.dispose();
   });

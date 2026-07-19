@@ -69,10 +69,15 @@ describe('CopilotAgentAdapter', () => {
       prompt: 'Fix the failing test.',
       cwd: '/workspace',
       attempt: 1,
+      allowedPaths: ['src'],
+      maxFilesChanged: 2,
+      maxTurns: 3,
     });
 
     expect(sendRequestMock).toHaveBeenCalledTimes(1);
     expect(result.summary).toContain('Applied the requested fix.');
+    expect(result.turnsUsed).toBe(1);
+    expect(result.changedFiles).toEqual([]);
   });
 
   it('maps provider runtime failures to explicit adapter errors', async () => {
@@ -93,6 +98,9 @@ describe('CopilotAgentAdapter', () => {
         prompt: 'Fix the failing test.',
         cwd: '/workspace',
         attempt: 1,
+        allowedPaths: ['src'],
+        maxFilesChanged: 2,
+        maxTurns: 3,
       }),
     ).rejects.toThrow('Copilot agent step execution failed. provider offline');
   });

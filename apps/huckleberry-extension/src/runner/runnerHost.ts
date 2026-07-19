@@ -5,7 +5,7 @@ import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
 import { appendEvidenceIndex, appendRunEvent, getRunEvents, reconstructRunsFromEvents } from './runEventStore';
 import { loadWorkflowDefinition } from './workflowLoader';
-import { WorkflowDefinition, WorkflowStep } from '../workflows';
+import { AgentStep, WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
   RunnerEvent,
   RunnerExecutionOptions,
@@ -20,15 +20,6 @@ import {
 
 type Reply = (response: RunnerResponse) => void;
 type EmitEvent = (response: RunnerResponse) => void;
-
-interface AgentWorkflowStepLike {
-  id: string;
-  type: 'agent';
-  prompt: string;
-  adapter?: string;
-}
-
-type RuntimeWorkflowStep = WorkflowStep | AgentWorkflowStepLike;
 
 /**
  * Hosts in-memory run lifecycle state for the lightweight command-only runner process.
@@ -286,7 +277,7 @@ export class RunnerHost {
     execution: RunnerExecutionOptions | undefined,
     emitEvent: EmitEvent,
   ): Promise<void> {
-    const runtimeSteps = workflow.steps as RuntimeWorkflowStep[];
+    const runtimeSteps = workflow.steps;
     const stepById = new Map(runtimeSteps.map(step => [step.id, step]));
     const stepAttempts = new Map<string, number>();
     const maxStepRetries = execution?.maxStepRetries ?? 0;
@@ -303,7 +294,7 @@ export class RunnerHost {
       { from: 'queued', to: 'running', reason: 'run-started' },
     );
 
-    let currentStep: RuntimeWorkflowStep | undefined = runtimeSteps[0];
+    let currentStep: WorkflowStep | undefined = runtimeSteps[0];
 
     while (currentStep) {
       if (this.cancellationRequests.has(run.runId)) {
@@ -522,7 +513,7 @@ export class RunnerHost {
     );
   }
 
-  private getNextSequentialStep(steps: RuntimeWorkflowStep[], stepId: string): RuntimeWorkflowStep | undefined {
+  private getNextSequentialStep(steps: WorkflowStep[], stepId: string): WorkflowStep | undefined {
     const currentIndex = steps.findIndex(step => step.id === stepId);
     if (currentIndex < 0) {
       return undefined;
@@ -545,13 +536,13 @@ export class RunnerHost {
     return conditionInputs[normalized] ?? false;
   }
 
-  private isAgentStep(step: RuntimeWorkflowStep): step is AgentWorkflowStepLike {
-    return step.type === 'agent' && 'prompt' in step && typeof step.prompt === 'string';
+  private isAgentStep(step: WorkflowStep): step is AgentStep {
+    return step.type === 'agent';
   }
 
   private async executeAgentStep(
     run: RunnerRunRecord,
-    step: AgentWorkflowStepLike,
+    step: AgentStep,
     attempt: number,
     emitEvent: EmitEvent,
   ): Promise<{ ok: true; result: AgentStepExecutionResult } | { ok: false }> {
@@ -588,7 +579,23 @@ export class RunnerHost {
         prompt: step.prompt,
         cwd: path.dirname(run.loopFilePath),
         attempt,
+        allowedPaths: step.allowedPaths,
+        maxFilesChanged: step.maxFilesChanged,
+        maxTurns: step.maxTurns,
       });
+
+      const constraintViolation = this.getAgentConstraintViolation(run.loopFilePath, step, result);
+      if (constraintViolation) {
+        this.finishRun(
+          run,
+          'failed',
+          'step-failed:agent-constraint',
+          `Agent step ${step.id} violated execution constraints.`,
+          constraintViolation,
+          emitEvent,
+        );
+        return { ok: false };
+      }
 
       return { ok: true, result };
     } catch (error) {
@@ -605,6 +612,49 @@ export class RunnerHost {
       );
       return { ok: false };
     }
+  }
+
+  private getAgentConstraintViolation(
+    loopFilePath: string,
+    step: AgentStep,
+    result: AgentStepExecutionResult,
+  ): RunnerStopReason | undefined {
+    if (result.turnsUsed > step.maxTurns) {
+      return {
+        code: 'AGENT_MAX_TURNS_EXCEEDED',
+        message: `Agent step '${step.id}' used ${result.turnsUsed} turns, exceeding maxTurns ${step.maxTurns}.`,
+      };
+    }
+
+    if (result.changedFiles.length > step.maxFilesChanged) {
+      return {
+        code: 'AGENT_MAX_FILES_CHANGED_EXCEEDED',
+        message: `Agent step '${step.id}' changed ${result.changedFiles.length} files, exceeding maxFilesChanged ${step.maxFilesChanged}.`,
+      };
+    }
+
+    const cwd = path.dirname(loopFilePath);
+    const normalizedAllowedPaths = step.allowedPaths.map((allowedPath: string) => this.normalizeConstraintPath(cwd, allowedPath));
+    for (const changedFile of result.changedFiles) {
+      const normalizedChangedFile = this.normalizeConstraintPath(cwd, changedFile);
+      const allowed = normalizedAllowedPaths.some((allowedPath: string) => {
+        return normalizedChangedFile === allowedPath || normalizedChangedFile.startsWith(`${allowedPath}/`);
+      });
+
+      if (!allowed) {
+        return {
+          code: 'AGENT_PATH_SCOPE_VIOLATION',
+          message: `Agent step '${step.id}' changed '${changedFile}', which is outside allowed paths: ${step.allowedPaths.join(', ')}.`,
+        };
+      }
+    }
+
+    return undefined;
+  }
+
+  private normalizeConstraintPath(cwd: string, inputPath: string): string {
+    const absolutePath = path.isAbsolute(inputPath) ? inputPath : path.resolve(cwd, inputPath);
+    return absolutePath.replace(/\\/g, '/');
   }
 
   private async ensureHydrated(): Promise<void> {

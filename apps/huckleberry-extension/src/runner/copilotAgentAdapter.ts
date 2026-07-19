@@ -82,6 +82,8 @@ export class CopilotAgentAdapter implements AgentAdapter {
       const normalizedSummary = summary.trim();
       return {
         summary: normalizedSummary.length > 0 ? normalizedSummary : 'Copilot agent step completed with no textual summary.',
+        turnsUsed: 1,
+        changedFiles: [],
       };
     } catch (error) {
       throw new Error(this.toErrorMessage(error, 'Copilot agent step execution failed.'));
@@ -103,6 +105,9 @@ export class CopilotAgentAdapter implements AgentAdapter {
       `Step ID: ${request.stepId}`,
       `Attempt: ${request.attempt}`,
       `Working directory: ${request.cwd}`,
+      `Allowed paths: ${request.allowedPaths.join(', ')}`,
+      `Max files changed: ${request.maxFilesChanged}`,
+      `Max turns: ${request.maxTurns}`,
       '',
       'Goal:',
       request.prompt,

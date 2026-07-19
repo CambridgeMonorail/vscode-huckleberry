@@ -1,4 +1,5 @@
 export {
+  type AgentStep,
   type RunStatus,
   type WorkflowDefinition,
   type WorkflowStep,

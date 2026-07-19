@@ -40,7 +40,7 @@ Priority values:
 | RIM-306 | 3 | Add cancellation and failure-stop reasons | P0 | Docto | Done | RIM-302 | Added abortable cancellation for running steps and structured stop reason codes/messages for non-success terminal outcomes |
 | RIM-401 | 4 | Introduce AgentAdapter abstraction | P0 | Docto | Done | RIM-303 | Added provider-neutral adapter registry and runner execution boundary for future agent steps while command-only runs remain functional |
 | RIM-402 | 4 | Implement Copilot adapter | P1 | Docto | Done | RIM-401 | Added preview-safe Copilot-backed adapter with availability probing and explicit provider failure mapping behind the AgentAdapter boundary |
-| RIM-403 | 4 | Add agent step node type | P0 | Docto | Planned | RIM-401, RIM-201 | Constrained agent execution |
+| RIM-403 | 4 | Add agent step node type | P0 | Docto | Done | RIM-401, RIM-201 | Added first-class agent step schema with allowed paths, max files changed, and max turns, enforced at validation and runner execution boundaries |
 | RIM-404 | 4 | Implement repair loop semantics | P0 | Docto | Planned | RIM-403, RIM-303 | Retry repair flow |
 | RIM-405 | 4 | Capture agent claims separately from evidence | P1 | Docto | Planned | RIM-304, RIM-403 | Claims vs facts |
 | RIM-501 | 5 | Implement approval gate step | P0 | Docto | Planned | RIM-302, RIM-304 | Explicit human decision |

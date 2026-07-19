@@ -103,4 +103,52 @@ describe('validateWorkflowDefinition', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.filter(error => error.code === 'STEP_REF_MISSING')).toHaveLength(2);
   });
+
+  it('accepts agent steps with explicit constraints', () => {
+    const workflow: WorkflowDefinition = {
+      schemaVersion: 1,
+      id: 'agent-flow',
+      name: 'Agent Flow',
+      steps: [
+        {
+          id: 'repair',
+          type: 'agent',
+          prompt: 'Fix the failing check.',
+          allowedPaths: ['src'],
+          maxFilesChanged: 2,
+          maxTurns: 3,
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects agent steps missing explicit constraints', () => {
+    const workflow = {
+      schemaVersion: 1,
+      id: 'agent-flow',
+      name: 'Agent Flow',
+      steps: [
+        {
+          id: 'repair',
+          type: 'agent',
+          prompt: '',
+          allowedPaths: [],
+          maxFilesChanged: 0,
+          maxTurns: 0,
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.code === 'AGENT_PROMPT_INVALID')).toBe(true);
+    expect(result.errors.some(error => error.code === 'AGENT_ALLOWED_PATHS_INVALID')).toBe(true);
+    expect(result.errors.some(error => error.code === 'AGENT_MAX_FILES_CHANGED_INVALID')).toBe(true);
+    expect(result.errors.some(error => error.code === 'AGENT_MAX_TURNS_INVALID')).toBe(true);
+  });
 });
