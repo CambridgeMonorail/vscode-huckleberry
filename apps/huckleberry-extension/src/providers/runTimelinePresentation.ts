@@ -1,4 +1,4 @@
-import { RunnerAgentClaim, RunnerApprovalDecision, RunnerRunRecord, RunnerStepResult } from '../runner';
+import { RunnerAgentClaim, RunnerApprovalDecision, RunnerDeepLink, RunnerRunRecord, RunnerStepResult } from '../runner';
 
 export interface RunTimelinePresentationModel {
   stepId: string;
@@ -12,6 +12,7 @@ export interface RunTimelinePresentationModel {
   durationMs?: number;
   agentClaim?: RunnerAgentClaim;
   approvalDecision?: RunnerApprovalDecision;
+  deepLinks?: RunnerDeepLink[];
   stepResult?: RunnerStepResult;
 }
 
@@ -99,6 +100,13 @@ export function buildTimelineTooltip(timeline: RunTimelinePresentationModel): st
     lines.push(`Stdout: ${timeline.stepResult.stdoutArtifactPath}`);
     lines.push(`Stderr: ${timeline.stepResult.stderrArtifactPath}`);
     lines.push(`Metadata: ${timeline.stepResult.metadataArtifactPath}`);
+  }
+
+  if (timeline.deepLinks && timeline.deepLinks.length > 0) {
+    lines.push('Deep links:');
+    for (const deepLink of timeline.deepLinks) {
+      lines.push(`- ${deepLink.label}${deepLink.target ? ` -> ${deepLink.target}` : ''}`);
+    }
   }
 
   return lines.join('\n');

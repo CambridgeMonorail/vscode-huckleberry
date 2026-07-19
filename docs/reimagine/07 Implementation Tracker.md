@@ -45,7 +45,7 @@ Priority values:
 | RIM-405 | 4 | Capture agent claims separately from evidence | P1 | Docto | Done | RIM-304, RIM-403 | Added dedicated `agentClaim` event payloads with adapter provenance and explicit Runs timeline Claim vs Evidence labeling |
 | RIM-501 | 5 | Implement approval gate step | P0 | Docto | Done | RIM-302, RIM-304 | Added paused approval gates with explicit approve/reject/defer actions, auditable decision metadata, branch-aware resume semantics, and Runs UI command wiring |
 | RIM-502 | 5 | Build Evidence Explorer | P1 | Docto | Done | RIM-304 | Added Evidence Explorer tree grouped by run/step/category with artifact open/reveal actions, category inference, and missing/stale artifact marking |
-| RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Planned | RIM-305 | Better triage flow |
+| RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Done | RIM-305 | Added run timeline deep-link actions to Problems/Test Explorer/logs/diffs with resilient fallback messaging and tests |
 | RIM-504 | 5 | Add run summary report generation | P2 | Docto | Planned | RIM-304 | End-of-run reporting |
 | RIM-601 | 6 | Implement worktree lifecycle service | P0 | Docto | Planned | RIM-303 | Isolation base |
 | RIM-602 | 6 | Route steps through isolation context | P0 | Docto | Planned | RIM-601, RIM-403 | Workspace/worktree parity |

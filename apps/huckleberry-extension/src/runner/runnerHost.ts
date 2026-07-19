@@ -8,6 +8,7 @@ import { loadWorkflowDefinition } from './workflowLoader';
 import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
   RunnerApprovalDecision,
+  RunnerDeepLink,
   RunnerEvent,
   RunnerExecutionOptions,
   RunnerAgentClaim,
@@ -424,6 +425,7 @@ export class RunnerHost {
       timestamp: Date.now(),
       transition,
       agentClaim,
+      deepLinks: this.buildDeepLinks(eventType, stepResult),
       stepResult,
       stopReason,
       approvalDecision,
@@ -870,6 +872,63 @@ export class RunnerHost {
       step: repairStep,
       maxAttempts: repairStep.retry.maxAttempts,
     };
+  }
+
+  private buildDeepLinks(eventType: string, stepResult?: RunnerStepResult): RunnerDeepLink[] | undefined {
+    if (!stepResult) {
+      return undefined;
+    }
+
+    const links: RunnerDeepLink[] = [
+      {
+        kind: 'logs',
+        label: 'Open stdout log',
+        target: stepResult.stdoutArtifactPath,
+      },
+      {
+        kind: 'logs',
+        label: 'Open stderr log',
+        target: stepResult.stderrArtifactPath,
+      },
+      {
+        kind: 'logs',
+        label: 'Open metadata log',
+        target: stepResult.metadataArtifactPath,
+      },
+    ];
+
+    const normalizedEvent = eventType.toLowerCase();
+    if (normalizedEvent.includes('failed') || normalizedEvent.includes('timeout')) {
+      links.push(
+        {
+          kind: 'problems',
+          label: 'Open Problems panel',
+        },
+        {
+          kind: 'tests',
+          label: 'Open Test Explorer',
+        },
+      );
+
+      const runDirectory = path.dirname(stepResult.stdoutArtifactPath);
+      const stem = `${stepResult.stepId}.attempt-${stepResult.attempt}`;
+      links.push(
+        {
+          kind: 'diff',
+          label: 'Open step diff (.diff)',
+          target: path.join(runDirectory, `${stem}.diff`),
+          description: 'Shows side-by-side patch artifact when present.',
+        },
+        {
+          kind: 'diff',
+          label: 'Open step patch (.patch)',
+          target: path.join(runDirectory, `${stem}.patch`),
+          description: 'Fallback patch artifact for troubleshooting.',
+        },
+      );
+    }
+
+    return links;
   }
 
   private async executeAgentStep(

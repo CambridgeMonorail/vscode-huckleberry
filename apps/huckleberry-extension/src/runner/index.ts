@@ -30,6 +30,8 @@ export {
   type RunnerAgentClaim,
   type RunnerApprovalAction,
   type RunnerApprovalDecision,
+  type RunnerDeepLink,
+  type RunnerDeepLinkKind,
   type RunnerTransition,
   type RunnerStepResult,
 } from './types';

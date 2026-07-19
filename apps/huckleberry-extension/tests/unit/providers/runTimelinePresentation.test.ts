@@ -84,4 +84,20 @@ describe('runTimelinePresentation', () => {
     expect(tooltip).toContain('Evidence (deterministic):');
     expect(tooltip).toContain('Stdout: /artifacts/lint-stdout.txt');
   });
+
+  it('renders deep-link actions in timeline tooltip', () => {
+    const tooltip = buildTimelineTooltip({
+      ...createBaseTimelineModel(),
+      deepLinks: [
+        { kind: 'problems', label: 'Open Problems panel' },
+        { kind: 'tests', label: 'Open Test Explorer' },
+        { kind: 'logs', label: 'Open stderr log', target: '/artifacts/stderr.txt' },
+      ],
+    });
+
+    expect(tooltip).toContain('Deep links:');
+    expect(tooltip).toContain('- Open Problems panel');
+    expect(tooltip).toContain('- Open Test Explorer');
+    expect(tooltip).toContain('- Open stderr log -> /artifacts/stderr.txt');
+  });
 });

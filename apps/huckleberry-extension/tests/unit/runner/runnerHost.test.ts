@@ -197,6 +197,10 @@ describe('RunnerHost', () => {
     if (failedEvent?.type === 'event') {
       expect(failedEvent.payload.stopReason?.code).toBe('STEP_EXIT_NON_ZERO');
       expect(failedEvent.payload.stopReason?.message).toContain("Step 'test' exited with code 2");
+      expect(failedEvent.payload.deepLinks?.some(link => link.kind === 'problems')).toBe(true);
+      expect(failedEvent.payload.deepLinks?.some(link => link.kind === 'tests')).toBe(true);
+      expect(failedEvent.payload.deepLinks?.some(link => link.kind === 'logs')).toBe(true);
+      expect(failedEvent.payload.deepLinks?.some(link => link.kind === 'diff')).toBe(true);
     }
 
     expect(appendRunEventMock).toHaveBeenCalled();

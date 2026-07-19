@@ -53,6 +53,15 @@ export interface RunnerApprovalDecision {
   decidedAt: number;
 }
 
+export type RunnerDeepLinkKind = 'problems' | 'tests' | 'diff' | 'logs';
+
+export interface RunnerDeepLink {
+  kind: RunnerDeepLinkKind;
+  label: string;
+  target?: string;
+  description?: string;
+}
+
 export type RunnerRequest =
   | {
       type: 'start';
@@ -139,6 +148,7 @@ export interface RunnerEvent {
   transition?: RunnerTransition;
   agentClaim?: RunnerAgentClaim;
   approvalDecision?: RunnerApprovalDecision;
+  deepLinks?: RunnerDeepLink[];
   stepResult?: RunnerStepResult;
   stopReason?: RunnerStopReason;
 }

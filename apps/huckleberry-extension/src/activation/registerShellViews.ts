@@ -4,7 +4,7 @@ import { EvidenceArtifactNodeModel, EvidenceExplorerProvider } from '../provider
 import { LoopExplorerProvider, LoopViewItemModel } from '../providers/LoopExplorerProvider';
 import { RunExplorerProvider, RunTimelineNodeModel } from '../providers/RunExplorerProvider';
 import { WorkflowTemplateService } from '../services';
-import { RunnerApprovalAction, RunnerClient } from '../runner';
+import { RunnerApprovalAction, RunnerClient, RunnerDeepLink } from '../runner';
 
 function extractLoopViewItemModel(input: unknown): LoopViewItemModel | undefined {
   if (input && typeof input === 'object') {
@@ -59,6 +59,17 @@ function extractTimelineNode(input: unknown): RunTimelineNodeModel | undefined {
 
     if ('timeline' in value && value['timeline'] && typeof value['timeline'] === 'object') {
       return value['timeline'] as RunTimelineNodeModel;
+    }
+  }
+
+  return undefined;
+}
+
+function extractTimelineDeepLink(input: unknown): RunnerDeepLink | undefined {
+  if (input && typeof input === 'object') {
+    const value = input as Record<string, unknown>;
+    if (typeof value['kind'] === 'string' && typeof value['label'] === 'string') {
+      return input as RunnerDeepLink;
     }
   }
 
@@ -217,6 +228,43 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
       await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(quickPick.path));
       return Promise.resolve();
     }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openDeepLink', async (input: unknown) => {
+      const timelineNode = extractTimelineNode(input);
+      if (!timelineNode || !timelineNode.deepLinks || timelineNode.deepLinks.length === 0) {
+        vscode.window.showWarningMessage('No deep-link actions are available for this timeline entry.');
+        return Promise.resolve();
+      }
+
+      const action = await vscode.window.showQuickPick(
+        timelineNode.deepLinks.map(link => ({
+          label: link.label,
+          description: link.kind,
+          detail: link.target,
+          link,
+        })),
+        {
+          title: `Deep-link actions for ${timelineNode.stepId || timelineNode.eventType}`,
+          placeHolder: 'Choose a navigation target',
+        },
+      );
+
+      if (!action) {
+        return Promise.resolve();
+      }
+
+      await executeDeepLink(action.link);
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openTimelineDeepLink', async (input: unknown) => {
+      const deepLink = extractTimelineDeepLink(input);
+      if (!deepLink) {
+        vscode.window.showWarningMessage('No deep-link metadata found for this action.');
+        return Promise.resolve();
+      }
+
+      await executeDeepLink(deepLink);
+      return Promise.resolve();
+    }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.evidence.openArtifact', async (input: unknown) => {
       const artifact = extractEvidenceArtifactNode(input);
       if (!artifact) {
@@ -326,4 +374,36 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
     evidenceTreeView,
     ...viewCommands,
   );
+}
+
+async function executeDeepLink(link: RunnerDeepLink): Promise<void> {
+  if (link.kind === 'problems') {
+    await vscode.commands.executeCommand('workbench.actions.view.problems');
+    return;
+  }
+
+  if (link.kind === 'tests') {
+    try {
+      await vscode.commands.executeCommand('testing.focusTestExplorer');
+      return;
+    } catch {
+      await vscode.commands.executeCommand('workbench.view.testing');
+      return;
+    }
+  }
+
+  if (!link.target) {
+    vscode.window.showWarningMessage(`Deep-link target is unavailable for '${link.label}'.`);
+    return;
+  }
+
+  const targetUri = vscode.Uri.file(link.target);
+  try {
+    await vscode.workspace.fs.stat(targetUri);
+  } catch {
+    vscode.window.showWarningMessage(`Deep-link target is unavailable: ${link.target}`);
+    return;
+  }
+
+  await vscode.commands.executeCommand('vscode.open', targetUri);
 }

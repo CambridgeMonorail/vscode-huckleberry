@@ -83,7 +83,13 @@ class RunTimelineTreeItem extends vscode.TreeItem {
 
     this.description = `${formatTimestamp(timeline.timestamp)}${timeline.durationMs !== undefined ? ` • ${formatDuration(timeline.durationMs)}` : ''}`;
     this.tooltip = buildTimelineTooltip(timeline);
-    this.contextValue = timeline.stepResult ? 'run-step-with-evidence' : timeline.agentClaim ? 'run-step-with-claim' : 'run-step';
+    this.contextValue = timeline.deepLinks && timeline.deepLinks.length > 0
+      ? 'run-step-with-deep-links'
+      : timeline.stepResult
+        ? 'run-step-with-evidence'
+        : timeline.agentClaim
+          ? 'run-step-with-claim'
+          : 'run-step';
     this.iconPath = getTimelineIcon(timeline);
 
     if (timeline.stepResult) {
@@ -265,5 +271,6 @@ function toTimelineNode(event: RunnerEvent): RunTimelineNodeModel {
     agentClaim: event.agentClaim,
     approvalDecision: event.approvalDecision,
     stepResult: event.stepResult,
+    deepLinks: event.deepLinks,
   };
 }

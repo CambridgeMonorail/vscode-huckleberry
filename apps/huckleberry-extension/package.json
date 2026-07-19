@@ -35,6 +35,8 @@
     "onCommand:vscode-copilot-huckleberry.runs.approvalAction",
     "onCommand:vscode-copilot-huckleberry.runs.getStatus",
     "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
+    "onCommand:vscode-copilot-huckleberry.runs.openDeepLink",
+    "onCommand:vscode-copilot-huckleberry.runs.openTimelineDeepLink",
     "onCommand:vscode-copilot-huckleberry.evidence.openArtifact",
     "onCommand:vscode-copilot-huckleberry.evidence.revealArtifact",
     "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
@@ -105,6 +107,20 @@
         "category": "Huckleberry",
         "icon": "$(go-to-file)",
         "description": "Open stdout, stderr, or metadata artifacts for a run step"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.openDeepLink",
+        "title": "Open Timeline Deep Link",
+        "category": "Huckleberry",
+        "icon": "$(link-external)",
+        "description": "Navigate from a run timeline entry to diagnostics, tests, diffs, or logs"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.openTimelineDeepLink",
+        "title": "Open Deep Link Target",
+        "category": "Huckleberry",
+        "icon": "$(link-external)",
+        "description": "Open a specific deep-link target from a timeline action"
       },
       {
         "command": "vscode-copilot-huckleberry.evidence.openArtifact",
@@ -211,6 +227,11 @@
         {
           "command": "vscode-copilot-huckleberry.runs.openStepEvidence",
           "when": "view == huckleberryRunsView && viewItem == run-step-with-evidence",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.openDeepLink",
+          "when": "view == huckleberryRunsView && viewItem == run-step-with-deep-links",
           "group": "inline"
         },
         {
