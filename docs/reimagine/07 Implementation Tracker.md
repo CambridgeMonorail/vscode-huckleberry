@@ -47,7 +47,7 @@ Priority values:
 | RIM-502 | 5 | Build Evidence Explorer | P1 | Docto | Done | RIM-304 | Added Evidence Explorer tree grouped by run/step/category with artifact open/reveal actions, category inference, and missing/stale artifact marking |
 | RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Done | RIM-305 | Added run timeline deep-link actions to Problems/Test Explorer/logs/diffs with resilient fallback messaging and tests |
 | RIM-504 | 5 | Add run summary report generation | P2 | Docto | Done | RIM-304 | Added deterministic run summary artifacts (JSON + Markdown) generated from persisted event streams with unresolved item/evidence extraction and Runs command access |
-| RIM-601 | 6 | Implement worktree lifecycle service | P0 | Docto | Planned | RIM-303 | Isolation base |
+| RIM-601 | 6 | Implement worktree lifecycle service | P0 | Docto | Done | RIM-303 | Added worktree lifecycle service with create/reuse/cleanup, run-to-worktree metadata mapping, safety guards, and orphan detection coverage |
 | RIM-602 | 6 | Route steps through isolation context | P0 | Docto | Planned | RIM-601, RIM-403 | Workspace/worktree parity |
 | RIM-603 | 6 | Add isolation visibility in UI | P1 | Docto | Planned | RIM-602, RIM-305 | Transparency in run details |
 | RIM-604 | 6 | Add diff evidence for isolated runs | P1 | Docto | Planned | RIM-602, RIM-304 | Reviewability |
@@ -92,7 +92,7 @@ Priority values:
 - [x] Summaries are reproducible from event data
 
 ### Stage 6
-- [ ] Worktree lifecycle stable
+- [x] Worktree lifecycle stable
 - [ ] Execution context switch transparent
 - [ ] Isolated run diffs captured as evidence
 

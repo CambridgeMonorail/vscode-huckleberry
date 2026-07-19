@@ -25,6 +25,14 @@ export {
 export { runStateMachine, type RunnerStateMachineResult } from './stateMachine';
 export { loadWorkflowDefinition } from './workflowLoader';
 export {
+  WorktreeLifecycleService,
+  type GitCommandRunner,
+  type WorktreeCleanupResult,
+  type WorktreeOrphanRecord,
+  type WorktreeProvisionRequest,
+  type WorktreeRunMetadata,
+} from './worktreeLifecycleService';
+export {
   type RunnerRequest,
   type RunnerResponse,
   type RunnerRunRecord,
