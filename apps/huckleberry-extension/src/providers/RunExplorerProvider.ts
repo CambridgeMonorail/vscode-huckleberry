@@ -263,6 +263,7 @@ function toTimelineNode(event: RunnerEvent): RunTimelineNodeModel {
     attempt: event.transition?.attempt,
     durationMs: event.stepResult?.durationMs,
     agentClaim: event.agentClaim,
+    approvalDecision: event.approvalDecision,
     stepResult: event.stepResult,
   };
 }

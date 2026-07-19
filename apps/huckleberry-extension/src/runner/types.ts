@@ -41,6 +41,18 @@ export interface RunnerAgentClaim {
   adapterId?: string;
 }
 
+export type RunnerApprovalAction = 'approve' | 'reject' | 'defer';
+
+export interface RunnerApprovalDecision {
+  stepId: string;
+  attempt: number;
+  action: RunnerApprovalAction;
+  actorId: string;
+  actorName?: string;
+  note?: string;
+  decidedAt: number;
+}
+
 export type RunnerRequest =
   | {
       type: 'start';
@@ -76,6 +88,17 @@ export type RunnerRequest =
       requestId: string;
       payload: {
         runId: string;
+      };
+    }
+  | {
+      type: 'approvalAction';
+      requestId: string;
+      payload: {
+        runId: string;
+        action: RunnerApprovalAction;
+        actorId: string;
+        actorName?: string;
+        note?: string;
       };
     }
   | {
@@ -115,6 +138,7 @@ export interface RunnerEvent {
   message?: string;
   transition?: RunnerTransition;
   agentClaim?: RunnerAgentClaim;
+  approvalDecision?: RunnerApprovalDecision;
   stepResult?: RunnerStepResult;
   stopReason?: RunnerStopReason;
 }

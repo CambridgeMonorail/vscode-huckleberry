@@ -7,6 +7,7 @@ import { appendEvidenceIndex, appendRunEvent, getRunEvents, reconstructRunsFromE
 import { loadWorkflowDefinition } from './workflowLoader';
 import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
+  RunnerApprovalDecision,
   RunnerEvent,
   RunnerExecutionOptions,
   RunnerAgentClaim,
@@ -22,6 +23,22 @@ import {
 type Reply = (response: RunnerResponse) => void;
 type EmitEvent = (response: RunnerResponse) => void;
 
+interface PausedApprovalState {
+  stepId: string;
+  attempt: number;
+}
+
+interface ActiveRunExecution {
+  workflow: WorkflowDefinition;
+  execution: RunnerExecutionOptions | undefined;
+  runtimeSteps: WorkflowStep[];
+  stepById: Map<string, WorkflowStep>;
+  stepAttempts: Map<string, number>;
+  repairAttempts: Map<string, number>;
+  currentStepId?: string;
+  pausedApproval?: PausedApprovalState;
+}
+
 /**
  * Hosts in-memory run lifecycle state for the lightweight command-only runner process.
  */
@@ -29,6 +46,7 @@ export class RunnerHost {
   private readonly runs = new Map<string, RunnerRunRecord>();
   private readonly cancellationRequests = new Set<string>();
   private readonly activeStepAbortControllers = new Map<string, AbortController>();
+  private readonly activeRunExecutions = new Map<string, ActiveRunExecution>();
   private readonly persistenceQueue = new Map<string, Promise<void>>();
   private hydrationPromise?: Promise<void>;
 
@@ -51,6 +69,9 @@ export class RunnerHost {
       case 'cancel':
         void this.handleCancel(message, reply, emitEvent);
         return;
+      case 'approvalAction':
+        void this.handleApprovalAction(message, reply, emitEvent);
+        return;
       case 'ping':
         reply({
           type: 'ack',
@@ -68,6 +89,7 @@ export class RunnerHost {
       controller.abort();
     }
     this.activeStepAbortControllers.clear();
+    this.activeRunExecutions.clear();
     this.cancellationRequests.clear();
     this.agentAdapterRegistry.dispose();
   }
@@ -118,7 +140,19 @@ export class RunnerHost {
       },
     });
 
-    void this.executeWorkflow(runRecord, workflow, message.payload.execution, emitEvent);
+    const runtimeSteps = workflow.steps;
+    const activeExecution: ActiveRunExecution = {
+      workflow,
+      execution: message.payload.execution,
+      runtimeSteps,
+      stepById: new Map(runtimeSteps.map(step => [step.id, step])),
+      stepAttempts: new Map<string, number>(),
+      repairAttempts: new Map<string, number>(),
+      currentStepId: runtimeSteps[0]?.id,
+    };
+
+    this.activeRunExecutions.set(runId, activeExecution);
+    void this.executeWorkflow(runRecord, activeExecution, emitEvent);
   }
 
   private async handleStatus(message: Extract<RunnerRequest, { type: 'status' }>, reply: Reply): Promise<void> {
@@ -214,6 +248,149 @@ export class RunnerHost {
     });
   }
 
+  private async handleApprovalAction(
+    message: Extract<RunnerRequest, { type: 'approvalAction' }>,
+    reply: Reply,
+    emitEvent: EmitEvent,
+  ): Promise<void> {
+    await this.ensureHydrated();
+
+    const run = this.runs.get(message.payload.runId);
+    if (!run) {
+      reply({
+        type: 'error',
+        requestId: message.requestId,
+        payload: {
+          code: 'RUN_NOT_FOUND',
+          message: `Run '${message.payload.runId}' was not found.`,
+        },
+      });
+      return;
+    }
+
+    const execution = this.activeRunExecutions.get(run.runId);
+    if (!execution?.pausedApproval || run.status !== 'paused') {
+      reply({
+        type: 'error',
+        requestId: message.requestId,
+        payload: {
+          code: 'APPROVAL_NOT_PENDING',
+          message: `Run '${run.runId}' is not waiting for an approval decision.`,
+        },
+      });
+      return;
+    }
+
+    const approvalStep = execution.stepById.get(execution.pausedApproval.stepId);
+    if (!approvalStep || approvalStep.type !== 'approval') {
+      reply({
+        type: 'error',
+        requestId: message.requestId,
+        payload: {
+          code: 'APPROVAL_STEP_NOT_FOUND',
+          message: `Approval step '${execution.pausedApproval.stepId}' was not found.`,
+        },
+      });
+      return;
+    }
+
+    const decision: RunnerApprovalDecision = {
+      stepId: execution.pausedApproval.stepId,
+      attempt: execution.pausedApproval.attempt,
+      action: message.payload.action,
+      actorId: message.payload.actorId,
+      actorName: message.payload.actorName,
+      note: message.payload.note,
+      decidedAt: Date.now(),
+    };
+
+    this.emitRunEvent(
+      run,
+      'paused',
+      `approval-${message.payload.action}`,
+      `Approval ${message.payload.action} recorded for step ${decision.stepId}.`,
+      emitEvent,
+      { from: 'paused', to: 'paused', stepId: decision.stepId, attempt: decision.attempt, reason: 'approval-decision' },
+      undefined,
+      undefined,
+      undefined,
+      decision,
+    );
+
+    execution.pausedApproval = undefined;
+
+    if (message.payload.action === 'reject') {
+      if (approvalStep.onReject) {
+        execution.currentStepId = approvalStep.onReject;
+        this.updateRunStatus(run, 'running');
+        this.emitRunEvent(
+          run,
+          'running',
+          'run-resumed',
+          `Run resumed after rejected approval step ${decision.stepId}.`,
+          emitEvent,
+          { from: 'paused', to: 'running', stepId: decision.stepId, reason: 'approval-rejected-branch' },
+        );
+        void this.executeWorkflow(run, execution, emitEvent);
+      } else {
+        this.finishRun(
+          run,
+          'failed',
+          'approval-rejected',
+          `Approval step ${decision.stepId} rejected.`,
+          {
+            code: 'APPROVAL_REJECTED',
+            message: `Run rejected by ${decision.actorName ?? decision.actorId} at approval step '${decision.stepId}'.`,
+          },
+          emitEvent,
+        );
+      }
+    } else if (message.payload.action === 'approve') {
+      const nextStepId = approvalStep.onApprove ?? this.getNextSequentialStep(execution.runtimeSteps, decision.stepId)?.id;
+      execution.currentStepId = nextStepId;
+      this.updateRunStatus(run, 'running');
+      this.emitRunEvent(
+        run,
+        'running',
+        'run-resumed',
+        `Run resumed after approval step ${decision.stepId}.`,
+        emitEvent,
+        { from: 'paused', to: 'running', stepId: decision.stepId, reason: 'approval-approved' },
+      );
+      void this.executeWorkflow(run, execution, emitEvent);
+    } else {
+      const deferTargetId = approvalStep.onDefer;
+      if (deferTargetId) {
+        execution.currentStepId = deferTargetId;
+        this.updateRunStatus(run, 'running');
+        this.emitRunEvent(
+          run,
+          'running',
+          'run-resumed',
+          `Run resumed after deferred approval step ${decision.stepId}.`,
+          emitEvent,
+          { from: 'paused', to: 'running', stepId: decision.stepId, reason: 'approval-deferred' },
+        );
+        void this.executeWorkflow(run, execution, emitEvent);
+      } else {
+        this.updateRunStatus(run, 'paused');
+        execution.pausedApproval = {
+          stepId: decision.stepId,
+          attempt: decision.attempt,
+        };
+      }
+    }
+
+    reply({
+      type: 'ack',
+      requestId: message.requestId,
+      payload: {
+        runId: run.runId,
+        ok: true,
+      },
+    });
+  }
+
   private handleUnknown(message: never, reply: Reply): void {
     reply({
       type: 'error',
@@ -235,6 +412,7 @@ export class RunnerHost {
     agentClaim?: RunnerAgentClaim,
     stepResult?: RunnerStepResult,
     stopReason?: RunnerStopReason,
+    approvalDecision?: RunnerApprovalDecision,
   ): void {
     const event: RunnerEvent = {
       runId: run.runId,
@@ -248,6 +426,7 @@ export class RunnerHost {
       agentClaim,
       stepResult,
       stopReason,
+      approvalDecision,
     };
 
     emitEvent({
@@ -276,29 +455,29 @@ export class RunnerHost {
 
   private async executeWorkflow(
     run: RunnerRunRecord,
-    workflow: WorkflowDefinition,
-    execution: RunnerExecutionOptions | undefined,
+    activeExecution: ActiveRunExecution,
     emitEvent: EmitEvent,
   ): Promise<void> {
-    const runtimeSteps = workflow.steps;
-    const stepById = new Map(runtimeSteps.map(step => [step.id, step]));
-    const stepAttempts = new Map<string, number>();
-    const repairAttempts = new Map<string, number>();
+    const { runtimeSteps, stepById, stepAttempts, repairAttempts, execution } = activeExecution;
     const maxStepRetries = execution?.maxStepRetries ?? 0;
     const stepTimeoutMs = execution?.stepTimeoutMs ?? 5_000;
     const conditionInputs = execution?.conditionInputs ?? {};
 
-    this.updateRunStatus(run, 'running');
-    this.emitRunEvent(
-      run,
-      'running',
-      'run-started',
-      'Run started.',
-      emitEvent,
-      { from: 'queued', to: 'running', reason: 'run-started' },
-    );
+    if (run.status !== 'running') {
+      this.updateRunStatus(run, 'running');
+      this.emitRunEvent(
+        run,
+        'running',
+        'run-started',
+        'Run started.',
+        emitEvent,
+        { from: 'queued', to: 'running', reason: 'run-started' },
+      );
+    }
 
-    let currentStep: WorkflowStep | undefined = runtimeSteps[0];
+    let currentStep: WorkflowStep | undefined = activeExecution.currentStepId
+      ? stepById.get(activeExecution.currentStepId)
+      : undefined;
 
     while (currentStep) {
       if (this.cancellationRequests.has(run.runId)) {
@@ -319,6 +498,7 @@ export class RunnerHost {
 
       const attempt = (stepAttempts.get(currentStep.id) ?? 0) + 1;
       stepAttempts.set(currentStep.id, attempt);
+      activeExecution.currentStepId = currentStep.id;
 
       if (currentStep.type === 'condition') {
         const nextId = this.evaluateCondition(currentStep.expression, conditionInputs)
@@ -333,20 +513,26 @@ export class RunnerHost {
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:condition' },
         );
         currentStep = stepById.get(nextId);
+        activeExecution.currentStepId = currentStep?.id;
         continue;
       }
 
       if (currentStep.type === 'approval') {
+        this.updateRunStatus(run, 'paused');
         this.emitRunEvent(
           run,
-          'running',
-          'step-succeeded:approval',
-          `Approval step ${currentStep.id} auto-completed in command-only mode.`,
+          'paused',
+          'approval-requested',
+          `Approval required at step ${currentStep.id}.`,
           emitEvent,
-          { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:approval' },
+          { from: 'running', to: 'paused', stepId: currentStep.id, attempt, reason: 'approval-requested' },
         );
-        currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
-        continue;
+        activeExecution.pausedApproval = {
+          stepId: currentStep.id,
+          attempt,
+        };
+        activeExecution.currentStepId = currentStep.id;
+        return;
       }
 
       if (this.isAgentStep(currentStep)) {
@@ -405,10 +591,12 @@ export class RunnerHost {
           }
 
           currentStep = retryTargetStep;
+          activeExecution.currentStepId = currentStep.id;
           continue;
         }
 
         currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
+        activeExecution.currentStepId = currentStep?.id;
         continue;
       }
 
@@ -519,6 +707,7 @@ export class RunnerHost {
           stepResult,
         );
         currentStep = nextStep;
+        activeExecution.currentStepId = currentStep?.id;
         continue;
       }
 
@@ -545,6 +734,7 @@ export class RunnerHost {
             stepResult,
           );
           currentStep = repairDecision.step;
+          activeExecution.currentStepId = currentStep.id;
           continue;
         }
 
@@ -599,6 +789,7 @@ export class RunnerHost {
       return;
     }
 
+    this.activeRunExecutions.delete(run.runId);
     this.finishRun(run, 'succeeded', 'all-steps-succeeded', 'Run completed successfully.', undefined, emitEvent);
   }
 
@@ -612,6 +803,7 @@ export class RunnerHost {
     stepResult?: RunnerStepResult,
   ): void {
     const fromStatus = run.status;
+    this.activeRunExecutions.delete(run.runId);
     this.updateRunStatus(run, status, stopReason);
     this.emitRunEvent(
       run,

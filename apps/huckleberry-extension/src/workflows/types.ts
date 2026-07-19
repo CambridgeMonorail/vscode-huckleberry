@@ -41,6 +41,9 @@ export interface ConditionStep extends StepBase {
 
 export interface ApprovalStep extends StepBase {
   type: 'approval';
+  onApprove?: string;
+  onReject?: string;
+  onDefer?: string;
 }
 
 export interface AgentStep extends StepBase {

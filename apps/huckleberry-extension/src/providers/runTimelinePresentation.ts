@@ -1,4 +1,4 @@
-import { RunnerAgentClaim, RunnerRunRecord, RunnerStepResult } from '../runner';
+import { RunnerAgentClaim, RunnerApprovalDecision, RunnerRunRecord, RunnerStepResult } from '../runner';
 
 export interface RunTimelinePresentationModel {
   stepId: string;
@@ -11,6 +11,7 @@ export interface RunTimelinePresentationModel {
   attempt?: number;
   durationMs?: number;
   agentClaim?: RunnerAgentClaim;
+  approvalDecision?: RunnerApprovalDecision;
   stepResult?: RunnerStepResult;
 }
 
@@ -73,6 +74,15 @@ export function buildTimelineTooltip(timeline: RunTimelinePresentationModel): st
     lines.push('Claim (agent):');
     lines.push(`  Source: ${timeline.agentClaim.adapterId ?? 'agent-adapter'}`);
     lines.push(`  Statement: ${timeline.agentClaim.summary}`);
+  }
+
+  if (timeline.approvalDecision) {
+    lines.push('Approval decision:');
+    lines.push(`  Action: ${timeline.approvalDecision.action}`);
+    lines.push(`  Actor: ${timeline.approvalDecision.actorName ?? timeline.approvalDecision.actorId}`);
+    if (timeline.approvalDecision.note) {
+      lines.push(`  Note: ${timeline.approvalDecision.note}`);
+    }
   }
 
   if (timeline.stopReasonCode) {

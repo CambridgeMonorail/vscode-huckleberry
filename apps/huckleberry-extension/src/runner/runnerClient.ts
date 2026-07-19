@@ -2,7 +2,7 @@ import * as path from 'path';
 import { fork, ChildProcess } from 'child_process';
 import * as vscode from 'vscode';
 import { logWithChannel, LogLevel } from '../utils';
-import { RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord } from './types';
+import { RunnerApprovalAction, RunnerEvent, RunnerRequest, RunnerResponse, RunnerRunRecord } from './types';
 
 interface PendingRequest {
   resolve: (response: RunnerResponse) => void;
@@ -84,6 +84,30 @@ export class RunnerClient implements vscode.Disposable {
       type: 'cancel',
       requestId: this.nextRequestId(),
       payload: { runId },
+    });
+
+    if (response.type !== 'ack') {
+      throw new Error(`Unexpected runner response type: ${response.type}`);
+    }
+  }
+
+  async submitApprovalAction(
+    runId: string,
+    action: RunnerApprovalAction,
+    actorId: string,
+    actorName?: string,
+    note?: string,
+  ): Promise<void> {
+    const response = await this.sendRequest({
+      type: 'approvalAction',
+      requestId: this.nextRequestId(),
+      payload: {
+        runId,
+        action,
+        actorId,
+        actorName,
+        note,
+      },
     });
 
     if (response.type !== 'ack') {

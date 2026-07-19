@@ -3,7 +3,7 @@ import { logWithChannel, LogLevel } from '../utils';
 import { LoopExplorerProvider, LoopViewItemModel } from '../providers/LoopExplorerProvider';
 import { RunExplorerProvider, RunTimelineNodeModel } from '../providers/RunExplorerProvider';
 import { WorkflowTemplateService } from '../services';
-import { RunnerClient } from '../runner';
+import { RunnerApprovalAction, RunnerClient } from '../runner';
 
 function extractLoopViewItemModel(input: unknown): LoopViewItemModel | undefined {
   if (input && typeof input === 'object') {
@@ -121,6 +121,39 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
 
       await runnerClient.cancelRun(runId);
       vscode.window.showInformationMessage(`Cancellation requested for run '${runId}'.`);
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.approvalAction', async (runInput: unknown) => {
+      const runId = extractRunId(runInput);
+      if (!runId) {
+        vscode.window.showWarningMessage('Run ID is required to submit an approval decision.');
+        return Promise.resolve();
+      }
+
+      const actionPick = await vscode.window.showQuickPick(
+        [
+          { label: 'Approve', action: 'approve' as RunnerApprovalAction },
+          { label: 'Reject', action: 'reject' as RunnerApprovalAction },
+          { label: 'Defer', action: 'defer' as RunnerApprovalAction },
+        ],
+        {
+          title: `Approval decision for run ${runId}`,
+          placeHolder: 'Select an approval action',
+        },
+      );
+
+      if (!actionPick) {
+        return Promise.resolve();
+      }
+
+      const note = await vscode.window.showInputBox({
+        title: `Optional note for ${actionPick.label.toLowerCase()}`,
+        placeHolder: 'Add an auditable note (optional)',
+      });
+
+      const actorId = process.env['USERNAME'] ?? process.env['USER'] ?? 'unknown-actor';
+      await runnerClient.submitApprovalAction(runId, actionPick.action, actorId, actorId, note);
+      vscode.window.showInformationMessage(`Submitted ${actionPick.label.toLowerCase()} decision for run '${runId}'.`);
       return Promise.resolve();
     }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openStepEvidence', async (input: unknown) => {

@@ -977,4 +977,242 @@ describe('RunnerHost', () => {
 
     host.dispose();
   });
+
+  it('pauses at approval and resumes on approve with auditable decision metadata', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    executeCommandStepMock.mockResolvedValue({
+      stdout: 'ok',
+      stderr: '',
+      exitCode: 0,
+      timedOut: false,
+      cancelled: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 0,
+      timedOut: false,
+      cancelled: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/metadata',
+    }));
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-approval-start',
+        payload: {
+          loopId: 'approval-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/approval.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'approval-loop',
+            name: 'Approval Loop',
+            steps: [
+              { id: 'gate', type: 'approval' },
+              { id: 'post-approval', type: 'command', command: 'echo ok' },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const startAck = replies.find(reply => reply.type === 'ack' && reply.requestId === 'req-approval-start');
+    expect(startAck).toBeDefined();
+    if (startAck?.type !== 'ack' || !startAck.payload.runId) {
+      host.dispose();
+      throw new Error('Expected start ack run id');
+    }
+
+    const pausedEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'approval-requested',
+    );
+    expect(pausedEvent).toBeDefined();
+
+    host.handleMessage(
+      {
+        type: 'approvalAction',
+        requestId: 'req-approval-approve',
+        payload: {
+          runId: startAck.payload.runId,
+          action: 'approve',
+          actorId: 'alice',
+          actorName: 'Alice',
+          note: 'Looks good',
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const decisionEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'approval-approve',
+    );
+    expect(decisionEvent).toBeDefined();
+    if (decisionEvent?.type === 'event') {
+      expect(decisionEvent.payload.approvalDecision?.actorId).toBe('alice');
+      expect(decisionEvent.payload.approvalDecision?.action).toBe('approve');
+    }
+
+    const succeededEvent = events.find(
+      event => event.type === 'event' && event.payload.status === 'succeeded',
+    );
+    expect(succeededEvent).toBeDefined();
+    expect(executeCommandStepMock).toHaveBeenCalledTimes(1);
+
+    host.dispose();
+  });
+
+  it('records rejection decisions and stops run when no reject branch is configured', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-reject-start',
+        payload: {
+          loopId: 'approval-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/approval.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'approval-loop',
+            name: 'Approval Loop',
+            steps: [{ id: 'gate', type: 'approval' }],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const startAck = replies.find(reply => reply.type === 'ack' && reply.requestId === 'req-reject-start');
+    if (startAck?.type !== 'ack' || !startAck.payload.runId) {
+      host.dispose();
+      throw new Error('Expected start ack run id');
+    }
+
+    host.handleMessage(
+      {
+        type: 'approvalAction',
+        requestId: 'req-reject-action',
+        payload: {
+          runId: startAck.payload.runId,
+          action: 'reject',
+          actorId: 'bob',
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.status === 'failed',
+    );
+    expect(failedEvent).toBeDefined();
+    if (failedEvent?.type === 'event') {
+      expect(failedEvent.payload.stopReason?.code).toBe('APPROVAL_REJECTED');
+    }
+
+    host.dispose();
+  });
+
+  it('records defer decisions and keeps run paused when no defer branch is configured', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-defer-start',
+        payload: {
+          loopId: 'approval-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/approval.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'approval-loop',
+            name: 'Approval Loop',
+            steps: [{ id: 'gate', type: 'approval' }],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const startAck = replies.find(reply => reply.type === 'ack' && reply.requestId === 'req-defer-start');
+    if (startAck?.type !== 'ack' || !startAck.payload.runId) {
+      host.dispose();
+      throw new Error('Expected start ack run id');
+    }
+
+    host.handleMessage(
+      {
+        type: 'approvalAction',
+        requestId: 'req-defer-action',
+        payload: {
+          runId: startAck.payload.runId,
+          action: 'defer',
+          actorId: 'charlie',
+          note: 'Need more context',
+        },
+      },
+      response => replies.push(response),
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const deferEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'approval-defer',
+    );
+    expect(deferEvent).toBeDefined();
+    if (deferEvent?.type === 'event') {
+      expect(deferEvent.payload.approvalDecision?.note).toBe('Need more context');
+    }
+
+    const terminalEvent = events.find(
+      event =>
+        event.type === 'event'
+        && (event.payload.status === 'succeeded'
+          || event.payload.status === 'failed'
+          || event.payload.status === 'cancelled'
+          || event.payload.status === 'exhausted'),
+    );
+    expect(terminalEvent).toBeUndefined();
+
+    host.dispose();
+  });
 });

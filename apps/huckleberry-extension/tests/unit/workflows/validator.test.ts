@@ -218,4 +218,55 @@ describe('validateWorkflowDefinition', () => {
     expect(result.errors.some(error => error.code === 'AGENT_RETRY_MAX_ATTEMPTS_INVALID')).toBe(true);
     expect(result.errors.some(error => error.code === 'AGENT_RETRY_TARGET_MISMATCH')).toBe(true);
   });
+
+  it('accepts approval steps with valid branch semantics', () => {
+    const workflow: WorkflowDefinition = {
+      schemaVersion: 1,
+      id: 'approval-flow',
+      name: 'Approval Flow',
+      steps: [
+        {
+          id: 'gate',
+          type: 'approval',
+          onApprove: 'tests',
+          onReject: 'notify',
+          onDefer: 'notify',
+        },
+        {
+          id: 'tests',
+          type: 'command',
+          command: 'pnpm test:affected',
+        },
+        {
+          id: 'notify',
+          type: 'command',
+          command: 'echo waiting',
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects approval branches that reference missing steps', () => {
+    const workflow = {
+      schemaVersion: 1,
+      id: 'approval-flow',
+      name: 'Approval Flow',
+      steps: [
+        {
+          id: 'gate',
+          type: 'approval',
+          onApprove: 'missing-step',
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.code === 'APPROVAL_BRANCH_MISSING')).toBe(true);
+  });
 });

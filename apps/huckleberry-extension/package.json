@@ -30,6 +30,7 @@
     "onCommand:vscode-copilot-huckleberry.runs.refresh",
     "onCommand:vscode-copilot-huckleberry.loops.runLoop",
     "onCommand:vscode-copilot-huckleberry.runs.cancel",
+    "onCommand:vscode-copilot-huckleberry.runs.approvalAction",
     "onCommand:vscode-copilot-huckleberry.runs.getStatus",
     "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
     "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
@@ -72,6 +73,13 @@
         "category": "Huckleberry",
         "icon": "$(debug-stop)",
         "description": "Cancel an active run by run ID"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.approvalAction",
+        "title": "Submit Approval Decision",
+        "category": "Huckleberry",
+        "icon": "$(checklist)",
+        "description": "Submit approve, reject, or defer decision for a paused run"
       },
       {
         "command": "vscode-copilot-huckleberry.runs.getStatus",
@@ -158,6 +166,11 @@
         {
           "command": "vscode-copilot-huckleberry.runs.cancel",
           "when": "view == huckleberryRunsView && viewItem == run-running",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.approvalAction",
+          "when": "view == huckleberryRunsView && viewItem == run-paused",
           "group": "inline"
         },
         {

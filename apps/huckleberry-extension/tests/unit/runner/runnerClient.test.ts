@@ -102,6 +102,15 @@ class FakeChildProcess extends EventEmitter {
                 ],
               },
             }
+          : request.type === 'approvalAction'
+            ? {
+                type: 'ack',
+                requestId: request.requestId,
+                payload: {
+                  ok: true,
+                  runId: request.payload.runId,
+                },
+              }
         : {
             type: 'status',
             requestId: request.requestId,
@@ -164,5 +173,11 @@ describe('RunnerClient', () => {
     const events = await client.getRunEvents('run-1');
     expect(events).toHaveLength(1);
     expect(events[0].eventType).toBe('step-started');
+  });
+
+  it('submits approval actions through IPC', async () => {
+    await expect(
+      client.submitApprovalAction('run-1', 'approve', 'alice', 'Alice', 'Looks good'),
+    ).resolves.toBeUndefined();
   });
 });

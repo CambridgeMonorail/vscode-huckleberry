@@ -28,6 +28,8 @@ export {
   type RunnerEvent,
   type RunnerExecutionOptions,
   type RunnerAgentClaim,
+  type RunnerApprovalAction,
+  type RunnerApprovalDecision,
   type RunnerTransition,
   type RunnerStepResult,
 } from './types';

@@ -43,7 +43,7 @@ Priority values:
 | RIM-403 | 4 | Add agent step node type | P0 | Docto | Done | RIM-401, RIM-201 | Added first-class agent step schema with allowed paths, max files changed, and max turns, enforced at validation and runner execution boundaries |
 | RIM-404 | 4 | Implement repair loop semantics | P0 | Docto | Done | RIM-403, RIM-303 | Added deterministic check-fail-repair-recheck orchestration with bounded repair attempts, exhaustion outcomes, and repair-attempt timeline metadata |
 | RIM-405 | 4 | Capture agent claims separately from evidence | P1 | Docto | Done | RIM-304, RIM-403 | Added dedicated `agentClaim` event payloads with adapter provenance and explicit Runs timeline Claim vs Evidence labeling |
-| RIM-501 | 5 | Implement approval gate step | P0 | Docto | Planned | RIM-302, RIM-304 | Explicit human decision |
+| RIM-501 | 5 | Implement approval gate step | P0 | Docto | Done | RIM-302, RIM-304 | Added paused approval gates with explicit approve/reject/defer actions, auditable decision metadata, branch-aware resume semantics, and Runs UI command wiring |
 | RIM-502 | 5 | Build Evidence Explorer | P1 | Docto | Planned | RIM-304 | Evidence navigation |
 | RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Planned | RIM-305 | Better triage flow |
 | RIM-504 | 5 | Add run summary report generation | P2 | Docto | Planned | RIM-304 | End-of-run reporting |
@@ -87,7 +87,7 @@ Priority values:
 - [ ] Claims/facts separation visible in UI
 
 ### Stage 5
-- [ ] Human approval gates pause/resume correctly
+- [x] Human approval gates pause/resume correctly
 - [ ] Evidence is easy to inspect and trace
 - [ ] Summaries are reproducible from event data
 

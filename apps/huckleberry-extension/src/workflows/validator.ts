@@ -110,12 +110,63 @@ function validateWorkflowSteps(steps: unknown[]): WorkflowValidationError[] {
 
     if (stepType === 'command') {
       errors.push(...validateCommandStep(stepRecord, index));
+      continue;
+    }
+
+    if (stepType === 'approval') {
+      errors.push(...validateApprovalStep(stepRecord, index, stepIds));
     }
   }
 
   errors.push(...validateRepairLoops(stepRecordsById));
 
   return errors;
+}
+
+function validateApprovalStep(
+  step: Record<string, unknown>,
+  index: number,
+  stepIds: Set<string>,
+): WorkflowValidationError[] {
+  const errors: WorkflowValidationError[] = [];
+  const stepId = typeof step['id'] === 'string' ? step['id'] : '(unknown-step)';
+
+  errors.push(...validateApprovalBranchReference(stepId, step, index, 'onApprove', stepIds));
+  errors.push(...validateApprovalBranchReference(stepId, step, index, 'onReject', stepIds));
+  errors.push(...validateApprovalBranchReference(stepId, step, index, 'onDefer', stepIds));
+
+  return errors;
+}
+
+function validateApprovalBranchReference(
+  stepId: string,
+  step: Record<string, unknown>,
+  index: number,
+  key: 'onApprove' | 'onReject' | 'onDefer',
+  stepIds: Set<string>,
+): WorkflowValidationError[] {
+  const value = step[key];
+  if (value === undefined) {
+    return [];
+  }
+
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [{
+      code: 'APPROVAL_BRANCH_INVALID',
+      message: `Approval step '${stepId}' ${key} must be a non-empty step id string when provided.`,
+      path: `steps[${index}].${key}`,
+    }];
+  }
+
+  if (!stepIds.has(value)) {
+    return [{
+      code: 'APPROVAL_BRANCH_MISSING',
+      message: `Approval step '${stepId}' ${key} references missing step '${value}'.`,
+      path: `steps[${index}].${key}`,
+    }];
+  }
+
+  return [];
 }
 
 function validateCommandStep(
