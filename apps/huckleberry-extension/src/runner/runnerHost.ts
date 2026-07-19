@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import * as path from 'path';
+import { AgentAdapterRegistry, AgentStepExecutionResult } from './agentAdapter';
 import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
 import { appendEvidenceIndex, appendRunEvent, getRunEvents, reconstructRunsFromEvents } from './runEventStore';
@@ -20,6 +21,15 @@ import {
 type Reply = (response: RunnerResponse) => void;
 type EmitEvent = (response: RunnerResponse) => void;
 
+interface AgentWorkflowStepLike {
+  id: string;
+  type: 'agent';
+  prompt: string;
+  adapter?: string;
+}
+
+type RuntimeWorkflowStep = WorkflowStep | AgentWorkflowStepLike;
+
 /**
  * Hosts in-memory run lifecycle state for the lightweight command-only runner process.
  */
@@ -29,6 +39,8 @@ export class RunnerHost {
   private readonly activeStepAbortControllers = new Map<string, AbortController>();
   private readonly persistenceQueue = new Map<string, Promise<void>>();
   private hydrationPromise?: Promise<void>;
+
+  constructor(private readonly agentAdapterRegistry: AgentAdapterRegistry = new AgentAdapterRegistry()) {}
 
   handleMessage(message: RunnerRequest, reply: Reply, emitEvent: EmitEvent): void {
     switch (message.type) {
@@ -65,6 +77,7 @@ export class RunnerHost {
     }
     this.activeStepAbortControllers.clear();
     this.cancellationRequests.clear();
+    this.agentAdapterRegistry.dispose();
   }
 
   private async handleStart(
@@ -273,7 +286,8 @@ export class RunnerHost {
     execution: RunnerExecutionOptions | undefined,
     emitEvent: EmitEvent,
   ): Promise<void> {
-    const stepById = new Map(workflow.steps.map(step => [step.id, step]));
+    const runtimeSteps = workflow.steps as RuntimeWorkflowStep[];
+    const stepById = new Map(runtimeSteps.map(step => [step.id, step]));
     const stepAttempts = new Map<string, number>();
     const maxStepRetries = execution?.maxStepRetries ?? 0;
     const stepTimeoutMs = execution?.stepTimeoutMs ?? 5_000;
@@ -289,7 +303,7 @@ export class RunnerHost {
       { from: 'queued', to: 'running', reason: 'run-started' },
     );
 
-    let currentStep: WorkflowStep | undefined = workflow.steps[0];
+    let currentStep: RuntimeWorkflowStep | undefined = runtimeSteps[0];
 
     while (currentStep) {
       if (this.cancellationRequests.has(run.runId)) {
@@ -336,7 +350,25 @@ export class RunnerHost {
           emitEvent,
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:approval' },
         );
-        currentStep = this.getNextSequentialStep(workflow.steps, currentStep.id);
+        currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
+        continue;
+      }
+
+      if (this.isAgentStep(currentStep)) {
+        const agentExecution = await this.executeAgentStep(run, currentStep, attempt, emitEvent);
+        if (!agentExecution.ok) {
+          return;
+        }
+
+        this.emitRunEvent(
+          run,
+          'running',
+          'step-succeeded:agent',
+          agentExecution.result.summary,
+          emitEvent,
+          { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:agent' },
+        );
+        currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
         continue;
       }
 
@@ -425,7 +457,7 @@ export class RunnerHost {
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:command' },
           stepResult,
         );
-        currentStep = this.getNextSequentialStep(workflow.steps, currentStep.id);
+        currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
         continue;
       }
 
@@ -444,13 +476,13 @@ export class RunnerHost {
 
       const stopReason = stepResult.timedOut
         ? {
-            code: 'STEP_TIMEOUT',
-            message: `Step '${currentStep.id}' timed out after ${stepTimeoutMs}ms.`,
-          }
+          code: 'STEP_TIMEOUT',
+          message: `Step '${currentStep.id}' timed out after ${stepTimeoutMs}ms.`,
+        }
         : {
-            code: 'STEP_EXIT_NON_ZERO',
-            message: `Step '${currentStep.id}' exited with code ${stepResult.exitCode ?? 'unknown'}.`,
-          };
+          code: 'STEP_EXIT_NON_ZERO',
+          message: `Step '${currentStep.id}' exited with code ${stepResult.exitCode ?? 'unknown'}.`,
+        };
 
       this.finishRun(
         run,
@@ -490,7 +522,7 @@ export class RunnerHost {
     );
   }
 
-  private getNextSequentialStep(steps: WorkflowStep[], stepId: string): WorkflowStep | undefined {
+  private getNextSequentialStep(steps: RuntimeWorkflowStep[], stepId: string): RuntimeWorkflowStep | undefined {
     const currentIndex = steps.findIndex(step => step.id === stepId);
     if (currentIndex < 0) {
       return undefined;
@@ -511,6 +543,68 @@ export class RunnerHost {
     }
 
     return conditionInputs[normalized] ?? false;
+  }
+
+  private isAgentStep(step: RuntimeWorkflowStep): step is AgentWorkflowStepLike {
+    return step.type === 'agent' && 'prompt' in step && typeof step.prompt === 'string';
+  }
+
+  private async executeAgentStep(
+    run: RunnerRunRecord,
+    step: AgentWorkflowStepLike,
+    attempt: number,
+    emitEvent: EmitEvent,
+  ): Promise<{ ok: true; result: AgentStepExecutionResult } | { ok: false }> {
+    this.emitRunEvent(
+      run,
+      'running',
+      'step-started:agent',
+      `Executing agent step ${step.id}.`,
+      emitEvent,
+      { from: 'running', to: 'running', stepId: step.id, attempt, reason: 'step-started:agent' },
+    );
+
+    const resolution = await this.agentAdapterRegistry.resolveAvailableAdapter(step.adapter);
+    if (!resolution.adapter) {
+      this.finishRun(
+        run,
+        'failed',
+        'step-failed:agent-adapter-unavailable',
+        `Agent step ${step.id} could not start.`,
+        {
+          code: 'AGENT_ADAPTER_UNAVAILABLE',
+          message: resolution.availability.reason ?? 'No agent adapter is available.',
+        },
+        emitEvent,
+      );
+      return { ok: false };
+    }
+
+    try {
+      const result = await resolution.adapter.executeAgentStep({
+        runId: run.runId,
+        loopId: run.loopId,
+        stepId: step.id,
+        prompt: step.prompt,
+        cwd: path.dirname(run.loopFilePath),
+        attempt,
+      });
+
+      return { ok: true, result };
+    } catch (error) {
+      this.finishRun(
+        run,
+        'failed',
+        'step-failed:agent-adapter-error',
+        `Agent step ${step.id} failed.`,
+        {
+          code: 'AGENT_ADAPTER_FAILED',
+          message: error instanceof Error ? error.message : String(error),
+        },
+        emitEvent,
+      );
+      return { ok: false };
+    }
   }
 
   private async ensureHydrated(): Promise<void> {

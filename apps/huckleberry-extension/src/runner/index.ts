@@ -1,5 +1,13 @@
 export { RunnerClient } from './runnerClient';
 export { RunnerHost } from './runnerHost';
+export {
+  AgentAdapterRegistry,
+  type AgentAdapter,
+  type AgentAdapterAvailability,
+  type AgentAdapterResolution,
+  type AgentStepExecutionRequest,
+  type AgentStepExecutionResult,
+} from './agentAdapter';
 export { executeCommandStep, type CommandExecutionRequest, type CommandExecutionResult } from './commandExecutor';
 export { persistStepEvidence, type PersistStepEvidenceRequest } from './evidenceStore';
 export {

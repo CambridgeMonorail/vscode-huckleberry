@@ -38,7 +38,7 @@ Priority values:
 | RIM-304 | 3 | Persist runs/events/evidence metadata | P0 | Docto | Done | RIM-302 | Added append-only run event store, evidence metadata index, run reconstruction helpers, and Runs view hydration from persisted history |
 | RIM-305 | 3 | Build Runs UI timeline | P1 | Docto | Done | RIM-302, RIM-304 | Runs explorer now renders hierarchical event timeline with step status/timestamps/durations and evidence artifact links |
 | RIM-306 | 3 | Add cancellation and failure-stop reasons | P0 | Docto | Done | RIM-302 | Added abortable cancellation for running steps and structured stop reason codes/messages for non-success terminal outcomes |
-| RIM-401 | 4 | Introduce AgentAdapter abstraction | P0 | Docto | Planned | RIM-303 | Provider boundary |
+| RIM-401 | 4 | Introduce AgentAdapter abstraction | P0 | Docto | Done | RIM-303 | Added provider-neutral adapter registry and runner execution boundary for future agent steps while command-only runs remain functional |
 | RIM-402 | 4 | Implement Copilot adapter | P1 | Docto | Planned | RIM-401 | First provider |
 | RIM-403 | 4 | Add agent step node type | P0 | Docto | Planned | RIM-401, RIM-201 | Constrained agent execution |
 | RIM-404 | 4 | Implement repair loop semantics | P0 | Docto | Planned | RIM-403, RIM-303 | Retry repair flow |

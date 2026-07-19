@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AgentAdapterRegistry } from '@huckleberry/extension/runner/agentAdapter';
 import { RunnerHost } from '@huckleberry/extension/runner/runnerHost';
 import { RunnerRequest, RunnerResponse } from '@huckleberry/extension/runner/types';
 
@@ -475,6 +476,100 @@ describe('RunnerHost', () => {
       expect(eventsResponse.payload.events).toHaveLength(1);
       expect(eventsResponse.payload.events[0].eventType).toBe('run-queued');
     }
+
+    host.dispose();
+  });
+
+  it('fails agent steps clearly when no adapter is registered', async () => {
+    const host = new RunnerHost(new AgentAdapterRegistry());
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-agent-unavailable',
+        payload: {
+          loopId: 'agent-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/agent.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'agent-loop',
+            name: 'Agent Loop',
+            steps: [
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Fix the failing check.',
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'step-failed:agent-adapter-unavailable',
+    );
+    expect(failedEvent).toBeDefined();
+    if (failedEvent?.type === 'event') {
+      expect(failedEvent.payload.stopReason?.code).toBe('AGENT_ADAPTER_UNAVAILABLE');
+    }
+
+    host.dispose();
+  });
+
+  it('routes agent steps through the adapter contract when available', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    const executeAgentStep = vi.fn().mockResolvedValue({ summary: 'Agent step completed.' });
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep,
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-agent-available',
+        payload: {
+          loopId: 'agent-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/agent.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'agent-loop',
+            name: 'Agent Loop',
+            steps: [
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Fix the failing check.',
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    expect(executeAgentStep).toHaveBeenCalledTimes(1);
+    const successEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'step-succeeded:agent',
+    );
+    expect(successEvent).toBeDefined();
 
     host.dispose();
   });
