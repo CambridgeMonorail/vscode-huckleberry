@@ -80,7 +80,7 @@ export class ChatService implements IChatService {
     this.disposeAll();
     const options: ChatParticipantOptions = {
       primaryId: 'huckleberry',
-      debugName: 'Huckleberry Task Manager',
+      debugName: 'Huckleberry Workflow Workbench',
     };
     const disposables = this.register(options);
     this.dumpParticipantState();

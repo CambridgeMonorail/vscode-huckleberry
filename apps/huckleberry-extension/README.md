@@ -1,8 +1,8 @@
-# Huckleberry Task Manager
+# Huckleberry Workflow Workbench
 
 ![Huckleberry Logo](https://raw.githubusercontent.com/CambridgeMonorail/vscode-huckleberry/main/assets/images/huckleberry-logo.png)
 
-AI-powered task management inside Visual Studio Code
+AI-powered workflow planning inside Visual Studio Code
 
 [![Release](https://img.shields.io/github/v/release/CambridgeMonorail/vscode-huckleberry?include_prereleases&style=flat-square)](https://github.com/CambridgeMonorail/vscode-huckleberry/releases)
 [![License](https://img.shields.io/github/license/CambridgeMonorail/vscode-huckleberry?style=flat-square)](./LICENSE)
@@ -16,7 +16,7 @@ AI-powered task management inside Visual Studio Code
 
 ## Overview
 
-Huckleberry is an AI-powered task manager that brings natural language task management directly into your VS Code workflow. Using VS Code's chat interface, you can have natural conversations with a dedicated Task Manager agent that helps you track, manage, and organise project tasks without leaving your development environment.
+Huckleberry is an AI-powered workflow workbench that brings natural language planning directly into your VS Code workflow. Using VS Code's chat interface, you can have natural conversations with a dedicated agent that helps you track, manage, and organize project work without leaving your development environment.
 
 > **AI Transparency**: This extension uses VS Code's Language Model API. While these models are powerful tools for understanding natural language requests, they may sometimes produce responses that are incorrect or incomplete. We recommend verifying important decisions, especially for critical project components.
 
@@ -24,9 +24,9 @@ For comprehensive documentation, visit our [documentation site](https://cambridg
 
 ## Features
 
-- 🗣️ **Natural Language Interface** - Create and manage tasks using conversational language
+- 🗣️ **Natural Language Interface** - Create and manage workflow tasks using conversational language
 - 📋 **Smart PRD Parsing** - Extract tasks automatically from project requirement documents
-- ✅ **Task Lifecycle Management** - Create, track, and complete tasks with simple chat commands
+- ✅ **Workflow Lifecycle Management** - Create, track, and complete workflow tasks with simple chat commands
 - 🔄 **Task Decomposition** - Break complex tasks into manageable subtasks
 - 📊 **Priority Management** - Organize tasks by priority, due date, and dependencies
 - 💾 **Workspace Integration** - Tasks are stored in your project files for version control and team sharing

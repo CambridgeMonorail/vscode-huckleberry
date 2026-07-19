@@ -12,5 +12,5 @@ export async function manageTasks(): Promise<void> {
     return;
   }
 
-  showInfo('Task management interface will be implemented soon!');
+  showInfo('Workflow workbench interface will be implemented soon!');
 }

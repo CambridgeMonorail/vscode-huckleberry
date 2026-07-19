@@ -883,7 +883,7 @@ export class LanguageModelToolsProvider {
               confirmationMessages: {
                 title: `Huckleberry Help: ${topicDisplay}`,
                 message: new vscode.MarkdownString(
-                  `**Get Huckleberry Task Manager Help**\n\n` +
+                  `**Get Huckleberry Workflow Workbench Help**\n\n` +
                   `This will show information about ${topic === 'general' ?
                     'all available features and commands' :
                     `how to use the ${topicDisplay} feature`}.`,

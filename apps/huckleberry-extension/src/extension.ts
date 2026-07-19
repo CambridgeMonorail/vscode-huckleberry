@@ -329,7 +329,7 @@ export function activate(context: vscode.ExtensionContext): void {
           // Show notification about task initialization if folders were added
           if (foldersAdded && isWorkspaceAvailable()) {
             vscode.window.showInformationMessage(
-              'Huckleberry Task Manager is now ready to use with your workspace.',
+              'Huckleberry Workflow Workbench is now ready to use with your workspace.',
               'Initialize Task Tracking',
             ).then(selection => {
               if (selection === 'Initialize Task Tracking') {

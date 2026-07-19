@@ -1,8 +1,8 @@
 {
   "name": "vscode-copilot-huckleberry",
-  "displayName": "Huckleberry Task Manager",
+  "displayName": "Huckleberry Workflow Workbench",
   "version": "0.1.26",
-  "description": "A VS Code GitHub Copilot extension that helps manage and track tasks using LLM capabilities",
+  "description": "A VS Code GitHub Copilot extension for defining and managing engineering workflows",
   "publisher": "CambridgeMonorail",
   "repository": {
     "type": "git",
@@ -53,7 +53,7 @@
         "command": "vscode-copilot-huckleberry.debugWelcomeView",
         "title": "Huckleberry: Debug Welcome View",
         "category": "Huckleberry",
-        "description": "Debug why the task explorer welcome view is not showing"
+        "description": "Debug why the workflow explorer welcome view is not showing"
       },
       {
         "command": "vscode-copilot-huckleberry.debugTreeViewProperties",
@@ -63,9 +63,9 @@
       },
       {
         "command": "vscode-copilot-huckleberry.manageTasks",
-        "title": "Huckleberry: Manage Tasks",
+        "title": "Huckleberry: Open Workbench",
         "category": "Huckleberry",
-        "description": "Open the Huckleberry task management interface"
+        "description": "Open the Huckleberry workflow workbench"
       },
       {
         "command": "vscode-copilot-huckleberry.initializeTaskTracking",
@@ -141,9 +141,9 @@
       },
       {
         "command": "vscode-copilot-huckleberry.openTaskExplorer",
-        "title": "Huckleberry: Open Task Explorer",
+        "title": "Huckleberry: Open Workflow Explorer",
         "category": "Huckleberry",
-        "description": "Open the Task Explorer view to visualize and manage tasks"
+        "description": "Open the Workflow Explorer view"
       },
       {
         "command": "vscode-copilot-huckleberry.createSubtasks",
@@ -180,10 +180,10 @@
       },
       {
         "command": "vscode-copilot-huckleberry.taskExplorer.refresh",
-        "title": "Refresh Task Explorer",
+        "title": "Refresh Workflow Explorer",
         "category": "Huckleberry",
         "icon": "$(refresh)",
-        "description": "Refresh the Task Explorer view"
+        "description": "Refresh the Workflow Explorer view"
       },
       {
         "command": "vscode-copilot-huckleberry.taskExplorer.sortByPriority",
@@ -202,14 +202,14 @@
       {
         "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
         "title": "Mark Complete",
-        "category": "Huckleberry Task Explorer",
+        "category": "Huckleberry Workflow Explorer",
         "icon": "$(check)",
         "description": "Mark the selected task as complete"
       },
       {
         "command": "vscode-copilot-huckleberry.taskExplorer.getNextTask",
         "title": "Go to Next Task",
-        "category": "Huckleberry Task Explorer",
+        "category": "Huckleberry Workflow Explorer",
         "icon": "$(arrow-right)",
         "description": "Get the next task to work on"
       }
@@ -218,7 +218,7 @@
       {
         "id": "huckleberry",
         "name": "Huckleberry",
-        "description": "An assistant that helps manage tasks and project requirements",
+        "description": "An assistant that helps manage engineering workflows and project execution",
         "isSticky": false,
         "commands": [
           {
@@ -232,7 +232,7 @@
       {
         "name": "create_task",
         "displayName": "Create Task",
-        "modelDescription": "Creates a new task in the Huckleberry Task Manager. Use this tool to create a new task with optional priority and due date information.",
+        "modelDescription": "Creates a new task in Huckleberry. Use this tool to create a new task with optional priority and due date information.",
         "canBeReferencedInPrompt": true,
         "toolReferenceName": "createHuckleberryTask",
         "userDescription": "Creates a task in your project's task management system",
@@ -480,7 +480,7 @@
       }
     ],
     "configuration": {
-      "title": "Huckleberry Task Manager",
+      "title": "Huckleberry Workflow Workbench",
       "properties": {
         "huckleberry.taskmanager.defaultTasksLocation": {
           "type": "string",
@@ -530,7 +530,7 @@
       "activitybar": [
         {
           "id": "huckleberryTaskExplorer",
-          "title": "Huckleberry Tasks",
+          "title": "Huckleberry Workflows",
           "icon": "resources/huckleberry-logo-dark.svg"
         }
       ]
@@ -539,9 +539,9 @@
       "huckleberryTaskExplorer": [
         {
           "id": "huckleberryTaskExplorer",
-          "name": "Task Explorer",
+          "name": "Workflow Explorer",
           "icon": "resources/huckleberry-logo-dark.svg",
-          "contextualTitle": "Tasks",
+          "contextualTitle": "Workflows",
           "type": "tree"
         }
       ]
@@ -595,17 +595,17 @@
     "viewsWelcome": [
       {
         "view": "huckleberryTaskExplorer",
-        "contents": "$(notebook) No tasks yet in this workspace\n\nGet started by creating your first task or scanning the codebase for TODOs.\n\n[$(plus) Create Task](command:vscode-copilot-huckleberry.createTask)\n[$(search) Scan for TODOs](command:vscode-copilot-huckleberry.scanTodos)",
+        "contents": "$(notebook) No workflows yet in this workspace\n\nGet started by initializing tracking and creating your first workflow task.\n\n[$(plus) Create Task](command:vscode-copilot-huckleberry.createTask)\n[$(search) Scan for TODOs](command:vscode-copilot-huckleberry.scanTodos)",
         "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized == true && huckleberry.hasTaskData == false"
       },
       {
         "view": "huckleberryTaskExplorer",
-        "contents": "$(warning) Task tracking not initialized\n\nYou need to initialize task tracking for this workspace first.\n\n[$(gear) Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
+        "contents": "$(warning) Workflow tracking not initialized\n\nYou need to initialize tracking for this workspace first.\n\n[$(gear) Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
         "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized == false"
       },
       {
         "view": "huckleberryTaskExplorer",
-        "contents": "$(gear) Huckleberry Task Management\n\nGet started by initializing task tracking.\n\n[Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
+        "contents": "$(gear) Huckleberry Workflow Workbench\n\nGet started by initializing tracking.\n\n[Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
         "when": "view == huckleberryTaskExplorer"
       }
     ]

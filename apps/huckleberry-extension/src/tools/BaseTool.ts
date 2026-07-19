@@ -8,7 +8,7 @@ export interface BaseToolParams {
 }
 
 /**
- * Base class for language model tools that can be used by the Task Manager
+ * Base class for language model tools used by Huckleberry.
  */
 export abstract class BaseTool<T extends BaseToolParams = BaseToolParams> {
   /**
@@ -68,7 +68,7 @@ export abstract class BaseTool<T extends BaseToolParams = BaseToolParams> {
    * @param message The error message
    */
   protected showError(message: string): void {
-    vscode.window.showErrorMessage(`Task Manager: ${message}`);
+    vscode.window.showErrorMessage(`Huckleberry: ${message}`);
   }
 
   /**
@@ -76,7 +76,7 @@ export abstract class BaseTool<T extends BaseToolParams = BaseToolParams> {
    * @param message The information message
    */
   protected showInfo(message: string): void {
-    vscode.window.showInformationMessage(`Task Manager: ${message}`);
+    vscode.window.showInformationMessage(`Huckleberry: ${message}`);
   }
 
   /**

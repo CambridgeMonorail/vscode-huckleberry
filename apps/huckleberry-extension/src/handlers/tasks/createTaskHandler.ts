@@ -108,7 +108,7 @@ export async function handleCreateTaskRequest(
 ${description}
 
 ## Notes
-- Created via Huckleberry Task Manager
+- Created via Huckleberry Workflow Workbench
 `;
 
       await writeFileTool.execute({

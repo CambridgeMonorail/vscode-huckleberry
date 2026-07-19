@@ -233,7 +233,7 @@ async function respondWithGeneralHelp(
   stream: vscode.ChatResponseStream,
 ): Promise<void> {
   await streamMarkdown(stream, `
-# Huckleberry Task Manager Help
+# Huckleberry Workflow Workbench Help
 
 I'm your huckleberry. I'm here to help you manage tasks in your project. Here are the features I support:
 

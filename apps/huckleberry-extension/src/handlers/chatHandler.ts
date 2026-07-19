@@ -39,7 +39,7 @@ export function isWorkspaceAvailable(): boolean {
 export function notifyNoWorkspace(): void {
   logWithChannel(LogLevel.WARN, 'No workspace is currently open');
   vscode.window.showInformationMessage(
-    'Huckleberry Task Manager requires an open workspace. Please open a folder or workspace to use all features.',
+    'Huckleberry Workflow Workbench requires an open workspace. Please open a folder or workspace to use all features.',
     'Open Folder',
   ).then(selection => {
     if (selection === 'Open Folder') {
@@ -174,7 +174,7 @@ export async function handleChatRequest(
       await stream.markdown(`
 **Huckleberry needs a workspace to manage tasks.**
 
-I notice you don't have a workspace open. To use Huckleberry Task Manager features, please:
+    I notice you don't have a workspace open. To use Huckleberry Workflow Workbench features, please:
 
 1. Open a folder or workspace first
 2. Then try your command again
@@ -184,7 +184,7 @@ You can open a folder via File > Open Folder or use the 'Open Folder' button bel
 
       // Show notification with action button
       vscode.window.showInformationMessage(
-        'Huckleberry Task Manager requires an open workspace to manage tasks.',
+        'Huckleberry Workflow Workbench requires an open workspace to manage workflows.',
         'Open Folder',
       ).then(selection => {
         if (selection === 'Open Folder') {
