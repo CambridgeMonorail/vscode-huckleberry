@@ -26,13 +26,17 @@
     "onChatParticipant:huckleberry",
     "onView:huckleberryLoopsView",
     "onView:huckleberryRunsView",
+    "onView:huckleberryEvidenceView",
     "onCommand:vscode-copilot-huckleberry.loops.refresh",
     "onCommand:vscode-copilot-huckleberry.runs.refresh",
+    "onCommand:vscode-copilot-huckleberry.evidence.refresh",
     "onCommand:vscode-copilot-huckleberry.loops.runLoop",
     "onCommand:vscode-copilot-huckleberry.runs.cancel",
     "onCommand:vscode-copilot-huckleberry.runs.approvalAction",
     "onCommand:vscode-copilot-huckleberry.runs.getStatus",
     "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
+    "onCommand:vscode-copilot-huckleberry.evidence.openArtifact",
+    "onCommand:vscode-copilot-huckleberry.evidence.revealArtifact",
     "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
     "onCommand:vscode-copilot-huckleberry.debugWelcomeView",
     "onCommand:vscode-copilot-huckleberry.debugTreeViewProperties"
@@ -52,6 +56,13 @@
         "category": "Huckleberry",
         "icon": "$(refresh)",
         "description": "Refresh the Runs explorer view"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.evidence.refresh",
+        "title": "Refresh Evidence",
+        "category": "Huckleberry",
+        "icon": "$(refresh)",
+        "description": "Refresh the Evidence explorer view"
       },
       {
         "command": "vscode-copilot-huckleberry.loops.createStarterTemplates",
@@ -96,6 +107,20 @@
         "description": "Open stdout, stderr, or metadata artifacts for a run step"
       },
       {
+        "command": "vscode-copilot-huckleberry.evidence.openArtifact",
+        "title": "Open Artifact",
+        "category": "Huckleberry",
+        "icon": "$(go-to-file)",
+        "description": "Open an artifact from the Evidence explorer"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.evidence.revealArtifact",
+        "title": "Reveal Artifact",
+        "category": "Huckleberry",
+        "icon": "$(folder-opened)",
+        "description": "Reveal an artifact in the OS file explorer"
+      },
+      {
         "command": "vscode-copilot-huckleberry.debugWelcomeView",
         "title": "Huckleberry: Debug Welcome View",
         "category": "Huckleberry",
@@ -136,6 +161,11 @@
           "id": "huckleberryRunsView",
           "name": "Runs",
           "type": "tree"
+        },
+        {
+          "id": "huckleberryEvidenceView",
+          "name": "Evidence",
+          "type": "tree"
         }
       ]
     },
@@ -154,6 +184,11 @@
         {
           "command": "vscode-copilot-huckleberry.runs.refresh",
           "when": "view == huckleberryRunsView",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.evidence.refresh",
+          "when": "view == huckleberryEvidenceView",
           "group": "navigation"
         }
       ],
@@ -177,6 +212,21 @@
           "command": "vscode-copilot-huckleberry.runs.openStepEvidence",
           "when": "view == huckleberryRunsView && viewItem == run-step-with-evidence",
           "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.evidence.openArtifact",
+          "when": "view == huckleberryEvidenceView && viewItem == evidence-artifact",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.evidence.revealArtifact",
+          "when": "view == huckleberryEvidenceView && viewItem == evidence-artifact",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.evidence.revealArtifact",
+          "when": "view == huckleberryEvidenceView && viewItem == evidence-artifact-missing",
+          "group": "inline"
         }
       ]
     },
@@ -188,6 +238,10 @@
       {
         "view": "huckleberryRunsView",
         "contents": "$(history) No runs yet.\n\nRun history and evidence timelines will appear here once loop execution is available.\n\n[$(refresh) Refresh Runs](command:vscode-copilot-huckleberry.runs.refresh)"
+      },
+      {
+        "view": "huckleberryEvidenceView",
+        "contents": "$(files) No evidence artifacts yet.\n\nArtifacts are grouped by run, step, and category after loop execution.\n\n[$(refresh) Refresh Evidence](command:vscode-copilot-huckleberry.evidence.refresh)"
       }
     ]
   },

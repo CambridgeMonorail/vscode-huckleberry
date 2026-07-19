@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { logWithChannel, LogLevel } from '../utils';
+import { EvidenceArtifactNodeModel, EvidenceExplorerProvider } from '../providers/EvidenceExplorerProvider';
 import { LoopExplorerProvider, LoopViewItemModel } from '../providers/LoopExplorerProvider';
 import { RunExplorerProvider, RunTimelineNodeModel } from '../providers/RunExplorerProvider';
 import { WorkflowTemplateService } from '../services';
@@ -64,6 +65,17 @@ function extractTimelineNode(input: unknown): RunTimelineNodeModel | undefined {
   return undefined;
 }
 
+function extractEvidenceArtifactNode(input: unknown): EvidenceArtifactNodeModel | undefined {
+  if (input && typeof input === 'object') {
+    const value = input as Record<string, unknown>;
+    if (typeof value['artifactPath'] === 'string' && typeof value['runId'] === 'string' && typeof value['stepId'] === 'string') {
+      return input as EvidenceArtifactNodeModel;
+    }
+  }
+
+  return undefined;
+}
+
 /**
  * Registers shell tree views and commands for the Loops and Runs explorers.
  */
@@ -71,6 +83,7 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
   const runnerClient = new RunnerClient();
   const loopExplorerProvider = new LoopExplorerProvider();
   const runExplorerProvider = new RunExplorerProvider(runnerClient);
+  const evidenceExplorerProvider = new EvidenceExplorerProvider(runnerClient);
   const workflowTemplateService = new WorkflowTemplateService();
 
   const loopsTreeView = vscode.window.createTreeView('huckleberryLoopsView', {
@@ -83,6 +96,11 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
     showCollapseAll: false,
   });
 
+  const evidenceTreeView = vscode.window.createTreeView('huckleberryEvidenceView', {
+    treeDataProvider: evidenceExplorerProvider,
+    showCollapseAll: false,
+  });
+
   const viewCommands = [
     vscode.commands.registerCommand('vscode-copilot-huckleberry.loops.refresh', async () => {
       await loopExplorerProvider.refresh();
@@ -92,6 +110,11 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.refresh', () => {
       runExplorerProvider.refresh();
       logWithChannel(LogLevel.DEBUG, 'Runs view refreshed');
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.evidence.refresh', async () => {
+      await evidenceExplorerProvider.refresh();
+      logWithChannel(LogLevel.DEBUG, 'Evidence view refreshed');
       return Promise.resolve();
     }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.getStatus', async (runInput: unknown) => {
@@ -194,6 +217,40 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
       await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(quickPick.path));
       return Promise.resolve();
     }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.evidence.openArtifact', async (input: unknown) => {
+      const artifact = extractEvidenceArtifactNode(input);
+      if (!artifact) {
+        vscode.window.showWarningMessage('No evidence artifact is associated with this item.');
+        return Promise.resolve();
+      }
+
+      try {
+        await vscode.workspace.fs.stat(vscode.Uri.file(artifact.artifactPath));
+      } catch {
+        vscode.window.showWarningMessage(`Artifact is missing or stale: ${artifact.artifactPath}`);
+        return Promise.resolve();
+      }
+
+      await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(artifact.artifactPath));
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.evidence.revealArtifact', async (input: unknown) => {
+      const artifact = extractEvidenceArtifactNode(input);
+      if (!artifact) {
+        vscode.window.showWarningMessage('No evidence artifact is associated with this item.');
+        return Promise.resolve();
+      }
+
+      try {
+        await vscode.workspace.fs.stat(vscode.Uri.file(artifact.artifactPath));
+      } catch {
+        vscode.window.showWarningMessage(`Artifact is missing or stale: ${artifact.artifactPath}`);
+        return Promise.resolve();
+      }
+
+      await vscode.commands.executeCommand('revealFileInOS', vscode.Uri.file(artifact.artifactPath));
+      return Promise.resolve();
+    }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.loops.runLoop', async (input: unknown) => {
       const item = extractLoopViewItemModel(input);
       if (!item) {
@@ -259,5 +316,14 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
     }),
   ];
 
-  context.subscriptions.push(runnerClient, loopExplorerProvider, runExplorerProvider, loopsTreeView, runsTreeView, ...viewCommands);
+  context.subscriptions.push(
+    runnerClient,
+    loopExplorerProvider,
+    runExplorerProvider,
+    evidenceExplorerProvider,
+    loopsTreeView,
+    runsTreeView,
+    evidenceTreeView,
+    ...viewCommands,
+  );
 }
