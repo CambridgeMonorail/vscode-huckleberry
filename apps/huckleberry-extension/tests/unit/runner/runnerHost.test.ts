@@ -7,12 +7,24 @@ const { executeCommandStepMock, persistStepEvidenceMock } = vi.hoisted(() => ({
   persistStepEvidenceMock: vi.fn(),
 }));
 
+const { appendRunEventMock, appendEvidenceIndexMock, reconstructRunsFromEventsMock } = vi.hoisted(() => ({
+  appendRunEventMock: vi.fn(),
+  appendEvidenceIndexMock: vi.fn(),
+  reconstructRunsFromEventsMock: vi.fn(),
+}));
+
 vi.mock('@huckleberry/extension/runner/commandExecutor', () => ({
   executeCommandStep: executeCommandStepMock,
 }));
 
 vi.mock('@huckleberry/extension/runner/evidenceStore', () => ({
   persistStepEvidence: persistStepEvidenceMock,
+}));
+
+vi.mock('@huckleberry/extension/runner/runEventStore', () => ({
+  appendRunEvent: appendRunEventMock,
+  appendEvidenceIndex: appendEvidenceIndexMock,
+  reconstructRunsFromEvents: reconstructRunsFromEventsMock,
 }));
 
 async function flushAsyncWork(): Promise<void> {
@@ -39,6 +51,8 @@ describe('RunnerHost', () => {
       completedAt: 120,
       durationMs: 20,
     });
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
 
     persistStepEvidenceMock.mockResolvedValue({
       runId: 'run-1',
@@ -98,6 +112,8 @@ describe('RunnerHost', () => {
     expect(statuses).toContain('succeeded');
     expect(executeCommandStepMock).toHaveBeenCalledTimes(1);
     expect(persistStepEvidenceMock).toHaveBeenCalledTimes(1);
+    expect(appendRunEventMock).toHaveBeenCalled();
+    expect(appendEvidenceIndexMock).toHaveBeenCalled();
 
     host.dispose();
   });
@@ -132,6 +148,8 @@ describe('RunnerHost', () => {
       stderrArtifactPath: '/tmp/stderr',
       metadataArtifactPath: '/tmp/metadata',
     }));
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
 
     host.handleMessage(
       {
@@ -173,6 +191,47 @@ describe('RunnerHost', () => {
       event => event.type === 'event' && event.payload.status === 'failed',
     );
     expect(failedEvent).toBeDefined();
+
+    expect(appendRunEventMock).toHaveBeenCalled();
+
+    host.dispose();
+  });
+
+  it('lists reconstructed runs loaded from persisted events', async () => {
+    const host = new RunnerHost();
+    const replies: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([
+      {
+        runId: 'historic-1',
+        loopId: 'lint',
+        loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+        status: 'failed',
+        startedAt: 1,
+        updatedAt: 2,
+        completedAt: 2,
+        stopReason: 'Step lint failed.',
+      },
+    ]);
+
+    host.handleMessage(
+      {
+        type: 'listRuns',
+        requestId: 'req-list',
+        payload: {},
+      },
+      response => replies.push(response),
+      () => undefined,
+    );
+
+    await flushAsyncWork();
+
+    const runsResponse = replies.find(reply => reply.type === 'runs');
+    expect(runsResponse).toBeDefined();
+    if (runsResponse?.type === 'runs') {
+      expect(runsResponse.payload.runs).toHaveLength(1);
+      expect(runsResponse.payload.runs[0].runId).toBe('historic-1');
+    }
 
     host.dispose();
   });

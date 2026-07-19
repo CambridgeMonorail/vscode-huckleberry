@@ -35,7 +35,7 @@ Priority values:
 | RIM-301 | 3 | Implement runner process and IPC contract | P0 | Docto | Done | RIM-201 | Added runner host/process/client IPC for start/status/cancel/events with Runs view integration and tests |
 | RIM-302 | 3 | Implement state-machine engine | P0 | Docto | Done | RIM-301 | Added deterministic transition engine with condition branching, retry limits, timeout handling, and replayable transition traces |
 | RIM-303 | 3 | Add command step executor | P0 | Docto | Done | RIM-301, RIM-302 | Added child-process command execution with timeout/exit capture, retry behavior, and per-step evidence artifacts under `.huckleberry/runs` |
-| RIM-304 | 3 | Persist runs/events/evidence metadata | P0 | Docto | Planned | RIM-302 | Recovery and inspectability |
+| RIM-304 | 3 | Persist runs/events/evidence metadata | P0 | Docto | Done | RIM-302 | Added append-only run event store, evidence metadata index, run reconstruction helpers, and Runs view hydration from persisted history |
 | RIM-305 | 3 | Build Runs UI timeline | P1 | Docto | Planned | RIM-302, RIM-304 | Timeline + statuses |
 | RIM-306 | 3 | Add cancellation and failure-stop reasons | P0 | Docto | Planned | RIM-302 | Clear terminal outcomes |
 | RIM-401 | 4 | Introduce AgentAdapter abstraction | P0 | Docto | Planned | RIM-303 | Provider boundary |
@@ -77,7 +77,7 @@ Priority values:
 
 ### Stage 3
 - [x] Command-only loops execute deterministically
-- [ ] Full event trail persisted and inspectable
+- [x] Full event trail persisted and inspectable
 - [ ] Cancel and timeout behavior reliable
 
 ### Stage 4

@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import * as path from 'path';
 import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
+import { appendEvidenceIndex, appendRunEvent, reconstructRunsFromEvents } from './runEventStore';
 import { loadWorkflowDefinition } from './workflowLoader';
 import { WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
@@ -24,6 +25,8 @@ type EmitEvent = (response: RunnerResponse) => void;
 export class RunnerHost {
   private readonly runs = new Map<string, RunnerRunRecord>();
   private readonly cancellationRequests = new Set<string>();
+  private readonly persistenceQueue = new Map<string, Promise<void>>();
+  private hydrationPromise?: Promise<void>;
 
   handleMessage(message: RunnerRequest, reply: Reply, emitEvent: EmitEvent): void {
     switch (message.type) {
@@ -31,10 +34,13 @@ export class RunnerHost {
         void this.handleStart(message, reply, emitEvent);
         return;
       case 'status':
-        this.handleStatus(message, reply);
+        void this.handleStatus(message, reply);
+        return;
+      case 'listRuns':
+        void this.handleListRuns(message, reply);
         return;
       case 'cancel':
-        this.handleCancel(message, reply, emitEvent);
+        void this.handleCancel(message, reply, emitEvent);
         return;
       case 'ping':
         reply({
@@ -57,6 +63,8 @@ export class RunnerHost {
     reply: Reply,
     emitEvent: EmitEvent,
   ): Promise<void> {
+    await this.ensureHydrated();
+
     const now = Date.now();
     const runId = randomUUID();
 
@@ -99,7 +107,9 @@ export class RunnerHost {
     void this.executeWorkflow(runRecord, workflow, message.payload.execution, emitEvent);
   }
 
-  private handleStatus(message: Extract<RunnerRequest, { type: 'status' }>, reply: Reply): void {
+  private async handleStatus(message: Extract<RunnerRequest, { type: 'status' }>, reply: Reply): Promise<void> {
+    await this.ensureHydrated();
+
     reply({
       type: 'status',
       requestId: message.requestId,
@@ -109,11 +119,25 @@ export class RunnerHost {
     });
   }
 
-  private handleCancel(
+  private async handleListRuns(message: Extract<RunnerRequest, { type: 'listRuns' }>, reply: Reply): Promise<void> {
+    await this.ensureHydrated();
+
+    reply({
+      type: 'runs',
+      requestId: message.requestId,
+      payload: {
+        runs: [...this.runs.values()].sort((left, right) => right.startedAt - left.startedAt),
+      },
+    });
+  }
+
+  private async handleCancel(
     message: Extract<RunnerRequest, { type: 'cancel' }>,
     reply: Reply,
     emitEvent: EmitEvent,
-  ): void {
+  ): Promise<void> {
+    await this.ensureHydrated();
+
     const run = this.runs.get(message.payload.runId);
 
     if (!run) {
@@ -166,6 +190,7 @@ export class RunnerHost {
     const event: RunnerEvent = {
       runId: run.runId,
       loopId: run.loopId,
+      loopFilePath: run.loopFilePath,
       status,
       eventType,
       message,
@@ -177,6 +202,13 @@ export class RunnerHost {
     emitEvent({
       type: 'event',
       payload: event,
+    });
+
+    this.queuePersistence(run.runId, async () => {
+      await appendRunEvent(event);
+      if (stepResult) {
+        await appendEvidenceIndex(run.runId, stepResult);
+      }
     });
   }
 
@@ -391,5 +423,30 @@ export class RunnerHost {
     }
 
     return conditionInputs[normalized] ?? false;
+  }
+
+  private async ensureHydrated(): Promise<void> {
+    if (!this.hydrationPromise) {
+      this.hydrationPromise = (async () => {
+        const reconstructed = await reconstructRunsFromEvents();
+        for (const run of reconstructed) {
+          this.runs.set(run.runId, run);
+        }
+      })();
+    }
+
+    await this.hydrationPromise;
+  }
+
+  private queuePersistence(runId: string, action: () => Promise<void>): void {
+    const pending = this.persistenceQueue.get(runId) ?? Promise.resolve();
+
+    const next = pending
+      .then(action)
+      .catch(() => {
+        // Persistence failures are intentionally swallowed to keep runner execution alive.
+      });
+
+    this.persistenceQueue.set(runId, next);
   }
 }

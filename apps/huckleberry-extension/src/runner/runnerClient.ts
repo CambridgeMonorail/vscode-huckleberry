@@ -51,6 +51,20 @@ export class RunnerClient implements vscode.Disposable {
     return response.payload.run;
   }
 
+  async listRuns(): Promise<RunnerRunRecord[]> {
+    const response = await this.sendRequest({
+      type: 'listRuns',
+      requestId: this.nextRequestId(),
+      payload: {},
+    });
+
+    if (response.type !== 'runs') {
+      throw new Error(`Unexpected runner response type: ${response.type}`);
+    }
+
+    return response.payload.runs;
+  }
+
   async cancelRun(runId: string): Promise<void> {
     const response = await this.sendRequest({
       type: 'cancel',

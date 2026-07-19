@@ -46,6 +46,11 @@ export type RunnerRequest =
       };
     }
   | {
+      type: 'listRuns';
+      requestId: string;
+      payload: Record<string, never>;
+    }
+  | {
       type: 'cancel';
       requestId: string;
       payload: {
@@ -81,6 +86,7 @@ export interface RunnerRunRecord {
 export interface RunnerEvent {
   runId: string;
   loopId: string;
+  loopFilePath?: string;
   status: RunnerRunStatus;
   timestamp: number;
   eventType: string;
@@ -111,6 +117,13 @@ export type RunnerResponse =
       requestId: string;
       payload: {
         run?: RunnerRunRecord;
+      };
+    }
+  | {
+      type: 'runs';
+      requestId: string;
+      payload: {
+        runs: RunnerRunRecord[];
       };
     }
   | {

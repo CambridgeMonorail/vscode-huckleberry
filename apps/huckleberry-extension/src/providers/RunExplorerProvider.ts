@@ -39,6 +39,8 @@ export class RunExplorerProvider implements vscode.TreeDataProvider<vscode.TreeI
   private readonly runnerEventSubscription: vscode.Disposable;
 
   constructor(private readonly runnerClient: RunnerClient) {
+    void this.hydrateRuns();
+
     this.runnerEventSubscription = this.runnerClient.onRunEvent(async event => {
       const latestStatus = await this.runnerClient.getStatus(event.runId);
       if (latestStatus) {
@@ -62,6 +64,18 @@ export class RunExplorerProvider implements vscode.TreeDataProvider<vscode.TreeI
 
   refresh(): void {
     this.onDidChangeEmitter.fire();
+  }
+
+  private async hydrateRuns(): Promise<void> {
+    try {
+      const runs = await this.runnerClient.listRuns();
+      for (const run of runs) {
+        this.runs.set(run.runId, run);
+      }
+      this.refresh();
+    } catch {
+      // Ignore hydration failures. Live events will still populate the view.
+    }
   }
 
   dispose(): void {
