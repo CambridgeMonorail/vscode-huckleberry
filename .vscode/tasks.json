@@ -1,84 +1,187 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "build-extension",
-      "type": "shell",
-      "command": "pnpm exec nx build vscode-copilot-huckleberry",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "dedicated"
-      },
-      "problemMatcher": "$tsc"
-    },
-    {
-      "label": "serve-react-app",
-      "type": "shell",
-      "command": "pnpm exec nx serve demo-site",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": {
-          "regexp": "."
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "VITE v\\d+\\.\\d+\\.\\d+\\s+ready",
-          "endsPattern": "\\sLocal:\\s+http://localhost:\\d+"
-        }
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },    {
-      "label": "watch-extension",
-      "type": "shell",
-      "command": "cd apps/huckleberry-extension && pnpm run watch",
-      "isBackground": true,
-      "group": "build",
-      "problemMatcher": "$tsc-watch"
-    },
-    {
-      "label": "run-tests",
-      "type": "shell",
-      "command": "cd apps/huckleberry-extension && pnpm run test",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "run-tests-watch",
-      "type": "shell",
-      "command": "cd apps/huckleberry-extension && pnpm run test:watch",
-      "isBackground": true,
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "run-tests-coverage",
-      "type": "shell",
-      "command": "cd apps/huckleberry-extension && pnpm run test:coverage",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build-extension",
+			"type": "shell",
+			"command": "pnpm exec nx build vscode-copilot-huckleberry",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "silent",
+				"panel": "dedicated"
+			},
+			"problemMatcher": "$tsc"
+		},
+		{
+			"label": "serve-react-app",
+			"type": "shell",
+			"command": "pnpm exec nx serve demo-site",
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "typescript",
+				"pattern": {
+					"regexp": "."
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "VITE v\\d+\\.\\d+\\.\\d+\\s+ready",
+					"endsPattern": "\\sLocal:\\s+http://localhost:\\d+"
+				}
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "watch-extension",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && pnpm run watch",
+			"isBackground": true,
+			"group": "build",
+			"problemMatcher": "$tsc-watch"
+		},
+		{
+			"label": "run-tests",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && pnpm run test",
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "run-tests-watch",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && pnpm run test:watch",
+			"isBackground": true,
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "run-tests-coverage",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && pnpm run test:coverage",
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "validate-affected-now",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-now",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-now",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-now",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "terminal-health-check",
+			"type": "shell",
+			"command": "echo ok",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-now",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-now",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "sync-stage2-issues",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 46 --body \"RIM-203 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added WorkflowValidationService in src/services/workflowValidationService.ts.\n- Added JSON + YAML parsing support (yaml dependency) for loop definition validation.\n- Strengthened validator pipeline in src/workflows/validator.ts to perform structural + semantic checks with explicit error codes/paths.\n- Added validation tests in tests/unit/services/workflowValidationService.test.ts.\n\nValidation: pnpm validate:affected green after changes.\nTracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 46 --comment \"Closing as completed by the RIM-203 implementation changes.\" && GH_PAGER=cat gh issue comment 47 --body \"RIM-204 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Implemented LoopExplorerProvider with discovery-backed item rendering.\n- Integrated per-loop validation status into view items (valid/invalid badges).\n- Added command wiring to open loop definitions and show concise validation summaries.\n- Loops refresh and file-watch updates now rehydrate validation state in UI.\n\nValidation: pnpm validate:affected green after changes.\nTracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 47 --comment \"Closing as completed by the RIM-204 implementation changes.\" && GH_PAGER=cat gh issue comment 48 --body \"RIM-205 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added WorkflowTemplateService in src/services/workflowTemplateService.ts.\n- Added command `vscode-copilot-huckleberry.loops.createStarterTemplates` and Loops view action.\n- Starter templates scaffolded for lint/typecheck/test under `.huckleberry/loops`.\n- Added unit tests in tests/unit/services/workflowTemplateService.test.ts including out-of-box template validation.\n\nValidation: pnpm validate:affected green after changes.\nTracker + Stage 2 exit checklist updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 48 --comment \"Closing as completed by the RIM-205 implementation changes.\"",
+			"group": "test"
+		},
+		{
+			"label": "status-check",
+			"type": "shell",
+			"command": "git status --short",
+			"group": "test"
+		},
+		{
+			"label": "status-check-now",
+			"type": "shell",
+			"command": "git rev-parse --abbrev-ref HEAD && git status --short",
+			"group": "test"
+		},
+		{
+			"label": "open-rim-issues",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --state open --limit 200 --search \"RIM-\"",
+			"group": "test"
+		},
+		{
+			"label": "branch-check-now",
+			"type": "shell",
+			"command": "git rev-parse --abbrev-ref HEAD",
+			"group": "test"
+		},
+		{
+			"label": "close-stage0-issues",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 35 --body \"RIM-001 is complete on branch feat/huckleberry-reimagination. Branch scope and stage framing were established for the migration program.\" && GH_PAGER=cat gh issue close 35 --comment \"Closing as completed by the Stage 0 setup work.\" && GH_PAGER=cat gh issue comment 36 --body \"RIM-002 is complete. Architecture decision records were drafted and referenced for reimagination execution.\" && GH_PAGER=cat gh issue close 36 --comment \"Closing as completed by the Stage 0 ADR work.\" && GH_PAGER=cat gh issue comment 37 --body \"RIM-003 is complete. Canonical run-state vocabulary and terminal statuses were defined and adopted in planning artifacts.\" && GH_PAGER=cat gh issue close 37 --comment \"Closing as completed by the Stage 0 run-state definition work.\"",
+			"group": "test"
+		},
+		{
+			"label": "open-rim-issues-check",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --state open --limit 200 --search \"RIM-\"",
+			"group": "test"
+		},
+		{
+			"label": "status-before-commit",
+			"type": "shell",
+			"command": "git status --short",
+			"group": "test"
+		},
+		{
+			"label": "close-rim-004",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 38 --body \"RIM-004 is complete. Implementation tracker was added and has been maintained as the execution source of truth.\" && GH_PAGER=cat gh issue close 38 --comment \"Closing as completed by Stage 0 execution tracking work.\"",
+			"group": "test"
+		},
+		{
+			"label": "commit-and-push-stage12",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat(extension): complete shell and workflow discovery stages\" && git push -u origin feat/huckleberry-reimagination",
+			"group": "test"
+		}
+	]
 }

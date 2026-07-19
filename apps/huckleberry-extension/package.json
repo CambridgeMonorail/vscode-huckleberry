@@ -24,194 +24,48 @@
   ],
   "activationEvents": [
     "onChatParticipant:huckleberry",
-    "onLanguageModelTool:create_task",
-    "onLanguageModelTool:initialize_tracking",
-    "onLanguageModelTool:initialise_tracking",
-    "onLanguageModelTool:scan_todos",
-    "onLanguageModelTool:list_tasks",
-    "onLanguageModelTool:mark_task_done",
-    "onLanguageModelTool:update_task_priority",
-    "onLanguageModelTool:prioritize_tasks",
-    "onLanguageModelTool:next_task",
-    "onLanguageModelTool:help",
-    "onLanguageModelTool:break_task_into_subtasks",
-    "onCommand:vscode-copilot-huckleberry.manageTasks",
-    "onCommand:vscode-copilot-huckleberry.initializeTaskTracking",
-    "onCommand:vscode-copilot-huckleberry.initialiseTaskTracking",
-    "onCommand:vscode-copilot-huckleberry.createTask",
-    "onCommand:vscode-copilot-huckleberry.listTasks",
-    "onCommand:vscode-copilot-huckleberry.markTaskComplete",
-    "onCommand:vscode-copilot-huckleberry.changeTaskPriority",
-    "onCommand:vscode-copilot-huckleberry.scanTodos",
-    "onCommand:vscode-copilot-huckleberry.prioritizeTasks",
-    "onCommand:vscode-copilot-huckleberry.getNextTask",
-    "onCommand:github-copilot.show",
-    "onView:huckleberryTaskExplorer"
-  ],  "contributes": {
+    "onView:huckleberryLoopsView",
+    "onView:huckleberryRunsView",
+    "onCommand:vscode-copilot-huckleberry.loops.refresh",
+    "onCommand:vscode-copilot-huckleberry.runs.refresh",
+    "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
+    "onCommand:vscode-copilot-huckleberry.debugWelcomeView",
+    "onCommand:vscode-copilot-huckleberry.debugTreeViewProperties"
+  ],
+  "contributes": {
     "commands": [
+      {
+        "command": "vscode-copilot-huckleberry.loops.refresh",
+        "title": "Refresh Loops",
+        "category": "Huckleberry",
+        "icon": "$(refresh)",
+        "description": "Refresh the Loops explorer view"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.refresh",
+        "title": "Refresh Runs",
+        "category": "Huckleberry",
+        "icon": "$(refresh)",
+        "description": "Refresh the Runs explorer view"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.loops.createStarterTemplates",
+        "title": "Create Starter Templates",
+        "category": "Huckleberry",
+        "icon": "$(new-file)",
+        "description": "Scaffold starter loop definitions under .huckleberry/loops"
+      },
       {
         "command": "vscode-copilot-huckleberry.debugWelcomeView",
         "title": "Huckleberry: Debug Welcome View",
         "category": "Huckleberry",
-        "description": "Debug why the workflow explorer welcome view is not showing"
+        "description": "Debug why the explorer welcome view is not showing"
       },
       {
         "command": "vscode-copilot-huckleberry.debugTreeViewProperties",
         "title": "Huckleberry: Debug TreeView Properties",
         "category": "Huckleberry",
         "description": "Inspect TreeView properties to troubleshoot welcome view issues"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.manageTasks",
-        "title": "Huckleberry: Open Workbench",
-        "category": "Huckleberry",
-        "description": "Open the Huckleberry workflow workbench"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.initializeTaskTracking",
-        "title": "Huckleberry: Initialize Task Tracking",
-        "category": "Huckleberry",
-        "description": "Set up task tracking for the current workspace"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.initialiseTaskTracking",
-        "title": "Huckleberry: Initialise Task Tracking",
-        "category": "Huckleberry",
-        "description": "Set up task tracking for the current workspace (British spelling)"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.createTask",
-        "title": "Huckleberry: Create Task",
-        "category": "Huckleberry",
-        "description": "Create a new task in the workspace"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.listTasks",
-        "title": "Huckleberry: List Tasks",
-        "category": "Huckleberry",
-        "description": "List all tasks in the workspace"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.markTaskComplete",
-        "title": "Huckleberry: Mark Task Complete",
-        "category": "Huckleberry",
-        "description": "Mark a task as completed"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.changeTaskPriority",
-        "title": "Huckleberry: Change Task Priority",
-        "category": "Huckleberry",
-        "description": "Change the priority of a task"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.scanTodos",
-        "title": "Huckleberry: Scan TODOs",
-        "category": "Huckleberry",
-        "description": "Scan workspace files for TODO comments and convert them to tasks"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.scanTodos",
-        "title": "Huckleberry: Scan for TODOs",
-        "category": "Huckleberry",
-        "description": "Scan codebase for TODO comments and create tasks"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.prioritizeTasks",
-        "title": "Huckleberry: Prioritize Tasks",
-        "category": "Huckleberry",
-        "description": "Sort tasks by status and priority"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.getNextTask",
-        "title": "Huckleberry: Get Next Task",
-        "category": "Huckleberry",
-        "description": "Suggest the next task to work on"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.getHelp",
-        "title": "Huckleberry: Get Help",
-        "category": "Huckleberry",
-        "description": "Show help and available commands for task management"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.parseRequirementsDocument",
-        "title": "Huckleberry: Parse Requirements Document",
-        "category": "Huckleberry",
-        "description": "Parse a requirements document and create tasks from it"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.openTaskExplorer",
-        "title": "Huckleberry: Open Workflow Explorer",
-        "category": "Huckleberry",
-        "description": "Open the Workflow Explorer view"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.createSubtasks",
-        "title": "Huckleberry: Create Subtasks",
-        "category": "Huckleberry",
-        "description": "Break down a task into multiple subtasks"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.exportTasks",
-        "title": "Huckleberry: Export Tasks",
-        "category": "Huckleberry",
-        "description": "Export tasks to a different format (markdown, CSV, JSON)"
-      },
-      {
-        "command": "vscode-copilot-huckleberry._checkCopilotAgentMode",
-        "title": "Huckleberry (Dev): Check Copilot Agent Mode",
-        "enablement": "huckleberry.developmentMode",
-        "category": "Huckleberry",
-        "description": "Check if Copilot Agent Mode is enabled (development only)"
-      },
-      {
-        "command": "vscode-copilot-huckleberry._testChat",
-        "title": "Huckleberry (Dev): Test Chat Integration",
-        "enablement": "huckleberry.developmentMode",
-        "category": "Huckleberry",
-        "description": "Test the chat integration and diagnose potential issues (development only)"
-      },
-      {
-        "command": "vscode-copilot-huckleberry._forceRefreshChatParticipants",
-        "title": "Huckleberry (Dev): Refresh Chat Participants",
-        "enablement": "huckleberry.developmentMode",
-        "category": "Huckleberry",
-        "description": "Force refresh of chat participants if they stop responding (development only)"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.taskExplorer.refresh",
-        "title": "Refresh Workflow Explorer",
-        "category": "Huckleberry",
-        "icon": "$(refresh)",
-        "description": "Refresh the Workflow Explorer view"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.taskExplorer.sortByPriority",
-        "title": "Sort by Priority",
-        "category": "Huckleberry",
-        "icon": "$(sort-precedence)",
-        "description": "Toggle sorting tasks by priority"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted",
-        "title": "Show/Hide Completed Tasks",
-        "category": "Huckleberry",
-        "icon": "$(check)",
-        "description": "Toggle visibility of completed tasks"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
-        "title": "Mark Complete",
-        "category": "Huckleberry Workflow Explorer",
-        "icon": "$(check)",
-        "description": "Mark the selected task as complete"
-      },
-      {
-        "command": "vscode-copilot-huckleberry.taskExplorer.getNextTask",
-        "title": "Go to Next Task",
-        "category": "Huckleberry Workflow Explorer",
-        "icon": "$(arrow-right)",
-        "description": "Get the next task to work on"
       }
     ],
     "chatParticipants": [
@@ -219,329 +73,28 @@
         "id": "huckleberry",
         "name": "Huckleberry",
         "description": "An assistant that helps manage engineering workflows and project execution",
-        "isSticky": false,
-        "commands": [
-          {
-            "name": "manageTasks",
-            "description": "Show the task management interface"
-          }
-        ]
+        "isSticky": false
       }
     ],
-    "languageModelTools": [
-      {
-        "name": "create_task",
-        "displayName": "Create Task",
-        "modelDescription": "Creates a new task in Huckleberry. Use this tool to create a new task with optional priority and due date information.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "createHuckleberryTask",
-        "userDescription": "Creates a task in your project's task management system",
-        "icon": "resources/create-task-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "description": {
-              "type": "string",
-              "description": "Description of the task"
-            },
-            "priority": {
-              "type": "string",
-              "enum": [
-                "low",
-                "medium",
-                "high",
-                "critical"
-              ],
-              "description": "Priority of the task"
-            }
-          },
-          "required": [
-            "description"
-          ]
-        }
-      },
-      {
-        "name": "initialize_tracking",
-        "displayName": "Initialize Task Tracking",
-        "modelDescription": "Initialize task tracking for a project workspace. Use this tool when a user first mentions they want to track tasks or organize their project work. This tool will create the necessary file structure for task tracking in the current workspace, including a tasks.json file to store task metadata. It requires an open workspace with write access and shouldn't be used in read-only environments or when task tracking is already set up.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "initializeHuckleberryTaskTracking",
-        "userDescription": "Sets up the task tracking system in your project",
-        "icon": "resources/initialize-tasks-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        },
-        "when": "workspaceFolderCount > 0"
-      },
-      {
-        "name": "initialise_tracking",
-        "displayName": "Initialise Task Tracking",
-        "modelDescription": "Initialise task tracking for a project workspace. Use this tool when a user first mentions they want to track tasks or organize their project work. This tool will create the necessary file structure for task tracking in the current workspace, including a tasks.json file to store task metadata. It requires an open workspace with write access and shouldn't be used in read-only environments or when task tracking is already set up.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "initialiseHuckleberryTaskTracking",
-        "userDescription": "Sets up the task tracking system in your project",
-        "icon": "resources/initialize-tasks-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        },
-        "when": "workspaceFolderCount > 0"
-      },
-      {
-        "name": "scan_todos",
-        "displayName": "Scan TODOs",
-        "modelDescription": "Scans the codebase for TODO comments and converts them to tasks. Use this tool to scan the codebase for TODO comments and create tasks from them.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "scanTodosHuckleberry",
-        "userDescription": "Finds TODOs in your code and adds them to your task list",
-        "icon": "resources/scan-todos-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "type": "string",
-              "description": "Optional file pattern to scan (e.g., '**/*.ts'). If not provided, will scan all files."
-            }
-          },
-          "required": []
-        }
-      },
-      {
-        "name": "list_tasks",
-        "displayName": "List Tasks",
-        "modelDescription": "Lists tasks from the task manager. Use this tool to retrieve and list tasks, optionally filtered by priority or status.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "listHuckleberryTasks",
-        "userDescription": "Shows your current tasks with optional filtering",
-        "icon": "resources/create-task-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "priority": {
-              "type": "string",
-              "enum": [
-                "low",
-                "medium",
-                "high",
-                "critical",
-                "all"
-              ],
-              "description": "Filter tasks by priority"
-            },
-            "status": {
-              "type": "string",
-              "enum": [
-                "open",
-                "in_progress",
-                "done",
-                "all"
-              ],
-              "description": "Filter tasks by status"
-            }
-          },
-          "required": []
-        }
-      },
-      {
-        "name": "mark_task_done",
-        "displayName": "Mark Task Done",
-        "modelDescription": "Marks a task as complete. Use this tool to mark a task as complete by providing the task ID.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "completeHuckleberryTask",
-        "userDescription": "Marks a task as completed",
-        "icon": "resources/initialize-tasks-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "taskId": {
-              "type": "string",
-              "description": "ID of the task to mark as done"
-            }
-          },
-          "required": [
-            "taskId"
-          ]
-        }
-      },
-      {
-        "name": "update_task_priority",
-        "displayName": "Change Task Priority",
-        "modelDescription": "Changes the priority of a task. Use this tool to change the priority of a task by providing the task ID and new priority.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "updateHuckleberryTaskPriority",
-        "userDescription": "Updates the priority of a task",
-        "icon": "resources/create-task-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "taskId": {
-              "type": "string",
-              "description": "ID of the task to update"
-            },
-            "priority": {
-              "type": "string",
-              "enum": [
-                "low",
-                "medium",
-                "high",
-                "critical"
-              ],
-              "description": "New priority for the task"
-            }
-          },
-          "required": [
-            "taskId",
-            "priority"
-          ]
-        }
-      },
-      {
-        "name": "prioritize_tasks",
-        "displayName": "Prioritize Tasks",
-        "modelDescription": "Sorts and organizes tasks by status and priority. Use this tool to sort tasks in the tasks.json file with incomplete tasks first, then by priority (critical, high, medium, low).",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "prioritizeHuckleberryTasks",
-        "userDescription": "Sorts tasks by status and priority",
-        "icon": "resources/initialize-tasks-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      },
-      {
-        "name": "next_task",
-        "displayName": "Get Next Task",
-        "modelDescription": "Suggests the next task to work on based on priority and status. Use this tool to help users decide which task they should focus on next from their task list.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "getNextHuckleberryTask",
-        "userDescription": "Suggests the next task you should work on",
-        "icon": "resources/create-task-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {},
-          "required": []
-        }
-      },
-      {
-        "name": "help",
-        "displayName": "Get Help",
-        "modelDescription": "Provides help and explanations about Huckleberry's task management features. Use this tool when the user asks for help, instructions, or information about available commands and features.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "getHuckleberryHelp",
-        "userDescription": "Shows help and available commands for task management",
-        "icon": "resources/initialize-tasks-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "topic": {
-              "type": "string",
-              "description": "Optional specific feature or topic to get help about",
-              "enum": [
-                "task-creation",
-                "task-listing",
-                "task-completion",
-                "task-priority",
-                "todo-scanning",
-                "requirements-parsing",
-                "task-decomposition",
-                "next-task",
-                "task-initialization",
-                "general"
-              ]
-            }
-          },
-          "required": []
-        }
-      },
-      {
-        "name": "break_task_into_subtasks",
-        "displayName": "Break Task into Subtasks",
-        "modelDescription": "Breaks a task into multiple subtasks. Use this tool when a task is complex and should be divided into smaller, more manageable pieces.",
-        "canBeReferencedInPrompt": true,
-        "toolReferenceName": "breakHuckleberryTask",
-        "userDescription": "Divides a complex task into multiple subtasks",
-        "icon": "resources/create-task-icon.svg",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "taskId": {
-              "type": "string",
-              "description": "ID of the task to break down into subtasks"
-            }
-          },
-          "required": [
-            "taskId"
-          ]
-        }
-      }
-    ],
-    "configuration": {
-      "title": "Huckleberry Workflow Workbench",
-      "properties": {
-        "huckleberry.taskmanager.defaultTasksLocation": {
-          "type": "string",
-          "default": "tasks",
-          "description": "Default location for task files (relative to workspace root)"
-        },
-        "huckleberry.taskmanager.taskFileTemplate": {
-          "type": "string",
-          "enum": [
-            "markdown",
-            "json"
-          ],
-          "default": "markdown",
-          "description": "Template format to use when creating new task files"
-        },
-        "huckleberry.taskmanager.defaultTaskPriority": {
-          "type": "string",
-          "enum": [
-            "low",
-            "medium",
-            "high",
-            "critical"
-          ],
-          "default": "medium",
-          "description": "Default priority for new tasks when unspecified"
-        },
-        "huckleberry.taskmanager.defaultDueDate": {
-          "type": "string",
-          "enum": [
-            "none",
-            "tomorrow",
-            "nextWeek",
-            "twoWeeks",
-            "custom"
-          ],
-          "default": "none",
-          "description": "Default due date setting for new tasks"
-        },
-        "huckleberry.taskmanager.customDueDateDays": {
-          "type": "number",
-          "default": 7,
-          "description": "Number of days for custom due date setting (when defaultDueDate is set to 'custom')"
-        }
-      }
-    },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "huckleberryTaskExplorer",
-          "title": "Huckleberry Workflows",
+          "id": "huckleberryWorkbench",
+          "title": "Huckleberry",
           "icon": "resources/huckleberry-logo-dark.svg"
         }
       ]
     },
     "views": {
-      "huckleberryTaskExplorer": [
+      "huckleberryWorkbench": [
         {
-          "id": "huckleberryTaskExplorer",
-          "name": "Workflow Explorer",
-          "icon": "resources/huckleberry-logo-dark.svg",
-          "contextualTitle": "Workflows",
+          "id": "huckleberryLoopsView",
+          "name": "Loops",
+          "type": "tree"
+        },
+        {
+          "id": "huckleberryRunsView",
+          "name": "Runs",
           "type": "tree"
         }
       ]
@@ -549,64 +102,30 @@
     "menus": {
       "view/title": [
         {
-          "command": "vscode-copilot-huckleberry.taskExplorer.refresh",
-          "when": "view == huckleberryTaskExplorer",
+          "command": "vscode-copilot-huckleberry.loops.refresh",
+          "when": "view == huckleberryLoopsView",
           "group": "navigation"
         },
         {
-          "command": "vscode-copilot-huckleberry.taskExplorer.sortByPriority",
-          "when": "view == huckleberryTaskExplorer",
-          "group": "1_filtering"
+          "command": "vscode-copilot-huckleberry.loops.createStarterTemplates",
+          "when": "view == huckleberryLoopsView",
+          "group": "navigation"
         },
         {
-          "command": "vscode-copilot-huckleberry.taskExplorer.toggleShowCompleted",
-          "when": "view == huckleberryTaskExplorer",
-          "group": "1_filtering"
-        },
-        {
-          "command": "vscode-copilot-huckleberry.getNextTask",
-          "when": "view == huckleberryTaskExplorer && huckleberry.hasTaskData",
-          "group": "2_tasks"
-        },
-        {
-          "command": "vscode-copilot-huckleberry.initializeTaskTracking",
-          "when": "view == huckleberryTaskExplorer && !huckleberry.isInitialized",
-          "group": "2_tasks"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "vscode-copilot-huckleberry.taskExplorer.markComplete",
-          "when": "view == huckleberryTaskExplorer && viewItem == incompleteTask",
-          "group": "1_modification"
-        },
-        {
-          "command": "vscode-copilot-huckleberry.taskExplorer.getNextTask",
-          "when": "view == huckleberryTaskExplorer && viewItem == completedTask",
-          "group": "1_modification"
-        },
-        {
-          "command": "vscode-copilot-huckleberry.createSubtasks",
-          "when": "view == huckleberryTaskExplorer",
-          "group": "1_modification"
+          "command": "vscode-copilot-huckleberry.runs.refresh",
+          "when": "view == huckleberryRunsView",
+          "group": "navigation"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "huckleberryTaskExplorer",
-        "contents": "$(notebook) No workflows yet in this workspace\n\nGet started by initializing tracking and creating your first workflow task.\n\n[$(plus) Create Task](command:vscode-copilot-huckleberry.createTask)\n[$(search) Scan for TODOs](command:vscode-copilot-huckleberry.scanTodos)",
-        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized == true && huckleberry.hasTaskData == false"
+        "view": "huckleberryLoopsView",
+        "contents": "$(repo) No loops found yet.\n\nCreate workflow files under `.huckleberry/loops` to populate this view.\n\n[$(new-file) Create Starter Templates](command:vscode-copilot-huckleberry.loops.createStarterTemplates)\n[$(refresh) Refresh Loops](command:vscode-copilot-huckleberry.loops.refresh)"
       },
       {
-        "view": "huckleberryTaskExplorer",
-        "contents": "$(warning) Workflow tracking not initialized\n\nYou need to initialize tracking for this workspace first.\n\n[$(gear) Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
-        "when": "view == huckleberryTaskExplorer && huckleberry.isInitialized == false"
-      },
-      {
-        "view": "huckleberryTaskExplorer",
-        "contents": "$(gear) Huckleberry Workflow Workbench\n\nGet started by initializing tracking.\n\n[Initialize Task Tracking](command:vscode-copilot-huckleberry.initializeTaskTracking)",
-        "when": "view == huckleberryTaskExplorer"
+        "view": "huckleberryRunsView",
+        "contents": "$(history) No runs yet.\n\nRun history and evidence timelines will appear here once loop execution is available.\n\n[$(refresh) Refresh Runs](command:vscode-copilot-huckleberry.runs.refresh)"
       }
     ]
   },
@@ -627,8 +146,10 @@
     "@types/vscode": "^1.93.0",
     "@vscode/vsce": "^3.3.2",
     "typescript": "^5.6.3"
-  },  "dependencies": {
+  },
+  "dependencies": {
     "@vscode/chat-extension-utils": "0.0.0-alpha.5",
-    "tslib": "^2.6.2"
+    "tslib": "^2.6.2",
+    "yaml": "^2.9.0"
   }
 }

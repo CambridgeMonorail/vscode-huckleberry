@@ -23,15 +23,15 @@ Priority values:
 | RIM-003 | 0 | Define run-state vocabulary and terminal statuses | P0 | Docto | Done | RIM-001 | Canonical status vocabulary added in schema/types artifacts |
 | RIM-004 | 0 | Add implementation tracker doc | P0 | Docto | Done | RIM-001 | This file |
 | RIM-101 | 1 | Rename user-facing product surfaces | P0 | Docto | Done | RIM-001 | User-facing branding updated to Workflow Workbench language |
-| RIM-102 | 1 | Remove task-domain commands and providers | P0 | Docto | Planned | RIM-101 | Runtime cleanup |
-| RIM-103 | 1 | Introduce new view containers (Loops/Runs) | P1 | Docto | Planned | RIM-101 | Empty-state first |
-| RIM-104 | 1 | Refactor activation into composition root | P1 | Docto | Planned | RIM-102 | Reduce extension.ts scope |
-| RIM-105 | 1 | Preserve packaging and baseline tests | P0 | Docto | Planned | RIM-102, RIM-103, RIM-104 | Build confidence gate |
-| RIM-201 | 2 | Define workflow schema v1 | P0 | Docto | Planned | RIM-003 | Canonical model |
-| RIM-202 | 2 | Add .huckleberry/loops discovery service | P0 | Docto | Planned | RIM-201 | Scanner + watcher |
-| RIM-203 | 2 | Build workflow validator service | P0 | Docto | Planned | RIM-201 | Schema + semantic checks |
-| RIM-204 | 2 | Implement LoopExplorerProvider | P1 | Docto | Planned | RIM-202, RIM-203 | UI integration |
-| RIM-205 | 2 | Add starter workflow templates | P2 | Docto | Planned | RIM-201, RIM-203 | Quickstart path |
+| RIM-102 | 1 | Remove task-domain commands and providers | P0 | Docto | Done | RIM-101 | Task-domain manifest contributions removed and activation path trimmed; `pnpm validate:affected` green |
+| RIM-103 | 1 | Introduce new view containers (Loops/Runs) | P1 | Docto | Done | RIM-101 | Loops/Runs activity views added with refresh commands and welcome empty states; `pnpm validate:affected` green |
+| RIM-104 | 1 | Refactor activation into composition root | P1 | Docto | Done | RIM-102 | Activation responsibilities moved into `src/activation/*`; `extension.ts` now composes modules |
+| RIM-105 | 1 | Preserve packaging and baseline tests | P0 | Docto | Done | RIM-102, RIM-103, RIM-104 | `pnpm validate:affected` and extension `pnpm run package` both pass |
+| RIM-201 | 2 | Define workflow schema v1 | P0 | Docto | Done | RIM-003 | Added workflow model + validator with tests for malformed IDs, empty steps, duplicate IDs, and bad condition refs |
+| RIM-202 | 2 | Add .huckleberry/loops discovery service | P0 | Docto | Done | RIM-201 | Added scanner + watcher service and wired Loops view to auto-refresh on add/edit/delete |
+| RIM-203 | 2 | Build workflow validator service | P0 | Docto | Done | RIM-201 | Added parse+validate pipeline (JSON/YAML) with clear parse/semantic errors |
+| RIM-204 | 2 | Implement LoopExplorerProvider | P1 | Docto | Done | RIM-202, RIM-203 | Loops view now lists files with valid/invalid badges; opening a loop shows validation summary |
+| RIM-205 | 2 | Add starter workflow templates | P2 | Docto | Done | RIM-201, RIM-203 | Added scaffold command for lint/typecheck/test templates under `.huckleberry/loops` with validation coverage |
 | RIM-301 | 3 | Implement runner process and IPC contract | P0 | Docto | Planned | RIM-201 | Runner foundation |
 | RIM-302 | 3 | Implement state-machine engine | P0 | Docto | Planned | RIM-301 | Deterministic transitions |
 | RIM-303 | 3 | Add command step executor | P0 | Docto | Planned | RIM-301, RIM-302 | Command-only vertical slice |
@@ -66,14 +66,14 @@ Priority values:
 - [ ] Status vocabulary accepted
 
 ### Stage 1
-- [ ] No task-manager runtime path remains
-- [ ] Extension activates with Loops/Runs views
-- [ ] Build/test/package baseline green
+- [x] No task-manager runtime path remains
+- [x] Extension activates with Loops/Runs views
+- [x] Build/test/package baseline green
 
 ### Stage 2
-- [ ] Loop discovery works with file watch updates
-- [ ] Validation errors are clear and actionable
-- [ ] Starter templates validate out of the box
+- [x] Loop discovery works with file watch updates
+- [x] Validation errors are clear and actionable
+- [x] Starter templates validate out of the box
 
 ### Stage 3
 - [ ] Command-only loops execute deterministically

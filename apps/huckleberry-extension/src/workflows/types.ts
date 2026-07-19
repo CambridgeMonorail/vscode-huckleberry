@@ -1,0 +1,56 @@
+export type RunStatus =
+  | 'queued'
+  | 'running'
+  | 'paused'
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled'
+  | 'exhausted';
+
+export interface WorkflowDefinition {
+  schemaVersion: 1;
+  id: string;
+  name: string;
+  description?: string;
+  steps: WorkflowStep[];
+}
+
+interface StepBase {
+  id: string;
+  name?: string;
+  description?: string;
+}
+
+export interface CommandStep extends StepBase {
+  type: 'command';
+  command: string;
+}
+
+export interface ConditionStep extends StepBase {
+  type: 'condition';
+  expression: string;
+  true: string;
+  false: string;
+}
+
+export interface ApprovalStep extends StepBase {
+  type: 'approval';
+}
+
+export interface ArtifactStep extends StepBase {
+  type: 'artifact';
+  command: string;
+}
+
+export type WorkflowStep = CommandStep | ConditionStep | ApprovalStep | ArtifactStep;
+
+export interface WorkflowValidationError {
+  code: string;
+  message: string;
+  path: string;
+}
+
+export interface WorkflowValidationResult {
+  valid: boolean;
+  errors: WorkflowValidationError[];
+}

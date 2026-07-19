@@ -22,6 +22,16 @@ Primary goals:
 | 6 | Worktree Isolation | Safe isolated execution path for riskier runs |
 | 7 | Quality + Release | Hardening, docs, telemetry, and release readiness |
 
+## Progress Snapshot
+
+Last updated: 2026-07-19
+
+- Completed: Stage 0 (RIM-001 through RIM-004)
+- Completed: Stage 1 (RIM-101 through RIM-105)
+- Completed: Stage 2 (RIM-201 through RIM-205)
+- In progress next: Stage 3 starting with RIM-301 (runner process and IPC contract)
+- Tracking source of truth: `docs/reimagine/07 Implementation Tracker.md`
+
 ## Cross-Cutting Rules
 
 - Do not ship a stage until acceptance criteria are met.
