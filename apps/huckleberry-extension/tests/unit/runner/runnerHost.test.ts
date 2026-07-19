@@ -745,4 +745,232 @@ describe('RunnerHost', () => {
 
     host.dispose();
   });
+
+  it('executes deterministic check-repair-recheck until the check succeeds', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    const executeAgentStep = vi.fn().mockResolvedValue({
+      summary: 'Applied repair changes.',
+      turnsUsed: 1,
+      changedFiles: ['src/repair.ts'],
+    });
+
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep,
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    executeCommandStepMock
+      .mockResolvedValueOnce({
+        stdout: '',
+        stderr: 'check failed',
+        exitCode: 1,
+        timedOut: false,
+        cancelled: false,
+        startedAt: 100,
+        completedAt: 130,
+        durationMs: 30,
+      })
+      .mockResolvedValueOnce({
+        stdout: 'all good',
+        stderr: '',
+        exitCode: 0,
+        timedOut: false,
+        cancelled: false,
+        startedAt: 200,
+        completedAt: 220,
+        durationMs: 20,
+      });
+
+    persistStepEvidenceMock
+      .mockImplementationOnce(async ({ runId, stepId, attempt, command, cwd }) => ({
+        runId,
+        stepId,
+        attempt,
+        command,
+        cwd,
+        startedAt: 100,
+        completedAt: 130,
+        durationMs: 30,
+        exitCode: 1,
+        timedOut: false,
+        cancelled: false,
+        stdoutArtifactPath: '/tmp/stdout-1',
+        stderrArtifactPath: '/tmp/stderr-1',
+        metadataArtifactPath: '/tmp/metadata-1',
+      }))
+      .mockImplementationOnce(async ({ runId, stepId, attempt, command, cwd }) => ({
+        runId,
+        stepId,
+        attempt,
+        command,
+        cwd,
+        startedAt: 200,
+        completedAt: 220,
+        durationMs: 20,
+        exitCode: 0,
+        timedOut: false,
+        cancelled: false,
+        stdoutArtifactPath: '/tmp/stdout-2',
+        stderrArtifactPath: '/tmp/stderr-2',
+        metadataArtifactPath: '/tmp/metadata-2',
+      }));
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-repair-success',
+        payload: {
+          loopId: 'repair-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/repair.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'repair-loop',
+            name: 'Repair Loop',
+            steps: [
+              {
+                id: 'check',
+                type: 'command',
+                command: 'pnpm test:affected',
+                onFailure: 'repair',
+              },
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Repair failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
+                retry: {
+                  target: 'check',
+                  maxAttempts: 2,
+                },
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    expect(executeCommandStepMock).toHaveBeenCalledTimes(2);
+    expect(executeAgentStep).toHaveBeenCalledTimes(1);
+
+    const repairEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'repair-attempt',
+    );
+    expect(repairEvent).toBeDefined();
+    if (repairEvent?.type === 'event') {
+      expect(repairEvent.payload.transition?.attempt).toBe(1);
+    }
+
+    const succeededEvent = events.find(
+      event => event.type === 'event' && event.payload.status === 'succeeded',
+    );
+    expect(succeededEvent).toBeDefined();
+
+    host.dispose();
+  });
+
+  it('marks runs as exhausted when repair attempts are consumed', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep: vi.fn().mockResolvedValue({
+        summary: 'Applied repair changes.',
+        turnsUsed: 1,
+        changedFiles: ['src/repair.ts'],
+      }),
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    executeCommandStepMock.mockResolvedValue({
+      stdout: '',
+      stderr: 'still failing',
+      exitCode: 1,
+      timedOut: false,
+      cancelled: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 1,
+      timedOut: false,
+      cancelled: false,
+      stdoutArtifactPath: `/tmp/stdout-${attempt}`,
+      stderrArtifactPath: `/tmp/stderr-${attempt}`,
+      metadataArtifactPath: `/tmp/metadata-${attempt}`,
+    }));
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-repair-exhausted',
+        payload: {
+          loopId: 'repair-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/repair.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'repair-loop',
+            name: 'Repair Loop',
+            steps: [
+              {
+                id: 'check',
+                type: 'command',
+                command: 'pnpm test:affected',
+                onFailure: 'repair',
+              },
+              {
+                id: 'repair',
+                type: 'agent',
+                prompt: 'Repair failing check.',
+                allowedPaths: ['src'],
+                maxFilesChanged: 2,
+                maxTurns: 3,
+                retry: {
+                  target: 'check',
+                  maxAttempts: 1,
+                },
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const exhaustedEvent = events.find(
+      event => event.type === 'event' && event.payload.status === 'exhausted',
+    );
+    expect(exhaustedEvent).toBeDefined();
+    if (exhaustedEvent?.type === 'event') {
+      expect(exhaustedEvent.payload.stopReason?.code).toBe('REPAIR_ATTEMPTS_EXHAUSTED');
+    }
+
+    host.dispose();
+  });
 });

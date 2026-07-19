@@ -40,6 +40,7 @@ function validateWorkflowSteps(steps: unknown[]): WorkflowValidationError[] {
   }
 
   const stepIds = new Set<string>();
+  const stepRecordsById = new Map<string, { index: number; step: Record<string, unknown> }>();
 
   for (let index = 0; index < steps.length; index += 1) {
     const stepRecord = asRecord(steps[index]);
@@ -79,6 +80,7 @@ function validateWorkflowSteps(steps: unknown[]): WorkflowValidationError[] {
     }
 
     stepIds.add(stepId);
+    stepRecordsById.set(stepId, { index, step: stepRecord });
   }
 
   for (let index = 0; index < steps.length; index += 1) {
@@ -105,6 +107,38 @@ function validateWorkflowSteps(steps: unknown[]): WorkflowValidationError[] {
     if (stepType === 'agent') {
       errors.push(...validateAgentStep(stepRecord, index));
     }
+
+    if (stepType === 'command') {
+      errors.push(...validateCommandStep(stepRecord, index));
+    }
+  }
+
+  errors.push(...validateRepairLoops(stepRecordsById));
+
+  return errors;
+}
+
+function validateCommandStep(
+  step: Record<string, unknown>,
+  index: number,
+): WorkflowValidationError[] {
+  const errors: WorkflowValidationError[] = [];
+  const stepId = typeof step['id'] === 'string' ? step['id'] : '(unknown-step)';
+
+  if (typeof step['command'] !== 'string' || step['command'].trim().length === 0) {
+    errors.push({
+      code: 'STEP_COMMAND_INVALID',
+      message: `Command step '${stepId}' must define a non-empty command string.`,
+      path: `steps[${index}].command`,
+    });
+  }
+
+  if (step['onFailure'] !== undefined && typeof step['onFailure'] !== 'string') {
+    errors.push({
+      code: 'STEP_ON_FAILURE_INVALID',
+      message: `Command step '${stepId}' onFailure must be a string when provided.`,
+      path: `steps[${index}].onFailure`,
+    });
   }
 
   return errors;
@@ -167,6 +201,89 @@ function validateAgentStep(
       message: `Agent step '${stepId}' adapter must be a string when provided.`,
       path: `steps[${index}].adapter`,
     });
+  }
+
+  const retry = asRecord(step['retry']);
+  if (step['retry'] !== undefined && !retry) {
+    errors.push({
+      code: 'AGENT_RETRY_INVALID',
+      message: `Agent step '${stepId}' retry must be an object when provided.`,
+      path: `steps[${index}].retry`,
+    });
+  }
+
+  if (retry) {
+    if (typeof retry['target'] !== 'string' || retry['target'].trim().length === 0) {
+      errors.push({
+        code: 'AGENT_RETRY_TARGET_INVALID',
+        message: `Agent step '${stepId}' retry target must be a non-empty string.`,
+        path: `steps[${index}].retry.target`,
+      });
+    }
+
+    if (!isPositiveInteger(retry['maxAttempts'])) {
+      errors.push({
+        code: 'AGENT_RETRY_MAX_ATTEMPTS_INVALID',
+        message: `Agent step '${stepId}' retry maxAttempts must be a positive integer.`,
+        path: `steps[${index}].retry.maxAttempts`,
+      });
+    }
+  }
+
+  return errors;
+}
+
+function validateRepairLoops(
+  stepRecordsById: Map<string, { index: number; step: Record<string, unknown> }>,
+): WorkflowValidationError[] {
+  const errors: WorkflowValidationError[] = [];
+
+  for (const [stepId, { index, step }] of stepRecordsById) {
+    if (step['type'] !== 'command') {
+      continue;
+    }
+
+    const onFailure = step['onFailure'];
+    if (typeof onFailure !== 'string') {
+      continue;
+    }
+
+    const targetEntry = stepRecordsById.get(onFailure);
+    if (!targetEntry) {
+      errors.push({
+        code: 'STEP_ON_FAILURE_TARGET_MISSING',
+        message: `Command step '${stepId}' references missing onFailure target '${onFailure}'.`,
+        path: `steps[${index}].onFailure`,
+      });
+      continue;
+    }
+
+    if (targetEntry.step['type'] !== 'agent') {
+      errors.push({
+        code: 'STEP_ON_FAILURE_TARGET_INVALID',
+        message: `Command step '${stepId}' onFailure target '${onFailure}' must reference an agent step.`,
+        path: `steps[${index}].onFailure`,
+      });
+      continue;
+    }
+
+    const retry = asRecord(targetEntry.step['retry']);
+    if (!retry) {
+      errors.push({
+        code: 'AGENT_RETRY_MISSING',
+        message: `Agent step '${onFailure}' must define retry policy when referenced by onFailure.`,
+        path: `steps[${targetEntry.index}].retry`,
+      });
+      continue;
+    }
+
+    if (retry['target'] !== stepId) {
+      errors.push({
+        code: 'AGENT_RETRY_TARGET_MISMATCH',
+        message: `Agent step '${onFailure}' retry target must be '${stepId}'.`,
+        path: `steps[${targetEntry.index}].retry.target`,
+      });
+    }
   }
 
   return errors;

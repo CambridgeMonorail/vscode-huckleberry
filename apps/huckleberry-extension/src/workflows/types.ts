@@ -21,9 +21,15 @@ interface StepBase {
   description?: string;
 }
 
+export interface RepairRetryPolicy {
+  target: string;
+  maxAttempts: number;
+}
+
 export interface CommandStep extends StepBase {
   type: 'command';
   command: string;
+  onFailure?: string;
 }
 
 export interface ConditionStep extends StepBase {
@@ -44,6 +50,7 @@ export interface AgentStep extends StepBase {
   allowedPaths: string[];
   maxFilesChanged: number;
   maxTurns: number;
+  retry?: RepairRetryPolicy;
 }
 
 export interface ArtifactStep extends StepBase {

@@ -151,4 +151,71 @@ describe('validateWorkflowDefinition', () => {
     expect(result.errors.some(error => error.code === 'AGENT_MAX_FILES_CHANGED_INVALID')).toBe(true);
     expect(result.errors.some(error => error.code === 'AGENT_MAX_TURNS_INVALID')).toBe(true);
   });
+
+  it('accepts valid command onFailure and agent retry wiring', () => {
+    const workflow: WorkflowDefinition = {
+      schemaVersion: 1,
+      id: 'repair-flow',
+      name: 'Repair Flow',
+      steps: [
+        {
+          id: 'typecheck',
+          type: 'command',
+          command: 'pnpm typecheck:affected',
+          onFailure: 'repair-typecheck',
+        },
+        {
+          id: 'repair-typecheck',
+          type: 'agent',
+          prompt: 'Fix typecheck failures.',
+          allowedPaths: ['src'],
+          maxFilesChanged: 5,
+          maxTurns: 4,
+          retry: {
+            target: 'typecheck',
+            maxAttempts: 2,
+          },
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it('rejects command onFailure links that are not valid repair loops', () => {
+    const workflow = {
+      schemaVersion: 1,
+      id: 'invalid-repair-flow',
+      name: 'Invalid Repair Flow',
+      steps: [
+        {
+          id: 'typecheck',
+          type: 'command',
+          command: 'pnpm typecheck:affected',
+          onFailure: 'repair-typecheck',
+        },
+        {
+          id: 'repair-typecheck',
+          type: 'agent',
+          prompt: 'Fix typecheck failures.',
+          allowedPaths: ['src'],
+          maxFilesChanged: 5,
+          maxTurns: 4,
+          retry: {
+            target: 'lint',
+            maxAttempts: 0,
+          },
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.code === 'AGENT_RETRY_MAX_ATTEMPTS_INVALID')).toBe(true);
+    expect(result.errors.some(error => error.code === 'AGENT_RETRY_TARGET_MISMATCH')).toBe(true);
+  });
 });

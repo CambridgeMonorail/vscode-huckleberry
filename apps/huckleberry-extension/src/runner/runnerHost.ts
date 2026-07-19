@@ -5,7 +5,7 @@ import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
 import { appendEvidenceIndex, appendRunEvent, getRunEvents, reconstructRunsFromEvents } from './runEventStore';
 import { loadWorkflowDefinition } from './workflowLoader';
-import { AgentStep, WorkflowDefinition, WorkflowStep } from '../workflows';
+import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
   RunnerEvent,
   RunnerExecutionOptions,
@@ -280,6 +280,7 @@ export class RunnerHost {
     const runtimeSteps = workflow.steps;
     const stepById = new Map(runtimeSteps.map(step => [step.id, step]));
     const stepAttempts = new Map<string, number>();
+    const repairAttempts = new Map<string, number>();
     const maxStepRetries = execution?.maxStepRetries ?? 0;
     const stepTimeoutMs = execution?.stepTimeoutMs ?? 5_000;
     const conditionInputs = execution?.conditionInputs ?? {};
@@ -359,8 +360,61 @@ export class RunnerHost {
           emitEvent,
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:agent' },
         );
+
+        const retryPolicy = currentStep.retry;
+        if (retryPolicy) {
+          this.emitRunEvent(
+            run,
+            'running',
+            'repair-recheck-scheduled',
+            `Repair step ${currentStep.id} scheduled deterministic re-check of ${retryPolicy.target}.`,
+            emitEvent,
+            {
+              from: 'running',
+              to: 'running',
+              stepId: retryPolicy.target,
+              attempt: repairAttempts.get(retryPolicy.target) ?? attempt,
+              reason: 'repair-recheck-scheduled',
+            },
+          );
+
+          const retryTargetStep = stepById.get(retryPolicy.target);
+          if (!this.isCommandStep(retryTargetStep)) {
+            this.finishRun(
+              run,
+              'failed',
+              'repair-target-missing',
+              `Repair step ${currentStep.id} references a missing deterministic re-check target.`,
+              {
+                code: 'REPAIR_TARGET_INVALID',
+                message: `Repair step '${currentStep.id}' target '${retryPolicy.target}' is invalid.`,
+              },
+              emitEvent,
+            );
+            return;
+          }
+
+          currentStep = retryTargetStep;
+          continue;
+        }
+
         currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
         continue;
+      }
+
+      if (!this.isCommandStep(currentStep)) {
+        this.finishRun(
+          run,
+          'failed',
+          'step-type-invalid',
+          `Step ${currentStep.id} is not executable in runner mode.`,
+          {
+            code: 'STEP_TYPE_UNSUPPORTED',
+            message: `Step '${currentStep.id}' has unsupported type '${(currentStep as WorkflowStep).type}'.`,
+          },
+          emitEvent,
+        );
+        return;
       }
 
       const command = currentStep.command;
@@ -439,6 +493,11 @@ export class RunnerHost {
 
       const stepFailed = stepResult.timedOut || stepResult.exitCode !== 0;
       if (!stepFailed) {
+        let nextStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
+        if (currentStep.onFailure && nextStep && nextStep.id === currentStep.onFailure) {
+          nextStep = this.getNextSequentialStep(runtimeSteps, nextStep.id);
+        }
+
         this.emitRunEvent(
           run,
           'running',
@@ -448,8 +507,48 @@ export class RunnerHost {
           { from: 'running', to: 'running', stepId: currentStep.id, attempt, reason: 'step-succeeded:command' },
           stepResult,
         );
-        currentStep = this.getNextSequentialStep(runtimeSteps, currentStep.id);
+        currentStep = nextStep;
         continue;
+      }
+
+      const repairDecision = this.resolveRepairStep(currentStep, stepById);
+      if (repairDecision) {
+        const repairAttempt = (repairAttempts.get(currentStep.id) ?? 0) + 1;
+        repairAttempts.set(currentStep.id, repairAttempt);
+
+        if (repairAttempt <= repairDecision.maxAttempts) {
+          this.emitRunEvent(
+            run,
+            'running',
+            'repair-attempt',
+            `Deterministic check ${currentStep.id} failed. Starting repair step ${repairDecision.step.id} (repair attempt ${repairAttempt}/${repairDecision.maxAttempts}).`,
+            emitEvent,
+            {
+              from: 'running',
+              to: 'running',
+              stepId: currentStep.id,
+              attempt: repairAttempt,
+              reason: 'repair-attempt',
+            },
+            stepResult,
+          );
+          currentStep = repairDecision.step;
+          continue;
+        }
+
+        this.finishRun(
+          run,
+          'exhausted',
+          'repair-attempts-exhausted',
+          `Repair attempts exhausted for deterministic check ${currentStep.id}.`,
+          {
+            code: 'REPAIR_ATTEMPTS_EXHAUSTED',
+            message: `Step '${currentStep.id}' exhausted repair attempts (${repairDecision.maxAttempts}).`,
+          },
+          emitEvent,
+          stepResult,
+        );
+        return;
       }
 
       if (attempt <= maxStepRetries) {
@@ -538,6 +637,33 @@ export class RunnerHost {
 
   private isAgentStep(step: WorkflowStep): step is AgentStep {
     return step.type === 'agent';
+  }
+
+  private isCommandStep(step: WorkflowStep | undefined): step is CommandStep {
+    return step?.type === 'command';
+  }
+
+  private resolveRepairStep(
+    step: CommandStep,
+    stepById: Map<string, WorkflowStep>,
+  ): { step: AgentStep; maxAttempts: number } | undefined {
+    if (!step.onFailure) {
+      return undefined;
+    }
+
+    const repairStep = stepById.get(step.onFailure);
+    if (!repairStep || !this.isAgentStep(repairStep) || !repairStep.retry) {
+      return undefined;
+    }
+
+    if (repairStep.retry.target !== step.id || repairStep.retry.maxAttempts <= 0) {
+      return undefined;
+    }
+
+    return {
+      step: repairStep,
+      maxAttempts: repairStep.retry.maxAttempts,
+    };
   }
 
   private async executeAgentStep(
