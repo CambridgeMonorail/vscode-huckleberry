@@ -132,6 +132,190 @@ describe('RunnerHost', () => {
     host.dispose();
   });
 
+  it('runs command and agent steps in workspace execution context', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    const executeAgentStep = vi.fn().mockResolvedValue({
+      summary: 'Agent completed in workspace mode.',
+      turnsUsed: 1,
+      changedFiles: [],
+    });
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep,
+    });
+
+    const host = new RunnerHost(adapterRegistry);
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    executeCommandStepMock.mockResolvedValue({
+      stdout: 'ok',
+      stderr: '',
+      exitCode: 0,
+      timedOut: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 0,
+      timedOut: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/meta',
+    }));
+
+    const workflow: RunnerRequest['payload']['workflow'] = {
+      schemaVersion: 1,
+      id: 'context-flow',
+      name: 'Context Flow',
+      steps: [
+        { id: 'lint', type: 'command', command: 'pnpm lint:affected' },
+        { id: 'repair', type: 'agent', prompt: 'Fix issues.', allowedPaths: ['src'], maxFilesChanged: 1, maxTurns: 2 },
+      ],
+    };
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-workspace-context',
+        payload: {
+          loopId: 'context-flow',
+          loopFilePath: '/workspace/.huckleberry/loops/context-flow.yaml',
+          workflow,
+          execution: { isolationMode: 'workspace' },
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    expect(executeCommandStepMock).toHaveBeenCalled();
+    expect(executeCommandStepMock.mock.calls[0][0].cwd.replace(/\\/g, '/')).toContain('/workspace');
+    expect(executeAgentStep).toHaveBeenCalled();
+    expect(executeAgentStep.mock.calls[0][0].cwd.replace(/\\/g, '/')).toContain('/workspace');
+
+    const runStarted = events.find(event => event.type === 'event' && event.payload.eventType === 'run-started');
+    if (runStarted?.type === 'event') {
+      expect(runStarted.payload.executionContext?.mode).toBe('workspace');
+      expect(runStarted.payload.executionContext?.workingDirectory.replace(/\\/g, '/')).toContain('/workspace');
+    }
+
+    host.dispose();
+  });
+
+  it('runs command and agent steps in provisioned worktree execution context', async () => {
+    const adapterRegistry = new AgentAdapterRegistry();
+    const executeAgentStep = vi.fn().mockResolvedValue({
+      summary: 'Agent completed in worktree mode.',
+      turnsUsed: 1,
+      changedFiles: [],
+    });
+    adapterRegistry.registerAdapter({
+      id: 'fake-adapter',
+      isAvailable: vi.fn().mockResolvedValue({ available: true }),
+      executeAgentStep,
+    });
+
+    const provisionWorktree = vi.fn().mockResolvedValue({
+      runId: 'placeholder',
+      loopId: 'context-flow',
+      workspaceRoot: '/workspace',
+      baseRef: 'HEAD',
+      worktreePath: '/workspace/.huckleberry/worktrees/context-run',
+      createdAt: 1,
+      lastUsedAt: 1,
+      active: true,
+      reused: false,
+    });
+    const cleanupRunWorktree = vi.fn().mockResolvedValue({
+      runId: 'placeholder',
+      removed: true,
+      preservedForActiveRuns: false,
+    });
+
+    const host = new RunnerHost(adapterRegistry, { provisionWorktree, cleanupRunWorktree });
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    executeCommandStepMock.mockResolvedValue({
+      stdout: 'ok',
+      stderr: '',
+      exitCode: 0,
+      timedOut: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd, executionContext }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      executionContext,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 0,
+      timedOut: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/meta',
+    }));
+
+    const workflow: RunnerRequest['payload']['workflow'] = {
+      schemaVersion: 1,
+      id: 'context-flow',
+      name: 'Context Flow',
+      steps: [
+        { id: 'lint', type: 'command', command: 'pnpm lint:affected' },
+        { id: 'repair', type: 'agent', prompt: 'Fix issues.', allowedPaths: ['src'], maxFilesChanged: 1, maxTurns: 2 },
+      ],
+    };
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-worktree-context',
+        payload: {
+          loopId: 'context-flow',
+          loopFilePath: '/workspace/.huckleberry/loops/context-flow.yaml',
+          workflow,
+          execution: { isolationMode: 'worktree', reuseWorktree: true },
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    expect(provisionWorktree).toHaveBeenCalled();
+    expect(executeCommandStepMock.mock.calls[0][0].cwd).toBe('/workspace/.huckleberry/worktrees/context-run');
+    expect(executeAgentStep.mock.calls[0][0].cwd).toBe('/workspace/.huckleberry/worktrees/context-run');
+    expect(cleanupRunWorktree).toHaveBeenCalled();
+
+    const runStarted = events.find(event => event.type === 'event' && event.payload.eventType === 'run-started');
+    if (runStarted?.type === 'event') {
+      expect(runStarted.payload.executionContext?.mode).toBe('worktree');
+      expect(runStarted.payload.executionContext?.worktreePath).toBe('/workspace/.huckleberry/worktrees/context-run');
+    }
+
+    host.dispose();
+  });
+
   it('retries and fails when command step keeps failing', async () => {
     const host = new RunnerHost();
     const replies: RunnerResponse[] = [];

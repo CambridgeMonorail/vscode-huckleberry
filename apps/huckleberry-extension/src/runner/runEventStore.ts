@@ -348,6 +348,7 @@ function toRunRecord(runId: string, events: RunnerEvent[]): RunnerRunRecord | un
     status: last.status,
     startedAt: first.timestamp,
     updatedAt: last.timestamp,
+    executionContext: last.executionContext ?? first.executionContext,
   };
 
   if (isTerminalStatus(last.status)) {

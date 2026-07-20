@@ -344,6 +344,33 @@ function isPositiveInteger(value: unknown): boolean {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
 }
 
+function validateExecutionOptions(workflowRecord: Record<string, unknown>): WorkflowValidationError[] {
+  const execution = workflowRecord['execution'];
+  if (execution === undefined) {
+    return [];
+  }
+
+  const executionRecord = asRecord(execution);
+  if (!executionRecord) {
+    return [{
+      code: 'EXECUTION_INVALID',
+      message: 'Workflow execution must be an object when provided.',
+      path: 'execution',
+    }];
+  }
+
+  const isolation = executionRecord['isolation'];
+  if (isolation !== undefined && isolation !== 'workspace' && isolation !== 'worktree') {
+    return [{
+      code: 'EXECUTION_ISOLATION_INVALID',
+      message: "Workflow execution isolation must be 'workspace' or 'worktree'.",
+      path: 'execution.isolation',
+    }];
+  }
+
+  return [];
+}
+
 function validateConditionStepReferences(
   step: Record<string, unknown>,
   index: number,
@@ -443,6 +470,8 @@ export function validateWorkflowDefinition(
       path: 'steps',
     });
   }
+
+  errors.push(...validateExecutionOptions(workflowRecord));
 
   return {
     valid: errors.length === 0,

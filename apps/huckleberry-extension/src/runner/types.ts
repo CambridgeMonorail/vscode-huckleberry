@@ -7,8 +7,20 @@ export interface RunnerExecutionOptions {
   failStepIds?: string[];
   conditionInputs?: Record<string, boolean>;
   workingDirectory?: string;
+  isolationMode?: 'workspace' | 'worktree';
+  worktreeBaseRef?: string;
+  reuseWorktree?: boolean;
   env?: Record<string, string>;
   shell?: boolean;
+}
+
+export interface RunnerExecutionContext {
+  mode: 'workspace' | 'worktree';
+  workspaceRoot: string;
+  workingDirectory: string;
+  worktreePath?: string;
+  baseRef?: string;
+  reusedWorktree?: boolean;
 }
 
 export interface RunnerStepResult {
@@ -23,6 +35,7 @@ export interface RunnerStepResult {
   exitCode: number | null;
   timedOut: boolean;
   cancelled?: boolean;
+  executionContext?: RunnerExecutionContext;
   stdoutArtifactPath: string;
   stderrArtifactPath: string;
   metadataArtifactPath: string;
@@ -183,6 +196,7 @@ export interface RunnerRunRecord {
   startedAt: number;
   updatedAt: number;
   completedAt?: number;
+  executionContext?: RunnerExecutionContext;
   stopReasonCode?: string;
   stopReason?: string;
 }
@@ -195,6 +209,7 @@ export interface RunnerEvent {
   timestamp: number;
   eventType: string;
   message?: string;
+  executionContext?: RunnerExecutionContext;
   transition?: RunnerTransition;
   agentClaim?: RunnerAgentClaim;
   approvalDecision?: RunnerApprovalDecision;

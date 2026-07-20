@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { RunnerStepResult } from './types';
+import { RunnerExecutionContext, RunnerStepResult } from './types';
 
 export interface PersistStepEvidenceRequest {
   runId: string;
@@ -14,6 +14,7 @@ export interface PersistStepEvidenceRequest {
   exitCode: number | null;
   timedOut: boolean;
   cancelled?: boolean;
+  executionContext?: RunnerExecutionContext;
   stdout: string;
   stderr: string;
 }
@@ -47,6 +48,7 @@ export async function persistStepEvidence(request: PersistStepEvidenceRequest): 
     exitCode: request.exitCode,
     timedOut: request.timedOut,
     cancelled: request.cancelled ?? false,
+    executionContext: request.executionContext,
     stdoutArtifactPath,
     stderrArtifactPath,
   };
@@ -65,6 +67,7 @@ export async function persistStepEvidence(request: PersistStepEvidenceRequest): 
     exitCode: request.exitCode,
     timedOut: request.timedOut,
     cancelled: request.cancelled ?? false,
+    executionContext: request.executionContext,
     stdoutArtifactPath,
     stderrArtifactPath,
     metadataArtifactPath,

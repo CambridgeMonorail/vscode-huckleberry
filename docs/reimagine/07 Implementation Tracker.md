@@ -48,7 +48,7 @@ Priority values:
 | RIM-503 | 5 | Improve diagnostics and deep-link integration | P1 | Docto | Done | RIM-305 | Added run timeline deep-link actions to Problems/Test Explorer/logs/diffs with resilient fallback messaging and tests |
 | RIM-504 | 5 | Add run summary report generation | P2 | Docto | Done | RIM-304 | Added deterministic run summary artifacts (JSON + Markdown) generated from persisted event streams with unresolved item/evidence extraction and Runs command access |
 | RIM-601 | 6 | Implement worktree lifecycle service | P0 | Docto | Done | RIM-303 | Added worktree lifecycle service with create/reuse/cleanup, run-to-worktree metadata mapping, safety guards, and orphan detection coverage |
-| RIM-602 | 6 | Route steps through isolation context | P0 | Docto | Planned | RIM-601, RIM-403 | Workspace/worktree parity |
+| RIM-602 | 6 | Route steps through isolation context | P0 | Docto | Done | RIM-601, RIM-403 | Added execution context abstraction and routed command/agent execution through workspace/worktree mode with context metadata propagation |
 | RIM-603 | 6 | Add isolation visibility in UI | P1 | Docto | Planned | RIM-602, RIM-305 | Transparency in run details |
 | RIM-604 | 6 | Add diff evidence for isolated runs | P1 | Docto | Planned | RIM-602, RIM-304 | Reviewability |
 | RIM-701 | 7 | Comprehensive test suite expansion | P0 | Docto | Planned | RIM-306, RIM-404, RIM-504, RIM-604 | Critical path quality |
@@ -93,7 +93,7 @@ Priority values:
 
 ### Stage 6
 - [x] Worktree lifecycle stable
-- [ ] Execution context switch transparent
+- [x] Execution context switch transparent
 - [ ] Isolated run diffs captured as evidence
 
 ### Stage 7

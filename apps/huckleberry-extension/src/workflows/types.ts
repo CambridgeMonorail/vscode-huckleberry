@@ -12,7 +12,12 @@ export interface WorkflowDefinition {
   id: string;
   name: string;
   description?: string;
+  execution?: WorkflowExecutionOptions;
   steps: WorkflowStep[];
+}
+
+export interface WorkflowExecutionOptions {
+  isolation?: 'workspace' | 'worktree';
 }
 
 interface StepBase {

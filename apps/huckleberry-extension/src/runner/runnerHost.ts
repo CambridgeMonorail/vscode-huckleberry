@@ -11,12 +11,14 @@ import {
   reconstructRunsFromEvents,
   writeRunSummaryArtifacts,
 } from './runEventStore';
+import { WorktreeLifecycleService } from './worktreeLifecycleService';
 import { loadWorkflowDefinition } from './workflowLoader';
 import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
 import {
   RunnerApprovalDecision,
   RunnerDeepLink,
   RunnerEvent,
+  RunnerExecutionContext,
   RunnerExecutionOptions,
   RunnerAgentClaim,
   RunnerRequest,
@@ -39,12 +41,18 @@ interface PausedApprovalState {
 interface ActiveRunExecution {
   workflow: WorkflowDefinition;
   execution: RunnerExecutionOptions | undefined;
+  executionContext: RunnerExecutionContext;
   runtimeSteps: WorkflowStep[];
   stepById: Map<string, WorkflowStep>;
   stepAttempts: Map<string, number>;
   repairAttempts: Map<string, number>;
   currentStepId?: string;
   pausedApproval?: PausedApprovalState;
+}
+
+interface WorktreeLifecycleAdapter {
+  provisionWorktree: WorktreeLifecycleService['provisionWorktree'];
+  cleanupRunWorktree: WorktreeLifecycleService['cleanupRunWorktree'];
 }
 
 /**
@@ -57,8 +65,14 @@ export class RunnerHost {
   private readonly activeRunExecutions = new Map<string, ActiveRunExecution>();
   private readonly persistenceQueue = new Map<string, Promise<void>>();
   private hydrationPromise?: Promise<void>;
+  private readonly worktreeLifecycleService: WorktreeLifecycleAdapter;
 
-  constructor(private readonly agentAdapterRegistry: AgentAdapterRegistry = new AgentAdapterRegistry()) {}
+  constructor(
+    private readonly agentAdapterRegistry: AgentAdapterRegistry = new AgentAdapterRegistry(),
+    worktreeLifecycleService: WorktreeLifecycleAdapter = new WorktreeLifecycleService(),
+  ) {
+    this.worktreeLifecycleService = worktreeLifecycleService;
+  }
 
   handleMessage(message: RunnerRequest, reply: Reply, emitEvent: EmitEvent): void {
     switch (message.type) {
@@ -130,6 +144,27 @@ export class RunnerHost {
       return;
     }
 
+    let executionContext: RunnerExecutionContext;
+    try {
+      executionContext = await this.resolveExecutionContext(
+        runId,
+        message.payload.loopId,
+        message.payload.loopFilePath,
+        workflow,
+        message.payload.execution,
+      );
+    } catch (error) {
+      reply({
+        type: 'error',
+        requestId: message.requestId,
+        payload: {
+          code: 'EXECUTION_CONTEXT_SETUP_FAILED',
+          message: error instanceof Error ? error.message : String(error),
+        },
+      });
+      return;
+    }
+
     const runRecord: RunnerRunRecord = {
       runId,
       loopId: message.payload.loopId,
@@ -137,6 +172,7 @@ export class RunnerHost {
       status: 'queued',
       startedAt: now,
       updatedAt: now,
+      executionContext,
     };
 
     this.runs.set(runId, runRecord);
@@ -155,6 +191,7 @@ export class RunnerHost {
     const activeExecution: ActiveRunExecution = {
       workflow,
       execution: message.payload.execution,
+      executionContext,
       runtimeSteps,
       stepById: new Map(runtimeSteps.map(step => [step.id, step])),
       stepAttempts: new Map<string, number>(),
@@ -445,6 +482,7 @@ export class RunnerHost {
       eventType,
       message,
       timestamp: Date.now(),
+      executionContext: run.executionContext,
       transition,
       agentClaim,
       deepLinks: this.buildDeepLinks(eventType, stepResult),
@@ -466,6 +504,7 @@ export class RunnerHost {
 
       if (isTerminalStatus(status)) {
         await writeRunSummaryArtifacts(run.runId);
+        await this.cleanupExecutionContext(run);
       }
     });
   }
@@ -564,7 +603,7 @@ export class RunnerHost {
       }
 
       if (this.isAgentStep(currentStep)) {
-        const agentExecution = await this.executeAgentStep(run, currentStep, attempt, emitEvent);
+        const agentExecution = await this.executeAgentStep(run, activeExecution, currentStep, attempt, emitEvent);
         if (!agentExecution.ok) {
           return;
         }
@@ -644,7 +683,7 @@ export class RunnerHost {
       }
 
       const command = currentStep.command;
-      const cwd = execution?.workingDirectory ?? path.dirname(run.loopFilePath);
+      const cwd = activeExecution.executionContext.workingDirectory;
 
       this.emitRunEvent(
         run,
@@ -680,6 +719,7 @@ export class RunnerHost {
           exitCode: commandResult.exitCode,
           timedOut: commandResult.timedOut,
           cancelled: commandResult.cancelled,
+          executionContext: activeExecution.executionContext,
           stdout: commandResult.stdout,
           stderr: commandResult.stderr,
         });
@@ -959,6 +999,7 @@ export class RunnerHost {
 
   private async executeAgentStep(
     run: RunnerRunRecord,
+    activeExecution: ActiveRunExecution,
     step: AgentStep,
     attempt: number,
     emitEvent: EmitEvent,
@@ -994,7 +1035,7 @@ export class RunnerHost {
         loopId: run.loopId,
         stepId: step.id,
         prompt: step.prompt,
-        cwd: path.dirname(run.loopFilePath),
+        cwd: activeExecution.executionContext.workingDirectory,
         attempt,
         allowedPaths: step.allowedPaths,
         maxFilesChanged: step.maxFilesChanged,
@@ -1006,7 +1047,7 @@ export class RunnerHost {
         adapterId: result.adapterId ?? resolution.adapter.id,
       };
 
-      const constraintViolation = this.getAgentConstraintViolation(run.loopFilePath, step, normalizedResult);
+      const constraintViolation = this.getAgentConstraintViolation(activeExecution.executionContext.workingDirectory, step, normalizedResult);
       if (constraintViolation) {
         this.finishRun(
           run,
@@ -1037,7 +1078,7 @@ export class RunnerHost {
   }
 
   private getAgentConstraintViolation(
-    loopFilePath: string,
+    workingDirectory: string,
     step: AgentStep,
     result: AgentStepExecutionResult,
   ): RunnerStopReason | undefined {
@@ -1055,10 +1096,9 @@ export class RunnerHost {
       };
     }
 
-    const cwd = path.dirname(loopFilePath);
-    const normalizedAllowedPaths = step.allowedPaths.map((allowedPath: string) => this.normalizeConstraintPath(cwd, allowedPath));
+    const normalizedAllowedPaths = step.allowedPaths.map((allowedPath: string) => this.normalizeConstraintPath(workingDirectory, allowedPath));
     for (const changedFile of result.changedFiles) {
-      const normalizedChangedFile = this.normalizeConstraintPath(cwd, changedFile);
+      const normalizedChangedFile = this.normalizeConstraintPath(workingDirectory, changedFile);
       const allowed = normalizedAllowedPaths.some((allowedPath: string) => {
         return normalizedChangedFile === allowedPath || normalizedChangedFile.startsWith(`${allowedPath}/`);
       });
@@ -1077,6 +1117,69 @@ export class RunnerHost {
   private normalizeConstraintPath(cwd: string, inputPath: string): string {
     const absolutePath = path.isAbsolute(inputPath) ? inputPath : path.resolve(cwd, inputPath);
     return absolutePath.replace(/\\/g, '/');
+  }
+
+  private async resolveExecutionContext(
+    runId: string,
+    loopId: string,
+    loopFilePath: string,
+    workflow: WorkflowDefinition,
+    execution: RunnerExecutionOptions | undefined,
+  ): Promise<RunnerExecutionContext> {
+    const workspaceRoot = this.deriveWorkspaceRoot(loopFilePath, execution?.workingDirectory);
+    const selectedMode = execution?.isolationMode ?? workflow.execution?.isolation ?? 'workspace';
+
+    if (selectedMode === 'workspace') {
+      return {
+        mode: 'workspace',
+        workspaceRoot,
+        workingDirectory: execution?.workingDirectory ?? workspaceRoot,
+      };
+    }
+
+    const metadata = await this.worktreeLifecycleService.provisionWorktree({
+      runId,
+      loopId,
+      workspaceRoot,
+      baseRef: execution?.worktreeBaseRef,
+      reuseExisting: execution?.reuseWorktree,
+    });
+
+    return {
+      mode: 'worktree',
+      workspaceRoot,
+      workingDirectory: metadata.worktreePath,
+      worktreePath: metadata.worktreePath,
+      baseRef: metadata.baseRef,
+      reusedWorktree: metadata.reused,
+    };
+  }
+
+  private deriveWorkspaceRoot(loopFilePath: string, explicitWorkingDirectory?: string): string {
+    if (explicitWorkingDirectory) {
+      return path.resolve(explicitWorkingDirectory);
+    }
+
+    const normalizedLoopPath = path.resolve(loopFilePath);
+    const marker = `${path.sep}.huckleberry${path.sep}loops${path.sep}`;
+    const markerIndex = normalizedLoopPath.lastIndexOf(marker);
+    if (markerIndex >= 0) {
+      return normalizedLoopPath.slice(0, markerIndex);
+    }
+
+    return path.dirname(normalizedLoopPath);
+  }
+
+  private async cleanupExecutionContext(run: RunnerRunRecord): Promise<void> {
+    if (run.executionContext?.mode !== 'worktree') {
+      return;
+    }
+
+    try {
+      await this.worktreeLifecycleService.cleanupRunWorktree(run.runId, run.executionContext.workspaceRoot);
+    } catch {
+      // Cleanup errors are non-fatal for run lifecycle; surfaced in later UX stage.
+    }
   }
 
   private async ensureHydrated(): Promise<void> {

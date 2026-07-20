@@ -269,4 +269,31 @@ describe('validateWorkflowDefinition', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.some(error => error.code === 'APPROVAL_BRANCH_MISSING')).toBe(true);
   });
+
+  it('accepts execution isolation mode when set to worktree', () => {
+    const workflow: WorkflowDefinition = {
+      ...createBaseWorkflow(),
+      execution: {
+        isolation: 'worktree',
+      },
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects invalid execution isolation mode values', () => {
+    const workflow = {
+      ...createBaseWorkflow(),
+      execution: {
+        isolation: 'sandbox',
+      },
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.code === 'EXECUTION_ISOLATION_INVALID')).toBe(true);
+  });
 });

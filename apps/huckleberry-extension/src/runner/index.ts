@@ -38,6 +38,7 @@ export {
   type RunnerRunRecord,
   type RunnerRunStatus,
   type RunnerEvent,
+  type RunnerExecutionContext,
   type RunnerExecutionOptions,
   type RunnerAgentClaim,
   type RunnerApprovalAction,
