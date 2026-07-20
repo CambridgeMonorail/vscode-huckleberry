@@ -63,6 +63,24 @@ interface RunDiffCaptureResult {
   warningMessage?: string;
 }
 
+interface CommandPolicyViolation {
+  pattern: string;
+  source: 'default' | 'custom';
+}
+
+const DEFAULT_BLOCKED_COMMAND_PATTERNS: ReadonlyArray<{ pattern: RegExp; label: string }> = [
+  { pattern: /\brm\s+-rf\b/i, label: 'rm -rf' },
+  { pattern: /\brmdir\s+\/[sq]+\b/i, label: 'rmdir /s' },
+  { pattern: /\bdel\s+\/[sqf]+\b/i, label: 'del /s' },
+  { pattern: /\bformat\s+[a-z]:/i, label: 'format drive' },
+  { pattern: /\bgit\s+reset\s+--hard\b/i, label: 'git reset --hard' },
+  { pattern: /\bgit\s+clean\s+-fdx?\b/i, label: 'git clean -fdx' },
+  { pattern: /\bgit\s+push\b[^\n]*--force(?:-with-lease)?\b/i, label: 'git push --force' },
+  { pattern: /\bshutdown\b/i, label: 'shutdown' },
+  { pattern: /\breboot\b/i, label: 'reboot' },
+  { pattern: /\bmkfs\b/i, label: 'mkfs' },
+];
+
 type RunDiffGenerator = (run: RunnerRunRecord) => Promise<RunDiffCaptureResult | undefined>;
 
 /**
@@ -728,6 +746,21 @@ export class RunnerHost {
 
       const command = currentStep.command;
       const cwd = activeExecution.executionContext.workingDirectory;
+      const commandPolicyViolation = this.getCommandPolicyViolation(command, execution);
+      if (commandPolicyViolation) {
+        this.finishRun(
+          run,
+          'failed',
+          'step-blocked:policy',
+          `Step ${currentStep.id} blocked by command policy.`,
+          {
+            code: 'COMMAND_POLICY_BLOCKED',
+            message: `Step '${currentStep.id}' command matched blocked pattern '${commandPolicyViolation.pattern}' (${commandPolicyViolation.source} policy).`,
+          },
+          emitEvent,
+        );
+        return;
+      }
 
       this.emitRunEvent(
         run,
@@ -959,6 +992,53 @@ export class RunnerHost {
 
   private isCommandStep(step: WorkflowStep | undefined): step is CommandStep {
     return step?.type === 'command';
+  }
+
+  private getCommandPolicyViolation(
+    command: string,
+    execution: RunnerExecutionOptions | undefined,
+  ): CommandPolicyViolation | undefined {
+    const commandPolicy = execution?.commandPolicy;
+    if (commandPolicy?.allowHighRiskCommands) {
+      return undefined;
+    }
+
+    for (const blockedPattern of DEFAULT_BLOCKED_COMMAND_PATTERNS) {
+      if (blockedPattern.pattern.test(command)) {
+        return {
+          pattern: blockedPattern.label,
+          source: 'default',
+        };
+      }
+    }
+
+    const customPatterns = commandPolicy?.blockedCommandPatterns ?? [];
+    for (const customPattern of customPatterns) {
+      if (typeof customPattern !== 'string') {
+        continue;
+      }
+
+      const trimmedPattern = customPattern.trim();
+      if (trimmedPattern.length === 0) {
+        continue;
+      }
+
+      try {
+        const compiledPattern = new RegExp(trimmedPattern, 'i');
+        if (compiledPattern.test(command)) {
+          return {
+            pattern: trimmedPattern,
+            source: 'custom',
+          };
+        }
+      } catch {
+        logWithChannel(LogLevel.WARN, `Ignoring invalid blocked command pattern '${trimmedPattern}'.`, {
+          pattern: trimmedPattern,
+        });
+      }
+    }
+
+    return undefined;
   }
 
   private resolveRepairStep(

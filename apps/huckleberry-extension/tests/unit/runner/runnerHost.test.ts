@@ -156,6 +156,125 @@ describe('RunnerHost', () => {
     host.dispose();
   });
 
+  it('blocks high-risk commands by default before spawning a process', async () => {
+    const host = new RunnerHost();
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-policy-blocked',
+        payload: {
+          loopId: 'policy-guard',
+          loopFilePath: '/workspace/.huckleberry/loops/policy-guard.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'policy-guard',
+            name: 'Policy Guard',
+            steps: [
+              {
+                id: 'wipe',
+                type: 'command',
+                command: 'rm -rf .',
+              },
+            ],
+          },
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    expect(executeCommandStepMock).not.toHaveBeenCalled();
+    expect(persistStepEvidenceMock).not.toHaveBeenCalled();
+
+    const blockedEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'step-blocked:policy',
+    );
+    expect(blockedEvent).toBeDefined();
+    if (blockedEvent?.type === 'event') {
+      expect(blockedEvent.payload.stopReason?.code).toBe('COMMAND_POLICY_BLOCKED');
+      expect(blockedEvent.payload.stopReason?.message).toContain('rm -rf');
+    }
+
+    host.dispose();
+  });
+
+  it('allows high-risk commands when explicit policy override is enabled', async () => {
+    const host = new RunnerHost();
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    executeCommandStepMock.mockResolvedValue({
+      stdout: 'ok',
+      stderr: '',
+      exitCode: 0,
+      timedOut: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+    persistStepEvidenceMock.mockResolvedValue({
+      runId: 'run-policy-allow',
+      stepId: 'reset',
+      attempt: 1,
+      command: 'git reset --hard HEAD',
+      cwd: '/workspace',
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 0,
+      timedOut: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/metadata',
+    });
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-policy-override',
+        payload: {
+          loopId: 'policy-override',
+          loopFilePath: '/workspace/.huckleberry/loops/policy-override.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'policy-override',
+            name: 'Policy Override',
+            steps: [
+              {
+                id: 'reset',
+                type: 'command',
+                command: 'git reset --hard HEAD',
+              },
+            ],
+          },
+          execution: {
+            commandPolicy: {
+              allowHighRiskCommands: true,
+            },
+          },
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    expect(executeCommandStepMock).toHaveBeenCalledTimes(1);
+    const statusEvents = events
+      .filter(event => event.type === 'event')
+      .map(event => (event.type === 'event' ? event.payload.status : ''));
+    expect(statusEvents).toContain('succeeded');
+
+    host.dispose();
+  });
+
   it('runs command and agent steps in workspace execution context', async () => {
     const adapterRegistry = new AgentAdapterRegistry();
     const executeAgentStep = vi.fn().mockResolvedValue({

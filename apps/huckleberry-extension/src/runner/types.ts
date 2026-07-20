@@ -12,6 +12,12 @@ export interface RunnerExecutionOptions {
   reuseWorktree?: boolean;
   env?: Record<string, string>;
   shell?: boolean;
+  commandPolicy?: RunnerCommandPolicy;
+}
+
+export interface RunnerCommandPolicy {
+  allowHighRiskCommands?: boolean;
+  blockedCommandPatterns?: string[];
 }
 
 export interface RunnerExecutionContext {

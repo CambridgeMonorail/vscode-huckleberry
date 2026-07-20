@@ -363,7 +363,7 @@ function validateExecutionOptions(workflowRecord: Record<string, unknown>): Work
   if (isolation !== undefined && isolation !== 'workspace' && isolation !== 'worktree') {
     return [{
       code: 'EXECUTION_ISOLATION_INVALID',
-      message: "Workflow execution isolation must be 'workspace' or 'worktree'.",
+      message: 'Workflow execution isolation must be \'workspace\' or \'worktree\'.',
       path: 'execution.isolation',
     }];
   }
