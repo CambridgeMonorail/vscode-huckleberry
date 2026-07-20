@@ -293,15 +293,15 @@
     "viewsWelcome": [
       {
         "view": "huckleberryLoopsView",
-        "contents": "$(repo) No loops found yet.\n\nCreate workflow files under `.huckleberry/loops` to populate this view.\n\n[$(new-file) Create Starter Templates](command:vscode-copilot-huckleberry.loops.createStarterTemplates)\n[$(refresh) Refresh Loops](command:vscode-copilot-huckleberry.loops.refresh)"
+        "contents": "$(repo) No loops found yet.\n\nCreate workflow files under `.huckleberry/loops` to populate this view.\n\n[$(new-file) Create Starter Templates](command:vscode-copilot-huckleberry.loops.createStarterTemplates)\n[$(book) Quick Start](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/quick-start.md)\n[$(refresh) Refresh Loops](command:vscode-copilot-huckleberry.loops.refresh)"
       },
       {
         "view": "huckleberryRunsView",
-        "contents": "$(history) No runs yet.\n\nRun history and evidence timelines will appear here once loop execution is available.\n\n[$(refresh) Refresh Runs](command:vscode-copilot-huckleberry.runs.refresh)"
+        "contents": "$(history) No runs yet.\n\nRun history and evidence timelines will appear here once loop execution is available.\n\n[$(book) Troubleshooting](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/runner-troubleshooting.md)\n[$(refresh) Refresh Runs](command:vscode-copilot-huckleberry.runs.refresh)"
       },
       {
         "view": "huckleberryEvidenceView",
-        "contents": "$(files) No evidence artifacts yet.\n\nArtifacts are grouped by run, step, and category after loop execution.\n\n[$(refresh) Refresh Evidence](command:vscode-copilot-huckleberry.evidence.refresh)"
+        "contents": "$(files) No evidence artifacts yet.\n\nArtifacts are grouped by run, step, and category after loop execution.\n\n[$(book) Evidence Model Guide](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/evidence-model-guide.md)\n[$(refresh) Refresh Evidence](command:vscode-copilot-huckleberry.evidence.refresh)"
       }
     ]
   },

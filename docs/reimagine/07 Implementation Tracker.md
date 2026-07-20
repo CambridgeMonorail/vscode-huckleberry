@@ -55,7 +55,7 @@ Priority values:
 | RIM-702 | 7 | Resilience and recovery testing | P0 | Docto | Done | RIM-304, RIM-701 | Added runner crash/reconnect recovery tests plus deterministic interrupted-run replay and host hydration checks |
 | RIM-703 | 7 | Telemetry and observability baseline | P1 | Docto | Done | RIM-305 | Added structured non-sensitive runner lifecycle telemetry, unit assertions for key lifecycle emission, and baseline privacy/retention documentation |
 | RIM-704 | 7 | Security and policy review | P0 | Docto | Done | RIM-403, RIM-602 | Added default high-risk command guardrails, explicit policy override controls, enforcement tests, and security review baseline doc |
-| RIM-705 | 7 | Documentation pack | P1 | Docto | Planned | RIM-205, RIM-504 | Adoption readiness |
+| RIM-705 | 7 | Documentation pack | P1 | Docto | Done | RIM-205, RIM-504 | Added workflow quickstart, authoring, evidence, and troubleshooting docs plus discoverable links from extension welcome views |
 | RIM-706 | 7 | Release checklist and go/no-go gate | P0 | Docto | Planned | RIM-701, RIM-702, RIM-703, RIM-704, RIM-705 | Release decision gate |
 
 ## Stage Exit Gate Checklist

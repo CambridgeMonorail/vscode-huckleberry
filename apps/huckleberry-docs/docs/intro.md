@@ -8,12 +8,12 @@ slug: /
 <div align="center">
   <img src="/img/huckleberry-logo-with-name.svg" alt="Huckleberry Logo" width="300" />
   
-  <p><em>AI-powered task management inside Visual Studio Code</em></p>
+   <p><em>Evidence-driven workflow orchestration inside Visual Studio Code</em></p>
 </div>
 
 ## Welcome to Huckleberry
 
-Huckleberry is a VS Code extension that brings AI-powered task management directly into your coding workflow. Using the VS Code Chat interface, you can have natural conversations with a dedicated Task Manager agent that helps you track, manage, and organize project tasks.
+Huckleberry is a VS Code extension for defining, running, and reviewing engineering workflows directly inside your workspace. It combines workflow discovery, runner orchestration, approval gates, and evidence inspection so deterministic checks and bounded agent repair steps stay visible and auditable.
 
 :::caution Alpha Status
 This project is in early development. Features are incomplete, APIs may change, and parts may be non-functional. Contributions and feedback welcome! Huckleberry is not yet available on the VS Code Marketplace.
@@ -21,14 +21,15 @@ This project is in early development. Features are incomplete, APIs may change, 
 
 ## Why Huckleberry?
 
-Huckleberry integrates seamlessly with your development workflow by leveraging VS Code's Language Model API and Copilot Chat integration. This creates a conversational interface for automated task management without ever leaving your development environment.
+Huckleberry keeps workflow execution inside the editor where the code, diagnostics, and review context already live. It is designed for loops such as lint, typecheck, test, repair, approval, and evidence review.
 
 ### Key Benefits
 
-- **Stay in the flow** - Manage tasks without switching contexts
-- **Natural language interface** - No complex syntax or commands to remember
-- **AI-powered assistance** - Get smart suggestions and automated organization
-- **Local storage** - All task data stays in your workspace under version control
+- **Stay in the flow** - Review and run workflows without leaving the editor
+- **Deterministic orchestration** - Run explicit command steps with replayable lifecycle events
+- **Bounded agent repair** - Use constrained agent steps without surrendering execution control
+- **Evidence first** - Review logs, summaries, diffs, and deep links from the `Runs` and `Evidence` views
+- **Local storage** - Loop definitions and run artifacts stay in your workspace under version control
 
 ## Why a VS Code Extension (Not Just an MCP Tool)?
 
@@ -51,11 +52,12 @@ While GitHub Copilot can use Model Context Protocol (MCP) tools, Huckleberry is 
    - No need for external MCP server setup or maintenance
    - Direct access to workspace files without network overhead
 
-This architecture allows Huckleberry to provide a richer, more integrated task management experience while leveraging the power of GitHub Copilot's AI capabilities.
+This architecture lets Huckleberry provide a richer workflow workbench while keeping the extension in charge of execution state, evidence capture, and approval boundaries.
 
 ## Next Steps
 
 - [Installation](./installation.md) - Get up and running with Huckleberry
-- [Quick Start](./quick-start.md) - Learn the basics in 5 minutes
-- [Features](./features.md) - Explore what Huckleberry can do
-- [Usage](./usage.md) - See detailed usage examples
+- [Quick Start](./quick-start.md) - Run your first command-only loop
+- [Workflow Authoring Guide](./workflow-authoring-guide.md) - Learn the schema and execution model
+- [Evidence Model Guide](./evidence-model-guide.md) - Understand artifacts, summaries, and claims
+- [Runner Troubleshooting](./runner-troubleshooting.md) - Diagnose validation, execution, and approval failures

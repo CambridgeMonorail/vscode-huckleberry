@@ -19,11 +19,14 @@ const sidebars: SidebarsConfig = {
         'intro',
         'installation',
         'quick-start',
+        'workflow-authoring-guide',
+        'evidence-model-guide',
+        'runner-troubleshooting',
       ],
     },
     {
       type: 'category',
-      label: 'Features',
+      label: 'Legacy Docs',
       items: [
         'features',
         'language-model-tools',

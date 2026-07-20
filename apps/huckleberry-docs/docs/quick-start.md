@@ -4,103 +4,115 @@ sidebar_position: 3
 
 # Quick Start
 
-This guide will get you up and running with Huckleberry Task Manager in just a few minutes.
+This guide gets a new contributor from installation to a successful command-only loop run in under 15 minutes.
 
-> **Note:** Haven't installed Huckleberry yet? Check out the [Installation Guide](./installation.md) first.
+> Haven't installed Huckleberry yet? Start with the [Installation Guide](./installation.md).
 
-## Initialize Task Tracking
+## What You Will Build
 
-After installing Huckleberry, the first step is to initialize task tracking in your workspace:
+By the end of this guide you will:
 
-1. Open VS Code with your project workspace
-2. Open the chat panel by clicking on the chat icon in the Activity Bar or pressing `Ctrl+Alt+Space` (Windows/Linux) or `Cmd+Shift+Space` (Mac)
-3. Type the following:
+- create starter loop definitions under `.huckleberry/loops`
+- inspect a valid workflow file
+- run a deterministic loop from the Loops view
+- review run evidence and summary artifacts
 
-```
-@Huckleberry Initialize task tracking for this project
-```
+## Prerequisites
 
-This will create the necessary files in your workspace for tracking tasks.
+Before you begin:
 
-## Creating Your First Task
+1. Install the extension and open a workspace folder.
+2. Make sure the workspace has scripts such as `pnpm lint:affected`, `pnpm typecheck:affected`, or replace the starter commands with equivalents for your repo.
+3. If you opened the folder after VS Code started, reload the window once so chat and tree views fully register.
 
-Let's create your first task:
+## 1. Open the Huckleberry Views
 
-1. In the chat panel, type:
+After activation, the Activity Bar shows a Huckleberry container with three views:
 
-```
-@Huckleberry Create a task to implement user authentication
-```
+- `Loops`: discovered workflow definitions from `.huckleberry/loops`
+- `Runs`: execution history and timeline entries
+- `Evidence`: grouped artifacts produced by runs
 
-2. Huckleberry will create a new task with a unique ID (e.g., `TASK-001`) and provide you with the details.
+If `Loops` is empty, use the welcome action to create starter templates.
 
-You can also create tasks with specific priorities:
+## 2. Create Starter Templates
 
-```
-@Huckleberry Create a high priority task to fix security vulnerability
-```
+Run `Huckleberry: Create Starter Templates` from either:
 
-## Viewing Your Tasks
+- the `Loops` view welcome content
+- the Command Palette
 
-To see all your tasks:
+This creates the following files:
 
-```
-@Huckleberry List all tasks
-```
-
-You can also filter by priority:
-
-```
-@Huckleberry What tasks are high priority?
+```text
+.huckleberry/loops/lint.yaml
+.huckleberry/loops/typecheck.yaml
+.huckleberry/loops/test.yaml
 ```
 
-Or by status:
+The generated `lint.yaml` looks like this:
 
-```
-@Huckleberry List completed tasks
-```
-
-## Managing Tasks
-
-### Mark a Task as Complete
-
-```
-@Huckleberry Mark task TASK-001 as complete
+```yaml
+schemaVersion: 1
+id: lint
+name: Lint
+steps:
+  - id: lint
+    type: command
+    command: pnpm lint:affected
 ```
 
-### Change a Task's Priority
+## 3. Adjust the Command for Your Workspace
 
-```
-@Huckleberry Mark task TASK-002 as high priority
-```
+If your repository does not expose `pnpm lint:affected`, edit the generated file and replace the command with a deterministic validation command that succeeds locally, for example:
 
-## Scanning for TODOs
-
-Huckleberry can automatically find TODO comments in your code and turn them into tasks:
-
-```
-@Huckleberry Scan for TODOs in the codebase
+```yaml
+command: pnpm exec nx run vscode-copilot-huckleberry:lint
 ```
 
-You can also specify a pattern to scan specific files:
+Keep the first loop simple: one command step, one clear pass/fail result.
 
-```
-@Huckleberry Scan for TODOs in **/*.ts
-```
+## 4. Run the Loop
 
-## Where Are My Tasks Stored?
+In the `Loops` view:
 
-Huckleberry stores tasks in your workspace:
+1. Refresh if needed.
+2. Right-click a valid loop.
+3. Select `Run Loop`.
 
-- **tasks.json** - The main task registry with basic metadata for all tasks
-- **tasks/** directory - Individual task files with detailed information
+The `Runs` view shows the queued run, then a running state, then a terminal outcome such as `succeeded` or `failed`.
 
-These files are stored locally and can be committed to version control to share with your team.
+## 5. Inspect the Result
+
+Open the finished run from the `Runs` view to inspect:
+
+- step timeline entries
+- stdout and stderr evidence
+- metadata artifacts
+- generated run summary files
+
+The `Evidence` view groups artifacts by run, step, and category so you can trace what happened without leaving VS Code.
+
+## 6. Know Where Files Are Stored
+
+Huckleberry writes loop and run data into your workspace:
+
+- `.huckleberry/loops/` for workflow definitions
+- `.huckleberry/runs/` for event history, summaries, and evidence artifacts
+
+This makes runs inspectable, reproducible, and easy to review in version-controlled repositories.
 
 ## Next Steps
 
-Now that you've learned the basics, you can:
+- Read the [Workflow Authoring Guide](./workflow-authoring-guide.md) to add conditions, approvals, agent repair steps, and execution options.
+- Read the [Evidence Model Guide](./evidence-model-guide.md) to understand claims, facts, summaries, and artifacts.
+- Use the [Runner Troubleshooting Guide](./runner-troubleshooting.md) when a loop fails to validate, execute, or resume.
 
-- Explore [all features](./features.md) of Huckleberry
-- Learn about [Agent Mode Features](./language-model-tools.md)
-- See more [advanced usage examples](./usage.md)
+## Success Criteria
+
+You are done when you can:
+
+- create a loop file under `.huckleberry/loops`
+- run it from the `Loops` view
+- inspect the terminal status, summary, and evidence from `Runs` and `Evidence`
+- explain why the run succeeded or failed using stored artifacts rather than memory
