@@ -10,6 +10,7 @@ import {
   reconstructRunsFromEvents,
   writeRunSummaryArtifacts,
 } from '@huckleberry/extension/runner/runEventStore';
+import { RunnerHost } from '@huckleberry/extension/runner/runnerHost';
 import { RunnerEvent, RunnerStepResult } from '@huckleberry/extension/runner/types';
 
 describe('runner lifecycle smoke', () => {
@@ -170,5 +171,119 @@ describe('runner lifecycle smoke', () => {
     expect(summary?.summary.status).toBe('exhausted');
     expect(summary?.summary.terminalEventType).toBe('run-diff-capture-warning');
     expect(summary?.summary.unresolvedItems.some(item => item.code === 'REPAIR_ATTEMPTS_EXHAUSTED')).toBe(true);
+  });
+
+  it('replays interrupted runs deterministically after extension reload', async () => {
+    const runId = 'run-smoke-interrupted';
+
+    await appendRunEvent({
+      runId,
+      loopId: 'repair-loop',
+      loopFilePath: '/workspace/.huckleberry/loops/repair.yaml',
+      status: 'queued',
+      eventType: 'run-queued',
+      timestamp: 100,
+      message: 'queued',
+    });
+
+    await appendRunEvent({
+      runId,
+      loopId: 'repair-loop',
+      loopFilePath: '/workspace/.huckleberry/loops/repair.yaml',
+      status: 'running',
+      eventType: 'step-started',
+      timestamp: 140,
+      message: 'running tests',
+      transition: {
+        from: 'running',
+        to: 'running',
+        stepId: 'tests',
+        attempt: 1,
+        reason: 'step-started',
+      },
+    });
+
+    const runs = await reconstructRunsFromEvents();
+    const run = runs.find(entry => entry.runId === runId);
+
+    expect(run).toBeDefined();
+    expect(run?.status).toBe('running');
+    expect(run?.startedAt).toBe(100);
+    expect(run?.updatedAt).toBe(140);
+    expect(run?.completedAt).toBeUndefined();
+    expect(run?.stopReasonCode).toBeUndefined();
+  });
+
+  it('hydrates persisted interrupted state through RunnerHost listRuns after restart', async () => {
+    const runId = 'run-smoke-host-reload';
+
+    await appendRunEvent({
+      runId,
+      loopId: 'lint-loop',
+      loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+      status: 'queued',
+      eventType: 'run-queued',
+      timestamp: 100,
+      message: 'queued',
+    });
+
+    await appendRunEvent({
+      runId,
+      loopId: 'lint-loop',
+      loopFilePath: '/workspace/.huckleberry/loops/lint.yaml',
+      status: 'running',
+      eventType: 'step-started',
+      timestamp: 120,
+      message: 'running lint',
+      transition: {
+        from: 'running',
+        to: 'running',
+        stepId: 'lint',
+        attempt: 1,
+        reason: 'step-started',
+      },
+    });
+
+    const host = new RunnerHost();
+    const replies: Array<{ type: string; payload: unknown }> = [];
+
+    host.handleMessage(
+      {
+        type: 'listRuns',
+        requestId: 'req-list-reload',
+        payload: {},
+      },
+      response => replies.push(response as { type: string; payload: unknown }),
+      () => undefined,
+    );
+
+    let runsReply = replies.find(reply => reply.type === 'runs') as
+      | {
+          type: 'runs';
+          payload: {
+            runs: Array<{ runId: string; status: string; updatedAt: number }>;
+          };
+        }
+      | undefined;
+
+    for (let attempt = 0; attempt < 20 && !runsReply; attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 5));
+      runsReply = replies.find(reply => reply.type === 'runs') as
+        | {
+            type: 'runs';
+            payload: {
+              runs: Array<{ runId: string; status: string; updatedAt: number }>;
+            };
+          }
+        | undefined;
+    }
+
+    expect(runsReply).toBeDefined();
+    const restored = runsReply?.payload.runs.find(run => run.runId === runId);
+    expect(restored).toBeDefined();
+    expect(restored?.status).toBe('running');
+    expect(restored?.updatedAt).toBe(120);
+
+    host.dispose();
   });
 });

@@ -214,4 +214,37 @@ describe('RunnerClient', () => {
       client.submitApprovalAction('run-1', 'approve', 'alice', 'Alice', 'Looks good'),
     ).resolves.toBeUndefined();
   });
+
+  it('recovers by respawning runner process after unexpected exit', async () => {
+    class CrashingChildProcess extends EventEmitter {
+      connected = true;
+
+      send(): boolean {
+        return true;
+      }
+
+      kill(): void {
+        this.connected = false;
+      }
+    }
+
+    const firstChild = new CrashingChildProcess();
+    const secondChild = new FakeChildProcess();
+    fakeFork
+      .mockImplementationOnce(() => firstChild)
+      .mockImplementationOnce(() => secondChild);
+
+    const recoveryClient = new RunnerClient();
+
+    const pendingStatus = recoveryClient.getStatus('run-before-crash');
+    firstChild.emit('exit', 1);
+
+    await expect(pendingStatus).rejects.toThrow('Runner process exited unexpectedly.');
+
+    const recoveredStatus = await recoveryClient.getStatus('run-after-restart');
+    expect(recoveredStatus?.runId).toBe('run-1');
+    expect(fakeFork).toHaveBeenCalledTimes(2);
+
+    recoveryClient.dispose();
+  });
 });

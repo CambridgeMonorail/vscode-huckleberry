@@ -52,7 +52,7 @@ Priority values:
 | RIM-603 | 6 | Add isolation visibility in UI | P1 | Docto | Done | RIM-602, RIM-305 | Runs UI now surfaces isolation mode/context metadata plus worktree location and branch inspection actions |
 | RIM-604 | 6 | Add diff evidence for isolated runs | P1 | Docto | Done | RIM-602, RIM-304 | Added terminal run-level diff artifact capture for isolated runs with timeline deep-linking and warning events on diff capture failures |
 | RIM-701 | 7 | Comprehensive test suite expansion | P0 | Docto | Done | RIM-306, RIM-404, RIM-504, RIM-604 | Added runner lifecycle smoke coverage and per-module coverage thresholds for critical runner modules |
-| RIM-702 | 7 | Resilience and recovery testing | P0 | Docto | Planned | RIM-304, RIM-701 | Crash safety |
+| RIM-702 | 7 | Resilience and recovery testing | P0 | Docto | Done | RIM-304, RIM-701 | Added runner crash/reconnect recovery tests plus deterministic interrupted-run replay and host hydration checks |
 | RIM-703 | 7 | Telemetry and observability baseline | P1 | Docto | Planned | RIM-305 | Operational visibility |
 | RIM-704 | 7 | Security and policy review | P0 | Docto | Planned | RIM-403, RIM-602 | Guardrails |
 | RIM-705 | 7 | Documentation pack | P1 | Docto | Planned | RIM-205, RIM-504 | Adoption readiness |
