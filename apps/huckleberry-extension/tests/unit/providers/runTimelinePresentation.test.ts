@@ -100,4 +100,23 @@ describe('runTimelinePresentation', () => {
     expect(tooltip).toContain('- Open Test Explorer');
     expect(tooltip).toContain('- Open stderr log -> /artifacts/stderr.txt');
   });
+
+  it('renders execution context details in timeline tooltip', () => {
+    const tooltip = buildTimelineTooltip({
+      ...createBaseTimelineModel(),
+      executionContext: {
+        mode: 'worktree',
+        workspaceRoot: '/workspace',
+        workingDirectory: '/workspace/.huckleberry/worktrees/run-1',
+        worktreePath: '/workspace/.huckleberry/worktrees/run-1',
+        baseRef: 'main',
+      },
+    });
+
+    expect(tooltip).toContain('Execution context:');
+    expect(tooltip).toContain('Mode: worktree');
+    expect(tooltip).toContain('Workspace root: /workspace');
+    expect(tooltip).toContain('Worktree path: /workspace/.huckleberry/worktrees/run-1');
+    expect(tooltip).toContain('Base ref: main');
+  });
 });

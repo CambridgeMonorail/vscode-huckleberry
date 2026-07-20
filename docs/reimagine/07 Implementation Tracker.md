@@ -49,7 +49,7 @@ Priority values:
 | RIM-504 | 5 | Add run summary report generation | P2 | Docto | Done | RIM-304 | Added deterministic run summary artifacts (JSON + Markdown) generated from persisted event streams with unresolved item/evidence extraction and Runs command access |
 | RIM-601 | 6 | Implement worktree lifecycle service | P0 | Docto | Done | RIM-303 | Added worktree lifecycle service with create/reuse/cleanup, run-to-worktree metadata mapping, safety guards, and orphan detection coverage |
 | RIM-602 | 6 | Route steps through isolation context | P0 | Docto | Done | RIM-601, RIM-403 | Added execution context abstraction and routed command/agent execution through workspace/worktree mode with context metadata propagation |
-| RIM-603 | 6 | Add isolation visibility in UI | P1 | Docto | Planned | RIM-602, RIM-305 | Transparency in run details |
+| RIM-603 | 6 | Add isolation visibility in UI | P1 | Docto | Done | RIM-602, RIM-305 | Runs UI now surfaces isolation mode/context metadata plus worktree location and branch inspection actions |
 | RIM-604 | 6 | Add diff evidence for isolated runs | P1 | Docto | Planned | RIM-602, RIM-304 | Reviewability |
 | RIM-701 | 7 | Comprehensive test suite expansion | P0 | Docto | Planned | RIM-306, RIM-404, RIM-504, RIM-604 | Critical path quality |
 | RIM-702 | 7 | Resilience and recovery testing | P0 | Docto | Planned | RIM-304, RIM-701 | Crash safety |

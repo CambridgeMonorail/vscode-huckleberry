@@ -5,6 +5,7 @@ import {
   buildTimelineTooltip,
   type RunTimelinePresentationModel,
 } from './runTimelinePresentation';
+import { buildRunIsolationPresentation } from './runIsolationPresentation';
 
 export interface RunTimelineNodeModel extends RunTimelinePresentationModel {
   runId: string;
@@ -21,25 +22,43 @@ class RunTreeItem extends vscode.TreeItem {
     super(`${run.loopId} (${run.status})`, vscode.TreeItemCollapsibleState.Collapsed);
     this.description = this.buildDescription(run);
     this.tooltip = this.buildTooltip(run, node.timeline.length);
-    this.contextValue = `run-${run.status}`;
+    const mode = run.executionContext?.mode ?? 'unknown';
+    this.contextValue = `run-${run.status}-${mode}`;
     this.iconPath = this.getIconForStatus(run.status);
   }
 
   private buildDescription(run: RunnerRunRecord): string {
     const completedSuffix = run.completedAt ? ` in ${formatDuration(run.completedAt - run.startedAt)}` : '';
-    return `${run.runId}${completedSuffix}`;
+    const modeLabel = run.executionContext?.mode ?? 'unknown';
+    return `${run.runId} • ${modeLabel}${completedSuffix}`;
   }
 
   private buildTooltip(run: RunnerRunRecord, timelineCount: number): string {
+    const isolation = buildRunIsolationPresentation(run);
     const lines: string[] = [
       `Run ID: ${run.runId}`,
       `Loop: ${run.loopId}`,
       `Status: ${run.status}`,
+      `Isolation mode: ${isolation.modeLabel}`,
       `Started: ${formatTimestamp(run.startedAt)}`,
       `Updated: ${formatTimestamp(run.updatedAt)}`,
       `Events: ${timelineCount}`,
       `Path: ${run.loopFilePath}`,
     ];
+
+    if (isolation.details.length > 0) {
+      lines.push('Isolation details:');
+      for (const detail of isolation.details) {
+        lines.push(`  ${detail}`);
+      }
+    }
+
+    if (isolation.warnings.length > 0) {
+      lines.push('Isolation warnings:');
+      for (const warning of isolation.warnings) {
+        lines.push(`  ${warning}`);
+      }
+    }
 
     if (run.completedAt) {
       lines.push(`Completed: ${formatTimestamp(run.completedAt)}`);
@@ -272,5 +291,6 @@ function toTimelineNode(event: RunnerEvent): RunTimelineNodeModel {
     approvalDecision: event.approvalDecision,
     stepResult: event.stepResult,
     deepLinks: event.deepLinks,
+    executionContext: event.executionContext,
   };
 }

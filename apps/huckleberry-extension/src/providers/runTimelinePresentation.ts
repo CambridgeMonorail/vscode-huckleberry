@@ -1,4 +1,11 @@
-import { RunnerAgentClaim, RunnerApprovalDecision, RunnerDeepLink, RunnerRunRecord, RunnerStepResult } from '../runner';
+import {
+  RunnerAgentClaim,
+  RunnerApprovalDecision,
+  RunnerDeepLink,
+  RunnerExecutionContext,
+  RunnerRunRecord,
+  RunnerStepResult,
+} from '../runner';
 
 export interface RunTimelinePresentationModel {
   stepId: string;
@@ -13,6 +20,7 @@ export interface RunTimelinePresentationModel {
   agentClaim?: RunnerAgentClaim;
   approvalDecision?: RunnerApprovalDecision;
   deepLinks?: RunnerDeepLink[];
+  executionContext?: RunnerExecutionContext;
   stepResult?: RunnerStepResult;
 }
 
@@ -69,6 +77,19 @@ export function buildTimelineTooltip(timeline: RunTimelinePresentationModel): st
 
   if (timeline.message) {
     lines.push(`Message: ${timeline.message}`);
+  }
+
+  if (timeline.executionContext) {
+    lines.push('Execution context:');
+    lines.push(`  Mode: ${timeline.executionContext.mode}`);
+    lines.push(`  Workspace root: ${timeline.executionContext.workspaceRoot}`);
+    lines.push(`  Working directory: ${timeline.executionContext.workingDirectory}`);
+    if (timeline.executionContext.worktreePath) {
+      lines.push(`  Worktree path: ${timeline.executionContext.worktreePath}`);
+    }
+    if (timeline.executionContext.baseRef) {
+      lines.push(`  Base ref: ${timeline.executionContext.baseRef}`);
+    }
   }
 
   if (timeline.agentClaim) {

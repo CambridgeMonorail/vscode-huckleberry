@@ -35,6 +35,8 @@
     "onCommand:vscode-copilot-huckleberry.runs.approvalAction",
     "onCommand:vscode-copilot-huckleberry.runs.getStatus",
     "onCommand:vscode-copilot-huckleberry.runs.openSummary",
+    "onCommand:vscode-copilot-huckleberry.runs.openWorktreeLocation",
+    "onCommand:vscode-copilot-huckleberry.runs.inspectWorktreeBranch",
     "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
     "onCommand:vscode-copilot-huckleberry.runs.openDeepLink",
     "onCommand:vscode-copilot-huckleberry.runs.openTimelineDeepLink",
@@ -108,6 +110,20 @@
         "category": "Huckleberry",
         "icon": "$(notebook)",
         "description": "Open machine and human-readable summary reports for a run"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.openWorktreeLocation",
+        "title": "Open Worktree Location",
+        "category": "Huckleberry",
+        "icon": "$(folder-opened)",
+        "description": "Reveal worktree location for isolated runs"
+      },
+      {
+        "command": "vscode-copilot-huckleberry.runs.inspectWorktreeBranch",
+        "title": "Inspect Branch Status",
+        "category": "Huckleberry",
+        "icon": "$(git-branch)",
+        "description": "Inspect git branch status for the run execution context"
       },
       {
         "command": "vscode-copilot-huckleberry.runs.openStepEvidence",
@@ -234,7 +250,17 @@
         },
         {
           "command": "vscode-copilot-huckleberry.runs.openSummary",
-          "when": "view == huckleberryRunsView && (viewItem == run-succeeded || viewItem == run-failed || viewItem == run-cancelled || viewItem == run-exhausted)",
+          "when": "view == huckleberryRunsView && (viewItem == run-succeeded-workspace || viewItem == run-failed-workspace || viewItem == run-cancelled-workspace || viewItem == run-exhausted-workspace || viewItem == run-succeeded-worktree || viewItem == run-failed-worktree || viewItem == run-cancelled-worktree || viewItem == run-exhausted-worktree || viewItem == run-succeeded-unknown || viewItem == run-failed-unknown || viewItem == run-cancelled-unknown || viewItem == run-exhausted-unknown)",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.openWorktreeLocation",
+          "when": "view == huckleberryRunsView && (viewItem == run-running-worktree || viewItem == run-paused-worktree || viewItem == run-succeeded-worktree || viewItem == run-failed-worktree || viewItem == run-cancelled-worktree || viewItem == run-exhausted-worktree)",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-copilot-huckleberry.runs.inspectWorktreeBranch",
+          "when": "view == huckleberryRunsView && (viewItem == run-running-worktree || viewItem == run-paused-worktree || viewItem == run-succeeded-worktree || viewItem == run-failed-worktree || viewItem == run-cancelled-worktree || viewItem == run-exhausted-worktree)",
           "group": "inline"
         },
         {

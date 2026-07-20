@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
+import { execFile } from 'child_process';
 import { logWithChannel, LogLevel } from '../utils';
 import { EvidenceArtifactNodeModel, EvidenceExplorerProvider } from '../providers/EvidenceExplorerProvider';
 import { LoopExplorerProvider, LoopViewItemModel } from '../providers/LoopExplorerProvider';
 import { RunExplorerProvider, RunTimelineNodeModel } from '../providers/RunExplorerProvider';
 import { WorkflowTemplateService } from '../services';
-import { RunnerApprovalAction, RunnerClient, RunnerDeepLink } from '../runner';
+import { RunnerApprovalAction, RunnerClient, RunnerDeepLink, RunnerRunRecord } from '../runner';
 
 function extractLoopViewItemModel(input: unknown): LoopViewItemModel | undefined {
   if (input && typeof input === 'object') {
@@ -59,6 +60,21 @@ function extractTimelineNode(input: unknown): RunTimelineNodeModel | undefined {
 
     if ('timeline' in value && value['timeline'] && typeof value['timeline'] === 'object') {
       return value['timeline'] as RunTimelineNodeModel;
+    }
+  }
+
+  return undefined;
+}
+
+function extractRunRecord(input: unknown): RunnerRunRecord | undefined {
+  if (input && typeof input === 'object') {
+    const value = input as Record<string, unknown>;
+    if (value['run'] && typeof value['run'] === 'object') {
+      return value['run'] as RunnerRunRecord;
+    }
+
+    if (typeof value['runId'] === 'string' && typeof value['loopId'] === 'string') {
+      return input as RunnerRunRecord;
     }
   }
 
@@ -294,6 +310,72 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
       await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(selection.path));
       return Promise.resolve();
     }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openWorktreeLocation', async (runInput: unknown) => {
+      const run = extractRunRecord(runInput);
+      if (!run) {
+        vscode.window.showWarningMessage('Run selection is required to open worktree location.');
+        return Promise.resolve();
+      }
+
+      if (!run.executionContext) {
+        vscode.window.showWarningMessage(`Isolation metadata is unavailable for run '${run.runId}'.`);
+        return Promise.resolve();
+      }
+
+      if (run.executionContext.mode !== 'worktree') {
+        vscode.window.showInformationMessage(`Run '${run.runId}' executed in workspace mode; no worktree path is available.`);
+        return Promise.resolve();
+      }
+
+      if (!run.executionContext.worktreePath) {
+        vscode.window.showWarningMessage(`Worktree metadata is missing for run '${run.runId}'.`);
+        return Promise.resolve();
+      }
+
+      const worktreeUri = vscode.Uri.file(run.executionContext.worktreePath);
+      try {
+        await vscode.workspace.fs.stat(worktreeUri);
+      } catch {
+        vscode.window.showWarningMessage(`Worktree path is stale or missing: ${run.executionContext.worktreePath}`);
+        return Promise.resolve();
+      }
+
+      await vscode.commands.executeCommand('revealFileInOS', worktreeUri);
+      return Promise.resolve();
+    }),
+    vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.inspectWorktreeBranch', async (runInput: unknown) => {
+      const run = extractRunRecord(runInput);
+      if (!run) {
+        vscode.window.showWarningMessage('Run selection is required to inspect worktree branch status.');
+        return Promise.resolve();
+      }
+
+      if (!run.executionContext) {
+        vscode.window.showWarningMessage(`Isolation metadata is unavailable for run '${run.runId}'.`);
+        return Promise.resolve();
+      }
+
+      const cwd = run.executionContext.mode === 'worktree'
+        ? run.executionContext.worktreePath
+        : run.executionContext.workingDirectory;
+
+      if (!cwd) {
+        vscode.window.showWarningMessage(`Isolation metadata is incomplete for run '${run.runId}'.`);
+        return Promise.resolve();
+      }
+
+      try {
+        const status = await readGitBranchStatus(cwd);
+        logWithChannel(LogLevel.INFO, `Run ${run.runId} branch status:\n${status}`);
+        vscode.window.showInformationMessage(`Branch status for run '${run.runId}' logged to Huckleberry output.`);
+      } catch (error) {
+        vscode.window.showWarningMessage(
+          `Unable to inspect branch status for run '${run.runId}': ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+
+      return Promise.resolve();
+    }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.openTimelineDeepLink', async (input: unknown) => {
       const deepLink = extractTimelineDeepLink(input);
       if (!deepLink) {
@@ -445,4 +527,17 @@ async function executeDeepLink(link: RunnerDeepLink): Promise<void> {
   }
 
   await vscode.commands.executeCommand('vscode.open', targetUri);
+}
+
+async function readGitBranchStatus(cwd: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile('git', ['-C', cwd, 'status', '--short', '--branch'], (error, stdout, stderr) => {
+      if (error) {
+        reject(new Error(stderr.trim() || error.message));
+        return;
+      }
+
+      resolve(stdout.trim());
+    });
+  });
 }
