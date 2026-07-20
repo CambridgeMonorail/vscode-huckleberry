@@ -24,6 +24,10 @@ const {
   writeRunSummaryArtifactsMock: vi.fn(),
 }));
 
+const { logWithChannelMock } = vi.hoisted(() => ({
+  logWithChannelMock: vi.fn(),
+}));
+
 vi.mock('@huckleberry/extension/runner/commandExecutor', () => ({
   executeCommandStep: executeCommandStepMock,
 }));
@@ -39,6 +43,17 @@ vi.mock('@huckleberry/extension/runner/runEventStore', () => ({
   getRunEvents: getRunEventsMock,
   getRunSummaryArtifacts: getRunSummaryArtifactsMock,
   writeRunSummaryArtifacts: writeRunSummaryArtifactsMock,
+}));
+
+vi.mock('@huckleberry/extension/utils/debugUtils', () => ({
+  LogLevel: {
+    INFO: 'INFO',
+    DEBUG: 'DEBUG',
+    WARN: 'WARN',
+    ERROR: 'ERROR',
+    CRITICAL: 'CRITICAL',
+  },
+  logWithChannel: logWithChannelMock,
 }));
 
 async function flushAsyncWork(): Promise<void> {
@@ -128,6 +143,15 @@ describe('RunnerHost', () => {
     expect(persistStepEvidenceMock).toHaveBeenCalledTimes(1);
     expect(appendRunEventMock).toHaveBeenCalled();
     expect(appendEvidenceIndexMock).toHaveBeenCalled();
+    expect(logWithChannelMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringContaining('Runner lifecycle telemetry:'),
+      expect.objectContaining({
+        telemetryType: 'runner-lifecycle',
+        runId: expect.any(String),
+        loopId: 'lint',
+      }),
+    );
 
     host.dispose();
   });
@@ -496,6 +520,16 @@ describe('RunnerHost', () => {
     }
 
     expect(appendRunEventMock).toHaveBeenCalled();
+    expect(logWithChannelMock).toHaveBeenCalledWith(
+      'WARN',
+      expect.stringContaining('Runner lifecycle telemetry: step-failed'),
+      expect.objectContaining({
+        telemetryType: 'runner-lifecycle',
+        status: 'failed',
+        stopReasonCode: 'STEP_EXIT_NON_ZERO',
+        stepId: 'test',
+      }),
+    );
 
     host.dispose();
   });

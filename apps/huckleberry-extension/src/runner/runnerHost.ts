@@ -16,6 +16,7 @@ import {
 import { WorktreeLifecycleService } from './worktreeLifecycleService';
 import { loadWorkflowDefinition } from './workflowLoader';
 import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
+import { logWithChannel, LogLevel } from '../utils/debugUtils';
 import {
   RunnerApprovalDecision,
   RunnerDeepLink,
@@ -503,6 +504,8 @@ export class RunnerHost {
       approvalDecision,
     };
 
+    this.logLifecycleTelemetry(event);
+
     emitEvent({
       type: 'event',
       payload: event,
@@ -534,6 +537,8 @@ export class RunnerHost {
               },
             ],
           };
+
+          this.logLifecycleTelemetry(warningEvent);
 
           emitEvent({
             type: 'event',
@@ -1260,6 +1265,32 @@ export class RunnerHost {
       });
 
     this.persistenceQueue.set(runId, next);
+  }
+
+  private logLifecycleTelemetry(event: RunnerEvent): void {
+    const telemetry = {
+      telemetryType: 'runner-lifecycle',
+      runId: event.runId,
+      loopId: event.loopId,
+      status: event.status,
+      eventType: event.eventType,
+      executionMode: event.executionContext?.mode,
+      transitionFrom: event.transition?.from,
+      transitionTo: event.transition?.to,
+      stepId: event.transition?.stepId ?? event.stepResult?.stepId ?? event.agentClaim?.stepId ?? event.approvalDecision?.stepId,
+      attempt: event.transition?.attempt ?? event.stepResult?.attempt ?? event.agentClaim?.attempt ?? event.approvalDecision?.attempt,
+      stopReasonCode: event.stopReason?.code,
+      terminal: isTerminalStatus(event.status),
+      timestamp: event.timestamp,
+    };
+
+    const level = event.eventType.includes('failed') || event.eventType.includes('warning')
+      ? LogLevel.WARN
+      : event.eventType.includes('cancelled') || event.eventType.includes('exhausted')
+        ? LogLevel.INFO
+        : LogLevel.DEBUG;
+
+    logWithChannel(level, `Runner lifecycle telemetry: ${event.eventType}`, telemetry);
   }
 }
 
