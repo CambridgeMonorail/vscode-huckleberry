@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
+import * as fs from 'fs/promises';
 import * as path from 'path';
+import { execFile } from 'child_process';
 import { AgentAdapterRegistry, AgentStepExecutionResult } from './agentAdapter';
 import { executeCommandStep } from './commandExecutor';
 import { persistStepEvidence } from './evidenceStore';
@@ -55,6 +57,13 @@ interface WorktreeLifecycleAdapter {
   cleanupRunWorktree: WorktreeLifecycleService['cleanupRunWorktree'];
 }
 
+interface RunDiffCaptureResult {
+  artifactPath: string;
+  warningMessage?: string;
+}
+
+type RunDiffGenerator = (run: RunnerRunRecord) => Promise<RunDiffCaptureResult | undefined>;
+
 /**
  * Hosts in-memory run lifecycle state for the lightweight command-only runner process.
  */
@@ -66,12 +75,15 @@ export class RunnerHost {
   private readonly persistenceQueue = new Map<string, Promise<void>>();
   private hydrationPromise?: Promise<void>;
   private readonly worktreeLifecycleService: WorktreeLifecycleAdapter;
+  private readonly runDiffGenerator: RunDiffGenerator;
 
   constructor(
     private readonly agentAdapterRegistry: AgentAdapterRegistry = new AgentAdapterRegistry(),
     worktreeLifecycleService: WorktreeLifecycleAdapter = new WorktreeLifecycleService(),
+    runDiffGenerator: RunDiffGenerator = generateRunDiffArtifact,
   ) {
     this.worktreeLifecycleService = worktreeLifecycleService;
+    this.runDiffGenerator = runDiffGenerator;
   }
 
   handleMessage(message: RunnerRequest, reply: Reply, emitEvent: EmitEvent): void {
@@ -485,7 +497,7 @@ export class RunnerHost {
       executionContext: run.executionContext,
       transition,
       agentClaim,
-      deepLinks: this.buildDeepLinks(eventType, stepResult),
+      deepLinks: this.buildDeepLinks(run, status, eventType, stepResult),
       stepResult,
       stopReason,
       approvalDecision,
@@ -503,6 +515,33 @@ export class RunnerHost {
       }
 
       if (isTerminalStatus(status)) {
+        const diffCapture = await this.runDiffGenerator(run);
+        if (diffCapture?.warningMessage) {
+          const warningEvent: RunnerEvent = {
+            runId: run.runId,
+            loopId: run.loopId,
+            loopFilePath: run.loopFilePath,
+            status,
+            eventType: 'run-diff-capture-warning',
+            message: diffCapture.warningMessage,
+            timestamp: Date.now(),
+            executionContext: run.executionContext,
+            deepLinks: [
+              {
+                kind: 'diff',
+                label: 'Open run diff artifact',
+                target: diffCapture.artifactPath,
+              },
+            ],
+          };
+
+          emitEvent({
+            type: 'event',
+            payload: warningEvent,
+          });
+          await appendRunEvent(warningEvent);
+        }
+
         await writeRunSummaryArtifacts(run.runId);
         await this.cleanupExecutionContext(run);
       }
@@ -940,12 +979,28 @@ export class RunnerHost {
     };
   }
 
-  private buildDeepLinks(eventType: string, stepResult?: RunnerStepResult): RunnerDeepLink[] | undefined {
-    if (!stepResult) {
-      return undefined;
+  private buildDeepLinks(
+    run: RunnerRunRecord,
+    status: RunnerRunStatus,
+    eventType: string,
+    stepResult?: RunnerStepResult,
+  ): RunnerDeepLink[] | undefined {
+    const links: RunnerDeepLink[] = [];
+
+    if (isTerminalStatus(status) && run.executionContext?.mode === 'worktree') {
+      links.push({
+        kind: 'diff',
+        label: 'Open run diff artifact',
+        target: getRunDiffArtifactPath(run.runId),
+        description: 'Run-level patch generated for isolated execution.',
+      });
     }
 
-    const links: RunnerDeepLink[] = [
+    if (!stepResult) {
+      return links.length > 0 ? links : undefined;
+    }
+
+    links.push(
       {
         kind: 'logs',
         label: 'Open stdout log',
@@ -961,7 +1016,7 @@ export class RunnerHost {
         label: 'Open metadata log',
         target: stepResult.metadataArtifactPath,
       },
-    ];
+    );
 
     const normalizedEvent = eventType.toLowerCase();
     if (normalizedEvent.includes('failed') || normalizedEvent.includes('timeout')) {
@@ -994,7 +1049,7 @@ export class RunnerHost {
       );
     }
 
-    return links;
+    return links.length > 0 ? links : undefined;
   }
 
   private async executeAgentStep(
@@ -1210,4 +1265,53 @@ export class RunnerHost {
 
 function isTerminalStatus(status: RunnerRunStatus): boolean {
   return status === 'succeeded' || status === 'failed' || status === 'cancelled' || status === 'exhausted';
+}
+
+function getRunDiffArtifactPath(runId: string): string {
+  return path.join(process.cwd(), '.huckleberry', 'runs', runId, 'run.diff.patch');
+}
+
+async function generateRunDiffArtifact(run: RunnerRunRecord): Promise<RunDiffCaptureResult | undefined> {
+  if (run.executionContext?.mode !== 'worktree') {
+    return undefined;
+  }
+
+  const artifactPath = getRunDiffArtifactPath(run.runId);
+  await fs.mkdir(path.dirname(artifactPath), { recursive: true });
+
+  try {
+    const diffOutput = await runGitDiff(run.executionContext.workingDirectory);
+    await fs.writeFile(artifactPath, diffOutput, 'utf8');
+    return { artifactPath };
+  } catch (error) {
+    const warningMessage = `Unable to capture isolated run diff for '${run.runId}': ${error instanceof Error ? error.message : String(error)}`;
+    await fs.writeFile(
+      artifactPath,
+      `# Diff capture warning\n${warningMessage}\n`,
+      'utf8',
+    );
+
+    return {
+      artifactPath,
+      warningMessage,
+    };
+  }
+}
+
+async function runGitDiff(workingDirectory: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      'git',
+      ['-C', workingDirectory, 'diff', '--binary', '--no-color'],
+      { maxBuffer: 10 * 1024 * 1024 },
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(new Error(stderr.trim() || error.message));
+          return;
+        }
+
+        resolve(stdout);
+      },
+    );
+  });
 }

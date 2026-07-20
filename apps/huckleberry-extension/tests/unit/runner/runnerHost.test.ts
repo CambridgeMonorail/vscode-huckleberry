@@ -245,7 +245,10 @@ describe('RunnerHost', () => {
       preservedForActiveRuns: false,
     });
 
-    const host = new RunnerHost(adapterRegistry, { provisionWorktree, cleanupRunWorktree });
+    const runDiffGenerator = vi.fn().mockResolvedValue({
+      artifactPath: '/workspace/.huckleberry/runs/run-worktree/run.diff.patch',
+    });
+    const host = new RunnerHost(adapterRegistry, { provisionWorktree, cleanupRunWorktree }, runDiffGenerator);
     const events: RunnerResponse[] = [];
 
     reconstructRunsFromEventsMock.mockResolvedValue([]);
@@ -306,12 +309,106 @@ describe('RunnerHost', () => {
     expect(executeCommandStepMock.mock.calls[0][0].cwd).toBe('/workspace/.huckleberry/worktrees/context-run');
     expect(executeAgentStep.mock.calls[0][0].cwd).toBe('/workspace/.huckleberry/worktrees/context-run');
     expect(cleanupRunWorktree).toHaveBeenCalled();
+    expect(runDiffGenerator).toHaveBeenCalledTimes(1);
+
+    const terminalEvent = events
+      .filter((event): event is Extract<RunnerResponse, { type: 'event' }> => event.type === 'event')
+      .find(event => event.payload.status === 'succeeded');
+    expect(terminalEvent).toBeDefined();
+    expect(terminalEvent?.payload.deepLinks?.some(link => link.label === 'Open run diff artifact')).toBe(true);
 
     const runStarted = events.find(event => event.type === 'event' && event.payload.eventType === 'run-started');
     if (runStarted?.type === 'event') {
       expect(runStarted.payload.executionContext?.mode).toBe('worktree');
       expect(runStarted.payload.executionContext?.worktreePath).toBe('/workspace/.huckleberry/worktrees/context-run');
     }
+
+    host.dispose();
+  });
+
+  it('emits an explicit warning event when isolated diff generation fails', async () => {
+    const provisionWorktree = vi.fn().mockResolvedValue({
+      runId: 'placeholder',
+      loopId: 'diff-warning',
+      workspaceRoot: '/workspace',
+      baseRef: 'HEAD',
+      worktreePath: '/workspace/.huckleberry/worktrees/diff-warning',
+      createdAt: 1,
+      lastUsedAt: 1,
+      active: true,
+      reused: false,
+    });
+    const cleanupRunWorktree = vi.fn().mockResolvedValue({
+      runId: 'placeholder',
+      removed: true,
+      preservedForActiveRuns: false,
+    });
+    const runDiffGenerator = vi.fn().mockResolvedValue({
+      artifactPath: '/workspace/.huckleberry/runs/run-diff-warning/run.diff.patch',
+      warningMessage: 'Unable to generate diff artifact for isolated run.',
+    });
+
+    const host = new RunnerHost(new AgentAdapterRegistry(), { provisionWorktree, cleanupRunWorktree }, runDiffGenerator);
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+    executeCommandStepMock.mockResolvedValue({
+      stdout: 'ok',
+      stderr: '',
+      exitCode: 0,
+      timedOut: false,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+    });
+    persistStepEvidenceMock.mockImplementation(async ({ runId, stepId, attempt, command, cwd, executionContext }) => ({
+      runId,
+      stepId,
+      attempt,
+      command,
+      cwd,
+      executionContext,
+      startedAt: 100,
+      completedAt: 120,
+      durationMs: 20,
+      exitCode: 0,
+      timedOut: false,
+      stdoutArtifactPath: '/tmp/stdout',
+      stderrArtifactPath: '/tmp/stderr',
+      metadataArtifactPath: '/tmp/meta',
+    }));
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-diff-warning',
+        payload: {
+          loopId: 'diff-warning',
+          loopFilePath: '/workspace/.huckleberry/loops/diff-warning.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'diff-warning',
+            name: 'Diff Warning',
+            steps: [
+              { id: 'lint', type: 'command', command: 'pnpm lint:affected' },
+            ],
+          },
+          execution: { isolationMode: 'worktree' },
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const warningEvent = events
+      .filter((event): event is Extract<RunnerResponse, { type: 'event' }> => event.type === 'event')
+      .find(event => event.payload.eventType === 'run-diff-capture-warning');
+
+    expect(warningEvent).toBeDefined();
+    expect(warningEvent?.payload.message).toContain('Unable to generate diff artifact for isolated run.');
+    expect(warningEvent?.payload.deepLinks?.some(link => link.label === 'Open run diff artifact')).toBe(true);
 
     host.dispose();
   });
