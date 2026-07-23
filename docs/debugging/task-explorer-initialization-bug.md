@@ -1,35 +1,52 @@
-# Fixed: Task Explorer Initialization Bug
+# Legacy Debug Note: Task Explorer Initialization Bug
 
-## Issue Summary
+> Historical context only: this document applies to legacy task-management runtime paths and is not part of the active workflow-first product surface (Loops/Runs/Evidence) on `feat/huckleberry-reimagination`.
+>
+> Active workflow-first references:
+>
+> - `docs/reimagine/04 PRD.md`
+> - `docs/reimagine/06 Staged Implementation Plan.md`
 
-A critical bug was causing an error when initializing task tracking from the Huckleberry Tasks Explorer view:
+## Relevance Status
+
+- Status: Legacy / archival reference
+- Active product impact: None for current Loops/Runs/Evidence command and view paths
+- Use this doc only when working inside legacy task-domain modules retained during migration
+
+## Legacy Issue Summary
+
+A critical bug caused an error when initializing task tracking from the legacy Huckleberry Tasks Explorer view:
 
 ```txt
 Cannot read properties of undefined (reading 'apply')
 ```
 
-## Root Cause
+## Legacy Root Cause
 
 The bug was caused by:
+
 1. Improper async handling in command registrations
 2. Loss of 'this' context during command execution
 3. Inconsistent Promise chaining and resolution
 
-## Resolution
+## Legacy Resolution
 
-Fixed in version 0.1.5 with the following improvements:
+Fixed in version 0.1.5 with the following improvements to the task-domain command path:
 
 1. Proper async handling for all VSCode commands
+
    - Added Promise.resolve() for non-async operations
    - Proper async/await usage for async operations
    - Consistent error handling and logging
 
 2. Command context preservation
+
    - Fixed 'this' binding in command handlers
    - Improved type safety with unknown context type
    - Added context validation logging
 
 3. Enhanced error handling
+
    - Comprehensive error logging throughout execution chain
    - Proper error propagation
    - User-friendly error messages
@@ -78,14 +95,15 @@ vscode.commands.registerCommand(
 // Properly filter and handle command disposables
 commandDisposables
   .filter((disposable): disposable is vscode.Disposable => disposable !== undefined)
-  .forEach(disposable => {
+  .forEach((disposable) => {
     context.subscriptions.push(disposable);
   });
 ```
 
-## Verification
+## Legacy Verification
 
-The fix has been verified through:
+The fix was verified through:
+
 1. Successful initialization from Task Explorer view
 2. Proper command execution from Command Palette
 3. Clean TypeScript compilation with no errors
@@ -93,13 +111,14 @@ The fix has been verified through:
 
 ## Notes
 
-This fix improves the overall reliability of command handling in the extension by:
+This fix improved reliability in the legacy task-command handling path by:
+
 - Ensuring consistent async behavior
 - Maintaining proper execution context
 - Providing better error feedback
 - Preventing duplicate command registrations
 
-## Bug Description (Fixed)
+## Historical Bug Description (Fixed)
 
 The following error was occurring when initializing task tracking from the Huckleberry Tasks Explorer view:
 
@@ -109,7 +128,7 @@ Cannot read properties of undefined (reading 'apply')
 
 This issue has been fixed in the latest version through improved async handling and promise management.
 
-## Initial Context
+## Historical Context
 
 - Error occurs when clicking the "Initialize Task Tracking" button in the Task Explorer view
 - The initialization works correctly when invoked through other methods (e.g., command palette)
@@ -160,10 +179,12 @@ class WelcomeTreeItem extends vscode.TreeItem {
 - Check if toolManager is initialized when Task Explorer loads
 
 2. Command Context Investigation
+
    - Add logging to capture command context ('this' binding)
    - Check if command handler is being called in the correct context
 
 3. Tool Manager Initialization
+
    - Review tool manager initialization process
    - Add logging to track tool manager state throughout extension lifecycle
 
@@ -181,12 +202,14 @@ class WelcomeTreeItem extends vscode.TreeItem {
 ## Debugging Plan
 
 1. Add comprehensive logging to track:
+
    - Extension activation sequence
    - Tool manager initialization
    - Command registration and execution flow
    - TreeView initialization and command invocation
 
 2. Set up breakpoints in:
+
    - Extension activation
    - Command registration
    - Command execution

@@ -4,195 +4,63 @@ sidebar_position: 10
 
 # Customization
 
-Huckleberry Task Manager offers multiple ways to customize its behavior and appearance to match your workflow preferences.
+This guide covers practical customization points for the workflow-first Huckleberry experience.
 
-## Configuration Options
+## What You Can Customize Today
 
-In addition to the [settings](./settings.md) that control Huckleberry's core functionality, there are several customization options available.
+### Workflow Definitions
 
-## Custom Task Templates
+Loop files under `.huckleberry/loops` are the primary customization surface.
 
-You can create custom templates for new tasks by defining a task template file in your workspace. Create a file at `.huckleberry/templates/task.md` with your preferred structure:
+You can customize:
 
-```markdown
-# ${id}: ${title}
+- Loop IDs and names
+- Step sequences
+- Command arguments and execution behavior
+- Approval gates and branching behavior
+- Isolation/worktree execution options
 
-**Priority**: ${priority}  
-**Status**: ${status}  
-**Created**: ${createdAt}  
-**Updated**: ${updatedAt}  
+Use the starter templates as your baseline, then adapt commands to your repository conventions.
 
-## Description
+### Team Conventions
 
-${description}
+Treat loop files as productized automation artifacts:
 
-## Acceptance Criteria
+- Keep naming consistent (for example `lint`, `typecheck`, `test`)
+- Prefer deterministic command steps where possible
+- Document intent in loop descriptions/comments
+- Review loop updates in pull requests
 
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
+### Evidence Review Workflow
 
-## Notes
+Customize your review process around persisted evidence:
 
-${notes}
+- Decide which artifacts should be retained
+- Define how run summaries are consumed in code review
+- Add branch/worktree inspection steps for higher-risk runs
 
-## Related Tasks
+## VS Code-Level Customization
 
-${relatedTasks}
-```
+You can customize usage ergonomics through VS Code itself:
 
-When Huckleberry creates new tasks, it will use your custom template and fill in the variables with appropriate values.
+- Keyboard shortcuts for frequently used Huckleberry commands
+- View/container placement and layout preferences
+- Chat and agent mode model selection
 
-## Custom Status Workflows
+## Recommended Operating Patterns
 
-By default, Huckleberry supports the following task statuses:
+1. Start with simple command-only loops.
+2. Add approvals where human judgment is needed.
+3. Add isolation/worktree mode for higher-risk workflows.
+4. Use summaries and evidence links as the decision source of truth.
 
-- Todo
-- In Progress
-- Done
+## Legacy Configuration Note
 
-You can define a custom workflow with additional statuses by creating a `.huckleberryrc.json` file in your workspace root:
+Some task-domain configuration examples may still exist in historical docs or migration-era modules. For the active workflow-first branch, prioritize loop/run/evidence configuration through `.huckleberry/loops` and run operations.
 
-```json
-{
-  "taskManager": {
-    "customStatusFlow": [
-      "Backlog",
-      "Ready",
-      "In Progress",
-      "Review",
-      "Testing",
-      "Done"
-    ]
-  }
-}
-```
+## Related Guides
 
-After setting a custom status flow, you can use these statuses in your commands:
-
-```
-@Huckleberry Mark task TASK-001 as Review
-```
-
-## Task Categories
-
-To organize tasks into categories, add a `categories` array to your `.huckleberryrc.json` file:
-
-```json
-{
-  "taskManager": {
-    "categories": [
-      "Frontend",
-      "Backend",
-      "Documentation",
-      "Testing",
-      "DevOps"
-    ]
-  }
-}
-```
-
-You can then assign tasks to categories:
-
-```
-@Huckleberry Create a Frontend task to implement the login form
-```
-
-## Custom Task ID Format
-
-By default, Huckleberry uses the format `TASK-XXX` for task IDs. You can customize this format by setting the `taskIdPrefix` in your `.huckleberryrc.json` file:
-
-```json
-{
-  "taskManager": {
-    "taskIdPrefix": "HB"
-  }
-}
-```
-
-This would create tasks with IDs like `HB-001`, `HB-002`, etc.
-
-## Themeing and Visual Customization
-
-Huckleberry respects VS Code's theming system, so its UI elements will match your chosen theme. No additional configuration is needed.
-
-## Chat Response Formatting
-
-You can customize how Huckleberry formats its responses in chat by adding a `chatFormatting` section to your `.huckleberryrc.json`:
-
-```json
-{
-  "chatFormatting": {
-    "successEmoji": "✅",
-    "errorEmoji": "❌",
-    "infoEmoji": "ℹ️",
-    "warningEmoji": "⚠️",
-    "useCodeBlocks": true
-  }
-}
-```
-
-## Command Aliases
-
-To create custom shortcuts for frequently used commands, add an `aliases` section to your `.huckleberryrc.json`:
-
-```json
-{
-  "aliases": {
-    "todo": "Scan for TODOs in the codebase",
-    "done": "Mark task ${1} as complete",
-    "high": "Mark task ${1} as high priority"
-  }
-}
-```
-
-This allows you to use shorthand commands:
-
-```
-@Huckleberry todo
-@Huckleberry done TASK-001
-@Huckleberry high TASK-002
-```
-
-## Keyboard Shortcuts
-
-While Huckleberry doesn't define default keyboard shortcuts, you can set your own through VS Code's keyboard shortcuts settings:
-
-1. Open VS Code's keyboard shortcuts editor: `File > Preferences > Keyboard Shortcuts`
-2. Search for "Huckleberry"
-3. Find the command you want to assign a shortcut to
-4. Click the plus icon and enter your preferred key combination
-
-## Extending Huckleberry
-
-Advanced users can extend Huckleberry's functionality by:
-
-1. **Custom Scripts**: Create scripts that interact with Huckleberry's task files
-2. **Integration with VS Code Tasks**: Create VS Code tasks that reference Huckleberry tasks
-3. **Git Hooks**: Add Git hooks that update task status based on commits or branches
-
-### Example: Pre-commit Hook
-
-Create a `.git/hooks/pre-commit` script that scans for TODOs before committing:
-
-```bash
-#!/bin/bash
-
-# Scan for new TODOs and create tasks for them
-code --extensionDevelopmentPath="path/to/huckleberry" --execute-command "huckleberry.scanTodos"
-
-# Prevent commit if there are high priority tasks
-HIGH_PRIORITY_TASKS=$(grep -l '"priority": "high"' tasks/*.json | wc -l)
-if [ $HIGH_PRIORITY_TASKS -gt 0 ]; then
-  echo "Warning: You have $HIGH_PRIORITY_TASKS high priority tasks remaining."
-  echo "Run 'code --execute-command \"huckleberry.listTasks\"' to see them."
-fi
-```
-
-## Best Practices for Customization
-
-1. **Start with defaults**: Use Huckleberry with its default settings initially to understand its workflow
-2. **Workspace-specific settings**: Apply customizations at the workspace level to maintain consistency within projects
-3. **Document customizations**: If working in a team, document any custom settings in your project README
-4. **Version control configuration**: Include your `.huckleberryrc.json` and templates in version control
-5. **Consistent categories**: Establish clear naming conventions for task categories
+- [Workflow Authoring Guide](./workflow-authoring-guide.md)
+- [Usage](./usage.md)
+- [Workflow Storage](./task-storage.md)
+- [Runner Troubleshooting](./runner-troubleshooting.md)

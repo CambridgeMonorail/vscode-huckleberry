@@ -1,4 +1,12 @@
-# Huckleberry Task Manager - Implementation Requirements
+# Huckleberry Task Manager - Implementation Requirements (Legacy)
+
+> Historical document: This requirements list reflects the earlier task-manager scope and is retained for traceability.
+>
+> Active workflow-first references:
+>
+> - `docs/reimagine/03 Specification.md`
+> - `docs/reimagine/04 PRD.md`
+> - `docs/reimagine/06 Staged Implementation Plan.md`
 
 This document provides a structured list of requirements for implementing the remaining features of the Huckleberry Task Manager VS Code extension.
 
@@ -7,6 +15,7 @@ This document provides a structured list of requirements for implementing the re
 ### Task Visualization and UI
 
 - [HIGH] Create Task Explorer View
+
   - Implement TreeDataProvider for hierarchical task visualization
   - Add status indicators (completed, in-progress, blocked)
   - Support filtering and sorting by various properties
@@ -24,6 +33,7 @@ This document provides a structured list of requirements for implementing the re
 ### Advanced Task Management
 
 - [HIGH] Implement Task Dependencies Management
+
   - Create tools for managing task relationships
   - Support creating blocking/blocked relationships
   - Add dependency validation to prevent circular dependencies
@@ -42,6 +52,7 @@ This document provides a structured list of requirements for implementing the re
 ### External Services
 
 - [MEDIUM] Add GitHub Issue Integration
+
   - Implement GitHub API authentication
   - Support creating GitHub issues from tasks
   - Allow importing existing GitHub issues as tasks

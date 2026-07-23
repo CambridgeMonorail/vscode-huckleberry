@@ -4,103 +4,62 @@ sidebar_position: 4
 
 # Features
 
-Huckleberry Task Manager offers a rich set of features designed to make task management seamless within your development workflow.
+Huckleberry Workflow Workbench provides evidence-driven workflow orchestration directly inside VS Code.
 
 ## Core Features
 
-### Natural Language Task Management
+### Workflow Discovery and Validation
 
-Manage tasks through simple, conversational language in VS Code's chat interface:
+- Discover workflow definitions from `.huckleberry/loops`
+- Validate schema and semantic correctness
+- Surface validation state in the Loops explorer
 
-- Create tasks using natural language descriptions
-- Update task status and priority with simple commands
-- Query and filter tasks based on various attributes
-- All without leaving your coding environment
+### Deterministic Run Lifecycle
 
-### Task Creation and Organization
+- Start workflow runs from the Loops view
+- Track status transitions in the Runs view
+- Capture explicit stop reasons and lifecycle events
 
-- **Task Creation**: Create tasks with descriptions, priorities, and due dates
+### Approval Gates
 
-- **Task Categories**: Organize tasks into categories or areas
+- Pause runs for human decisions
+- Submit approve/reject/defer actions
+- Attach optional audit notes for traceability
 
-- **Priority Levels**: Assign low, medium, or high priority to tasks
+### Evidence-First Review
 
-- **Task Status**: Track task completion status (todo, in-progress, done)
+- Generate run summaries in JSON and Markdown
+- Group artifacts by run, step, and category
+- Open deep links to diagnostics, tests, logs, and diffs
 
-### Task Discovery
+### Isolation and Worktrees
 
-- **TODO Comment Scanning**: Automatically discover tasks from `TODO` comments in your code
+- Execute workflows in isolated worktree contexts when configured
+- Surface worktree location and branch inspection actions in run details
 
-- **Requirements Parsing**: Parse project requirement documents to generate tasks
+## VS Code Integration
 
-- **Task Decomposition**: Break down complex tasks into manageable subtasks
+- Chat participant via `@Huckleberry`
+- Command palette actions for loop/run/evidence workflows
+- Activity Bar container with Loops, Runs, and Evidence views
+- Agent-mode integration through VS Code Language Model Tools
 
-## Integration Features
+## Storage and Portability
 
-### VS Code Integration
+Huckleberry stores workflow state locally in your workspace:
 
-- **Chat Participant**: Integration with VS Code's chat interface via `@Huckleberry` mentions
+- `.huckleberry/loops` for definitions
+- `.huckleberry/runs` for events, summaries, and artifacts
 
-- **Command Palette**: Access commands through VS Code's command palette
+This supports version control, auditability, and reproducibility.
 
-- **Agent Mode Integration**: Direct AI integration through VS Code's Language Model API
+## Current Scope
 
-- **Workspace Storage**: All tasks stored locally in your workspace files
+This branch is workflow-first. Legacy task-management modules may still exist during migration, but active user-facing behavior is centered on loops, runs, approvals, and evidence.
 
-### Agent Mode Tools
+## Related Guides
 
-Huckleberry integrates with VS Code's Language Model API (known as "Agent Mode"), allowing AI assistants like GitHub Copilot to directly interact with Huckleberry's task management features without requiring explicit `@Huckleberry` mentions.
-
-Key agent mode capabilities include:
-
-- Creating and updating tasks through natural conversation
-
-- Initializing task tracking for new projects
-
-- Scanning codebase for TODOs
-
-- Listing and filtering tasks
-
-- Updating task status and priority
-
-For complete details on available tools and how they work, see the [Language Model Tools (Agent Mode)](./language-model-tools.md) documentation.
-
-## Storage and Persistence
-
-Huckleberry stores tasks locally in your workspace, making them:
-
-- **Version controlled**: Track task changes with your code
-
-- **Team accessible**: Share tasks with your team
-
-- **Transparent**: All data stored as plain text files
-
-- **Portable**: No dependency on external servers or services
-
-## Upcoming Features
-
-:::note
-The following features are on our roadmap but may not be available in the current version.
-:::
-
-- **Tree View**: A dedicated tree view for task visualization and management
-
-- **VS Code Tasks Integration**: Integration with VS Code's built-in task system
-
-- **Task Dependencies**: Define and track dependencies between tasks
-
-- **Time Tracking**: Track time spent on tasks
-
-- **Reporting**: Generate reports of task progress and completion
-
-## Feature Comparison
-
-| Feature | Huckleberry | Traditional Task Tools | VS Code Built-in Tasks |
-|---------|-------------|------------------------|------------------------|
-| Natural Language Interface | ✅ | ❌ | ❌ |
-| AI Integration | ✅ | ❌ | ❌ |
-| In-Editor Access | ✅ | ❌ | ✅ |
-| Version Control | ✅ | Varies | ✅ |
-| TODO Scanning | ✅ | ❌ | ❌ |
-| Requirements Parsing | ✅ | ❌ | ❌ |
-| Customizable | ✅ | Varies | ✅ |
+- [Usage](./usage.md)
+- [Workflow Storage](./task-storage.md)
+- [Extension Architecture](./extension-architecture.md)
+- [Runner Troubleshooting](./runner-troubleshooting.md)

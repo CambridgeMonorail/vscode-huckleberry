@@ -4,245 +4,160 @@ sidebar_position: 11
 
 # Extension Architecture
 
-This page documents the architecture of the Huckleberry Task Manager extension for developers interested in understanding how it works or contributing to its development.
+This page documents the current workflow-first architecture of Huckleberry.
 
 ## Architectural Overview
 
-Huckleberry is built on a modular architecture with clean separation of concerns. The extension is divided into the following main components:
+Huckleberry is organized around three primary product surfaces:
 
-```
+- Loops: discover and validate workflow definitions
+- Runs: execute loops and inspect lifecycle state
+- Evidence: inspect artifacts, summaries, and deep links
+
+Current high-level structure:
+
+```text
 huckleberry-extension/
 ├── src/
-│   ├── extension.ts            # Main entry point
-│   ├── types.ts                # TypeScript type definitions
-│   ├── config.ts               # Configuration defaults
-│   ├── config/                 # Configuration management
-│   ├── services/               # Core business logic
-│   ├── handlers/               # Command handlers
-│   ├── tools/                  # Language model tools
-│   └── utils/                  # Utility functions
+│   ├── extension.ts            # Entry point and activation orchestration
+│   ├── activation/             # Composition root modules
+│   ├── providers/              # Loops/Runs/Evidence TreeDataProviders
+│   ├── runner/                 # Runner client/host, IPC, state machine, evidence, worktrees
+│   ├── workflows/              # Workflow schema, loader, validator
+│   ├── services/               # Chat, discovery, validation, templates, state
+│   ├── handlers/               # Chat and command request routing
+│   ├── tools/                  # Internal tool implementations
+│   ├── utils/                  # Logging and VS Code helpers
+│   └── types.ts                # Shared type definitions
 ```
 
-## Extension Entry Point
+## Entry Point and Activation
 
-The `extension.ts` file serves as the entry point for the VS Code extension. It handles:
+`src/extension.ts` handles startup and delegates to activation modules:
 
-- Extension activation and deactivation
-- Command registration
-- Chat participant registration
-- Language model tool registration
+- `createExtensionServices`
+- `registerShellViews`
+- `registerCoreCommands`
+- `registerWorkspaceLifecycle`
+- `registerChatParticipants`
 
-## Core Components
+This keeps startup composable and testable.
 
-### Task Management System
+## Product Surfaces
 
-The Task Management System (`services/taskManager.ts`) is responsible for:
+### Loops Surface
 
-- Creating, updating, and deleting tasks
-- Storing and retrieving task data
-- Enforcing task structure and validation
-- Managing task relationships and dependencies
+Loops are workflow definitions located under `.huckleberry/loops`.
 
-### Chat Integration
+Key responsibilities:
 
-The Chat Participant (`services/chatParticipant.ts`) integrates with VS Code's chat interface, allowing:
+- Discover loop files from workspace
+- Validate schema and semantics
+- Present validation state in the Loops view
+- Allow execution via `Run Loop`
 
-- Natural language interaction with the task manager
-- Command parsing and intent recognition
-- Response formatting and presentation
+Key modules:
 
-### Language Model Tools
+- `services/loopDiscoveryService.ts`
+- `services/workflowValidationService.ts`
+- `providers/LoopExplorerProvider.ts`
+- `workflows/*`
 
-The Language Model Tools (`tools/`) allow VS Code's language model (like GitHub Copilot) to directly interact with Huckleberry's functionality:
+### Runs Surface
 
-- Tool registration and discovery
-- Validation and execution of tools
-- Result formatting for the language model
+Runs represent workflow executions and lifecycle timelines.
 
-### Agent Mode Implementation
+Key responsibilities:
 
-The Agent Mode implementation (`tools/`) allows VS Code's AI assistants (like GitHub Copilot) to directly interact with Huckleberry's functionality:
+- Start, monitor, and cancel runs
+- Surface run status and transitions
+- Handle approval-gate pause and resume decisions
+- Open run summaries and timeline deep links
 
-- **createTask**: Creates a new task with optional priority 
-- **initializeTracking**: Sets up task tracking in a workspace
-- **scanTodos**: Converts TODO comments to tasks
-- **listTasks**: Lists and filters tasks
-- **markTaskDone**: Completes a task
-- **updateTaskPriority**: Changes a task's priority level
+Key modules:
 
-These tools are registered with VS Code's Language Model Tools API, enabling seamless integration with AI assistants in agent mode. While users experience these as "Agent Mode Features," they're implemented as Language Model Tools in the codebase.
+- `runner/runnerClient.ts`
+- `runner/runnerHost.ts`
+- `runner/stateMachine.ts`
+- `providers/RunExplorerProvider.ts`
+- `providers/runTimelinePresentation.ts`
 
-### File System Interaction
+### Evidence Surface
 
-The File System Service (`services/fileSystem.ts`) manages all interactions with the workspace file system:
+Evidence provides inspectable execution outputs.
 
-- Task persistence to JSON and Markdown files
-- Workspace scanning for TODOs
-- File watching for changes
+Key responsibilities:
 
-## Detailed Architecture
+- Group artifacts by run/step/category
+- Open and reveal artifacts
+- Surface missing/stale artifact states
+- Support traceability for decisions and audits
 
-### Request Flow
+Key modules:
 
-When a user interacts with Huckleberry through chat, the request flows as follows:
+- `providers/EvidenceExplorerProvider.ts`
+- `providers/evidenceExplorerPresentation.ts`
+- `runner/evidenceStore.ts`
+- `runner/runEventStore.ts`
 
-1. **Input**: User types `@Huckleberry create a task to implement authentication`
-2. **Chat Participant**: Receives the message and extracts the intent
-3. **Command Router**: Identifies the appropriate command handler
-4. **Command Handler**: Processes the command, invoking the necessary services
-5. **Task Manager**: Performs the requested operation on the task data
-6. **Persistence Layer**: Stores changes to the file system
-7. **Response Formatter**: Generates a human-readable response
-8. **Output**: Response displayed in the chat interface
+## Runner Architecture
 
-### Language Model Tool Flow
+The runner layer is responsible for deterministic workflow execution and persistence.
 
-When a language model uses a Huckleberry tool:
+Core components:
 
-1. **Tool Invocation**: LM calls a registered tool with parameters
-2. **Tool Validation**: Parameters are validated for correctness
-3. **Service Layer**: Tool routes to the appropriate service
-4. **Operation**: The requested operation is performed
-5. **Result Formatting**: Results are formatted for the language model
-6. **Response**: Structured data returned to the language model
+- Runner host/client IPC boundary
+- Command-step execution
+- Optional agent-step adapter boundary
+- Approval decision handling
+- Event persistence and run reconstruction
+- Summary generation (`summary.json`, `summary.md`)
+- Isolation support with worktree lifecycle service
 
-## Key Services
+Storage model:
 
-### Task Service
+- `.huckleberry/loops` for workflow definitions
+- `.huckleberry/runs` for event logs, summaries, and artifacts
 
-```typescript
-/**
- * Core service for managing tasks
- */
-export class TaskService {
-  /**
-   * Creates a new task with the provided details
-   * @param title Task title
-   * @param description Optional task description
-   * @param priority Task priority level
-   * @returns The created task object
-   */
-  public async createTask(
-    title: string, 
-    description?: string, 
-    priority?: TaskPriority
-  ): Promise<Task>;
+## Chat and Agent Mode Integration
 
-  /**
-   * Updates an existing task
-   * @param taskId The ID of the task to update
-   * @param updates Object containing the fields to update
-   * @returns The updated task
-   */
-  public async updateTask(
-    taskId: string, 
-    updates: Partial<Task>
-  ): Promise<Task>;
+Huckleberry integrates with VS Code Chat and Language Model Tools so users can drive workflow operations conversationally.
 
-  // Additional methods for task management...
-}
-```
+Common operation categories:
 
-### TODO Scanner Service
+- Loop operations
+- Run operations
+- Approval operations
+- Evidence operations
 
-```typescript
-/**
- * Service for scanning the workspace for TODO comments
- */
-export class TodoScannerService {
-  /**
-   * Scans the workspace for TODO comments and creates tasks
-   * @param pattern Optional glob pattern to filter files
-   * @returns Array of created tasks
-   */
-  public async scanTodos(pattern?: string): Promise<Task[]>;
-}
-```
+The assistant experience is conversational, while execution and state remain deterministic and inspectable.
 
-### Language Model Tool Provider
+## Request Flow
 
-```typescript
-/**
- * Provider for registering Language Model tools
- */
-export class LanguageModelToolProvider {
-  /**
-   * Registers all Huckleberry tools with the VS Code Language Model API
-   * @param context Extension context
-   */
-  public registerTools(context: vscode.ExtensionContext): void;
-}
-```
+Typical flow for a workflow action:
 
-## Extension Lifecyle
-
-### Activation
-
-The extension activates when:
-
-- A workspace is opened
-- A command is executed
-- The chat interface is used
-
-On activation, the extension:
-
-1. Initializes services and dependencies
-2. Registers commands with VS Code
-3. Registers chat participants
-4. Registers language model tools
-5. Sets up file system watchers
-
-### Deactivation
-
-On deactivation, the extension:
-
-1. Saves any pending changes
-2. Disposes of file system watchers
-3. Releases resources
+1. User triggers chat or command action.
+2. Handler routes to service and/or runner client.
+3. Runner host executes state-machine transitions.
+4. Events and artifacts are persisted.
+5. Providers refresh Loops/Runs/Evidence views.
+6. User inspects summary and evidence for next decision.
 
 ## Testing Strategy
 
-The extension uses a combination of:
+Current testing emphasizes workflow reliability and auditability:
 
-- **Unit Tests**: For testing individual components in isolation
-- **Integration Tests**: For testing component interactions
-- **End-to-End Tests**: For testing the extension in a real VS Code environment
+- Unit tests for runner, providers, and workflow validation
+- Integration tests for VS Code extension behavior
+- Manual smoke checks for loop execution, approval gates, deep links, and evidence
 
-## Performance Considerations
+## Security and Reliability Principles
 
-Huckleberry is designed to be lightweight and responsive by:
+- Workspace-local storage for loops/runs/evidence
+- Explicit stop reasons and approval decisions
+- Deterministic summary generation from persisted events
+- Bounded agent behavior and command policy guardrails
 
-- Loading task data lazily when needed
-- Processing files asynchronously
-- Using efficient data structures for task management
-- Minimizing filesystem operations
+## Migration Note
 
-## Security Model
-
-Huckleberry follows these security principles:
-
-- **Local Storage**: All task data remains in the user's workspace
-- **No External Services**: No data is sent to external servers
-- **Permission Based**: Only accesses files within the workspace
-- **Validation**: All inputs are validated before processing
-
-## Integration Points
-
-Huckleberry integrates with VS Code through:
-
-- **Command API**: For registering and executing commands
-- **Chat API**: For chat participant integration
-- **Language Model API**: For AI-assisted task management
-- **Workspace API**: For file system access and workspace configuration
-
-## Contributing
-
-Before contributing to the extension architecture:
-
-1. Familiarize yourself with the VS Code Extension API
-2. Follow the project's TypeScript coding standards
-3. Maintain separation of concerns between components
-4. Write unit tests for new functionality
-5. Document public APIs with JSDoc comments
-
-For more details on contributing, see the [Development](./development.md) guide.
+Legacy task-domain modules may still exist in the repository while migration completes. New feature work should target the workflow-first architecture described above.

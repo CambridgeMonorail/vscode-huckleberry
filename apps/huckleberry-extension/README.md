@@ -2,280 +2,112 @@
 
 ![Huckleberry Logo](https://raw.githubusercontent.com/CambridgeMonorail/vscode-huckleberry/main/assets/images/huckleberry-logo.png)
 
-AI-powered workflow planning inside Visual Studio Code
+Evidence-driven workflow orchestration inside Visual Studio Code.
 
 [![Release](https://img.shields.io/github/v/release/CambridgeMonorail/vscode-huckleberry?include_prereleases&style=flat-square)](https://github.com/CambridgeMonorail/vscode-huckleberry/releases)
 [![License](https://img.shields.io/github/license/CambridgeMonorail/vscode-huckleberry?style=flat-square)](./LICENSE)
 [![VS Code Version](https://img.shields.io/badge/VS%20Code-%5E1.93.0-blue?style=flat-square)](https://code.visualstudio.com/updates/v1_93)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/CONTRIBUTING.md)
-[![Contributors](https://img.shields.io/github/contributors/CambridgeMonorail/vscode-huckleberry?style=flat-square)](https://github.com/CambridgeMonorail/vscode-huckleberry/graphs/contributors)
 
-> **⚠️ ALPHA STATUS**: This extension is in early development (version 0.1.24). Features are incomplete, APIs may change, and parts may be non-functional. We welcome your feedback and contributions as we work towards a stable release!
-
-## Features • [Installation](#installation) • [Getting Started](#getting-started) • [Commands](#commands) • [Settings](#settings) • [FAQ](#faq) • [Support](#support)
+> ⚠️ ALPHA STATUS: This extension is in active development. APIs and behavior may change.
 
 ## Overview
 
-Huckleberry is an AI-powered workflow workbench that brings natural language planning directly into your VS Code workflow. Using VS Code's chat interface, you can have natural conversations with a dedicated agent that helps you track, manage, and organize project work without leaving your development environment.
+Huckleberry is a VS Code extension for workflow execution with explicit evidence. It helps you define loops, run them, inspect outcomes, and make approval decisions without leaving the editor.
 
-> **AI Transparency**: This extension uses VS Code's Language Model API. While these models are powerful tools for understanding natural language requests, they may sometimes produce responses that are incorrect or incomplete. We recommend verifying important decisions, especially for critical project components.
+Primary product surfaces:
 
-For comprehensive documentation, visit our [documentation site](https://cambridgemonorail.github.io/vscode-huckleberry/).
+- Loops: workflow definitions and validation
+- Runs: execution lifecycle and timeline
+- Evidence: artifacts, summaries, and deep links
 
 ## Features
 
-- 🗣️ **Natural Language Interface** - Create and manage workflow tasks using conversational language
-- 📋 **Smart PRD Parsing** - Extract tasks automatically from project requirement documents
-- ✅ **Workflow Lifecycle Management** - Create, track, and complete workflow tasks with simple chat commands
-- 🔄 **Task Decomposition** - Break complex tasks into manageable subtasks
-- 📊 **Priority Management** - Organize tasks by priority, due date, and dependencies
-- 💾 **Workspace Integration** - Tasks are stored in your project files for version control and team sharing
-- 🤖 **Language Model Integration** - Tasks can be created and managed directly by VS Code's language model
+- Workflow loop discovery and validation from `.huckleberry/loops`
+- Starter template generation for common checks
+- Run execution with persisted lifecycle events
+- Approval-gate controls (approve, reject, defer)
+- Run summaries (`summary.json`, `summary.md`) derived from event history
+- Evidence explorer grouped by run, step, and category
+- Deep links from timeline entries to diagnostics, tests, logs, and diffs
+- Optional isolation support with worktree visibility commands
 
 ## Installation
 
-1. Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=CambridgeMonorail.vscode-huckleberry)
-2. Reload VS Code when prompted
+### Pre-release (recommended)
 
-Or install from VSIX:
+1. Download the latest VSIX from [GitHub Releases](https://github.com/CambridgeMonorail/vscode-huckleberry/releases).
+2. In VS Code Extensions view, choose `Install from VSIX...`.
+3. Select the downloaded VSIX and reload when prompted.
 
-1. Download from [GitHub releases](https://github.com/CambridgeMonorail/vscode-huckleberry/releases)
-2. In VS Code, run "Install from VSIX" and select the downloaded file
-3. Reload VS Code when prompted
+### Requirements
 
-### System Requirements
-
-- Visual Studio Code version 1.93 or later
-- GitHub Copilot subscription (for AI features)
-- Internet connection (for AI access)
-- 4GB RAM minimum (8GB recommended)
+- VS Code `1.93+`
+- GitHub Copilot subscription (for chat and agent-mode features)
 
 ## Getting Started
 
-After installation:
+1. Open the Huckleberry container from the Activity Bar.
+2. In Loops view, run `Create Starter Templates`.
+3. Edit generated loop commands to match your workspace scripts.
+4. Run a valid loop using `Run Loop`.
+5. Inspect status, timeline, and summaries in Runs.
+6. Inspect artifacts in Evidence.
 
-1. Open VS Code's Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-2. Run "Huckleberry: Initialize Task Tracking"
-3. Open VS Code's chat panel and type `@Huckleberry help`
+## Command Surface
 
-Try these example commands:
+Key commands:
 
-```
-@Huckleberry Create a task to implement user authentication
-@Huckleberry Scan for TODOs in the codebase
-@Huckleberry What tasks are high priority?
-@Huckleberry Mark task TASK-123 as done
-@Huckleberry Break task TASK-123 into subtasks
-```
+- `Huckleberry: Refresh Loops`
+- `Huckleberry: Refresh Runs`
+- `Huckleberry: Refresh Evidence`
+- `Huckleberry: Create Starter Templates`
+- `Huckleberry: Run Loop`
+- `Huckleberry: Cancel Run`
+- `Huckleberry: Submit Approval Decision`
+- `Huckleberry: Get Run Status`
+- `Huckleberry: Open Run Summary`
+- `Huckleberry: Open Worktree Location`
+- `Huckleberry: Inspect Branch Status`
+- `Huckleberry: Open Step Evidence`
+- `Huckleberry: Open Timeline Deep Link`
+- `Huckleberry: Open Deep Link Target`
+- `Huckleberry: Open Artifact`
+- `Huckleberry: Reveal Artifact`
 
-## Command Reference
+## Data Model and Storage
 
-### Quick Start Commands
+Huckleberry keeps runtime state in workspace files:
 
-The fastest way to get started is through VS Code's Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
+- `.huckleberry/loops` for workflow definitions
+- `.huckleberry/runs` for run events, summaries, and evidence artifacts
 
-- **Huckleberry: Manage Tasks** - Open the task management interface
-- **Huckleberry: Initialize Task Tracking** - Set up task tracking for your workspace
-- **Huckleberry: Create Task** - Create a new task quickly
-- **Huckleberry: Open Task Explorer** - View all tasks in a dedicated panel
-
-### Natural Language Commands
-
-In the VS Code chat panel, mention `@Huckleberry` followed by what you want to do:
-
-Task Creation:
-```text
-@Huckleberry Create a task to implement user authentication
-@Huckleberry Create a high priority task to fix security vulnerability
-@Huckleberry Break task TASK-123 into subtasks
-```
-
-Task Management:
-```text
-@Huckleberry List all tasks
-@Huckleberry What tasks are high priority?
-@Huckleberry Mark task TASK-123 as complete
-@Huckleberry Prioritise tasks by deadline
-```
-
-Scanning and Analysis:
-```text
-@Huckleberry Scan for TODOs in the codebase
-@Huckleberry Scan for TODOs in **/*.ts
-@Huckleberry Parse requirements.md and create tasks
-@Huckleberry What task should I work on next?
-```
-
-### VS Code Command Palette Reference
-
-Full list of available commands in the Command Palette:
-
-| Command | Description |
-|---------|-------------|
-| `Huckleberry: Manage Tasks` | Open the task management interface |
-| `Huckleberry: Initialize Task Tracking` | Set up task tracking for the current workspace |
-| `Huckleberry: Create Task` | Create a new task in the workspace |
-| `Huckleberry: List Tasks` | List all tasks in the workspace |
-| `Huckleberry: Mark Task Complete` | Mark a task as completed |
-| `Huckleberry: Change Task Priority` | Change the priority of a task |
-| `Huckleberry: Scan TODOs` | Scan workspace files for TODO comments |
-| `Huckleberry: Prioritize Tasks` | Sort tasks by status and priority |
-| `Huckleberry: Get Next Task` | Suggest the next task to work on |
-| `Huckleberry: Get Help` | Show help and command reference |
-| `Huckleberry: Parse Requirements Document` | Extract tasks from a PRD |
-| `Huckleberry: Open Task Explorer` | Open the task visualization view |
-| `Huckleberry: Create Subtasks` | Break down a task into subtasks |
-| `Huckleberry: Export Tasks` | Export tasks (markdown, CSV, JSON) |
-
-## Settings
-
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `huckleberry.taskmanager.defaultTasksLocation` | Location for task files | `"tasks"` |
-| `huckleberry.taskmanager.taskFileTemplate` | Format for task files | `"markdown"` |
-| `huckleberry.taskmanager.defaultTaskPriority` | Default priority level | `"medium"` |
-| `huckleberry.taskmanager.defaultDueDate` | Default due date setting | `"none"` |
-
-## FAQ
-
-**Do I need GitHub Copilot?**
-While basic task management works without Copilot, the AI-powered features require a GitHub Copilot subscription.
-
-**Where are tasks stored?**
-All tasks are stored locally in your workspace under the tasks directory (configurable). Tasks are saved as plain text files that can be version controlled.
-
-**Can I use it offline?**
-Basic task management works offline, but AI features require an internet connection.
-
-**How do I migrate tasks?**
-Simply copy the tasks directory between workspaces. All task data is stored in plain text files.
-
-**Which languages are supported?**
-Huckleberry works with any programming language. The TODO scanning feature supports all languages recognized by VS Code.
+This supports traceability, reproducibility, and reviewability.
 
 ## Troubleshooting
 
-### Chat Features Not Working
+If the extension appears idle:
 
-1. Ensure VS Code 1.93+ is installed
-2. Verify GitHub Copilot is installed and signed in
-3. If you opened a folder after VS Code started, reload the window
-4. Check Output panel for "Huckleberry" logs
+1. Confirm a workspace folder is open.
+2. Check Loops view for valid definitions.
+3. Refresh Loops/Runs/Evidence views.
+4. Open run summary and evidence artifacts for failure context.
 
-### Task Files Not Showing
+For deeper guidance, see:
 
-1. Verify tasks directory exists
-2. Run "Initialize Task Tracking" command
-3. Check workspace write permissions
-
-### AI Features Not Working
-
-1. Verify active Copilot subscription
-2. Check internet connection
-3. Try switching language model
-4. Reload workspace
-
-For more help, see our [troubleshooting guide](https://github.com/CambridgeMonorail/vscode-huckleberry/wiki/Troubleshooting).
-
-## Privacy and Data Handling
-
-Your privacy is important to us. Huckleberry:
-
-- Uses VS Code's Language Model API for natural language processing
-- Stores task data locally in your workspace
-- Does not collect telemetry or personal data
-- Does not send workspace data to external services except for AI processing via VS Code's API
-- Requires GitHub Copilot access for AI features
-
-## Known Limitations
-
-- **Alpha Status**: This extension is in early development (0.1.24). Features may be incomplete or change.
-- **AI Dependencies**:  
-  - Requires active internet connection
-  - Requires GitHub Copilot subscription
-  - AI suggestions may contain errors and should be reviewed
-  - AI features may not work in restricted or airgapped environments
-- **Performance**:  
-  - Initial task parsing of large documents may take a few seconds
-  - Recommended RAM: 8GB for optimal performance
-- **Language Support**: While the extension works with any programming language, it has been primarily tested with:  
-  - TypeScript/JavaScript
-  - Python
-  - C#
-  - Java
+- [Quick Start](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/quick-start.md)
+- [Workflow Authoring Guide](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/workflow-authoring-guide.md)
+- [Evidence Model Guide](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/evidence-model-guide.md)
+- [Runner Troubleshooting](https://github.com/CambridgeMonorail/vscode-huckleberry/blob/main/apps/huckleberry-docs/docs/runner-troubleshooting.md)
 
 ## Contributing
 
-We welcome contributions! Here's how you can help:
+Contributions are welcome:
 
-- 🐛 [Report bugs](https://github.com/CambridgeMonorail/vscode-huckleberry/issues/new?labels=bug&template=bug_report.md)
-- 💡 [Suggest features](https://github.com/CambridgeMonorail/vscode-huckleberry/issues/new?labels=enhancement&template=feature_request.md)
-- 🔀 [Submit PRs](https://github.com/CambridgeMonorail/vscode-huckleberry/pulls)
+- Report issues: https://github.com/CambridgeMonorail/vscode-huckleberry/issues
+- Submit PRs: https://github.com/CambridgeMonorail/vscode-huckleberry/pulls
 
-See our [Contributing Guide](CONTRIBUTING.md) for detailed guidelines.
-
-## Support
-
-Need help?
-
-1. Check the [FAQ](#faq) and [Troubleshooting](#troubleshooting) sections
-2. Search [GitHub issues](https://github.com/CambridgeMonorail/vscode-huckleberry/issues)
-3. Create a new issue
-4. Join [discussions](https://github.com/CambridgeMonorail/vscode-huckleberry/discussions)
+Please follow repository contribution guidelines and keep changes aligned to the workflow-first architecture.
 
 ## License
 
 [MIT License](./LICENSE)
-
----
-
-Made with ❤️ by [CambridgeMonorail](https://github.com/CambridgeMonorail)
-
-## Features in Action
-
-### Natural Language Task Creation
-
-Create and manage tasks using natural language in VS Code's chat interface. Simply open the chat panel, mention @Huckleberry, and describe your task - it's that easy!
-
-![Task creation in VS Code chat](https://raw.githubusercontent.com/CambridgeMonorail/vscode-huckleberry/main/media/screenshots/task-creation.gif)
-
-> More feature demonstrations coming soon! Check our [documentation site](https://cambridgemonorail.github.io/vscode-huckleberry/) for updates.
-
-## AI Ethics and Guidelines
-
-Huckleberry follows strict ethical AI principles:
-
-### Content Safety
-
-- Uses VS Code's Language Model API's built-in content filtering
-- Refuses to generate harmful, offensive, or inappropriate content
-- Will not engage with prompts attempting to bypass content restrictions
-
-### Fairness and Inclusivity
-
-- Works consistently across all programming languages and projects
-- Uses inclusive language in all interactions
-- Provides clear error messages and guidance in all scenarios
-
-### Transparency
-
-- Clearly indicates when AI is being used
-- Distinguishes between AI-generated suggestions and deterministic features
-- Provides explanations for AI-based decisions when relevant
-
-### User Control and Privacy
-
-- All task data stays in your workspace
-- No data collection beyond what's needed for AI features
-- You control when and how AI features are used
-- Non-AI features work without Copilot subscription
-
-### Feedback and Reporting
-
-If you encounter any issues with AI-generated content or behavior:
-
-1. Use the "Report Issue" command in VS Code
-2. Open an issue on our [GitHub repository](https://github.com/CambridgeMonorail/vscode-huckleberry/issues/new)
-3. Join our [discussions](https://github.com/CambridgeMonorail/vscode-huckleberry/discussions) for feature requests
-
-We actively monitor and address all AI-related feedback to ensure responsible AI usage.

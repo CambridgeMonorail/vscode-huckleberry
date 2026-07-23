@@ -98,6 +98,861 @@
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat(runner): add command-only runner ipc foundation\" && git push",
 			"group": "test"
+		},
+		{
+			"label": "validate-affected-rim404",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim404",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-404 in:title\""
+		},
+		{
+			"label": "gh-close-rim404",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 58 --body \"RIM-404 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added explicit repair-loop schema primitives: command onFailure and agent retry target/maxAttempts.\n- Implemented deterministic check-fail-repair-recheck behavior in RunnerHost.\n- Enforced bounded repair attempts with terminal exhausted outcome and stop reason code REPAIR_ATTEMPTS_EXHAUSTED.\n- Added repair attempt and recheck scheduling timeline events with attempt metadata.\n- Added unit coverage for success-after-repair and exhausted-repair scenarios.\n- Added validator coverage for valid and invalid repair-loop wiring.\n\nValidation:\n- pnpm run test (apps/huckleberry-extension) passed: 20 files, 129 tests.\n- pnpm validate:affected passed via workspace task.\n- Tracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 58 --comment \"Closing as completed by the RIM-404 repair loop semantics implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim404",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all"
+		},
+		{
+			"label": "git-commit-rim404",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/workflows/index.ts apps/huckleberry-extension/src/workflows/types.ts apps/huckleberry-extension/src/workflows/validator.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts apps/huckleberry-extension/tests/unit/workflows/validator.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): add bounded repair loop semantics\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim404",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all"
+		},
+		{
+			"label": "validate-affected-rim405",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-rim405-ci",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm validate:affected"
+		},
+		{
+			"label": "gh-issue-view-rim405",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-405 in:title\""
+		},
+		{
+			"label": "git-status-rim405",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all"
+		},
+		{
+			"label": "gh-close-rim405",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 59 --body \"RIM-405 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added dedicated `agentClaim` structures to runner events for agent narrative data.\n- Kept deterministic command outputs in `stepResult` evidence structures.\n- Wired runner host to emit claim payloads on successful agent steps with adapter provenance.\n- Updated Copilot adapter output to include adapter identity.\n- Updated Runs timeline presentation to clearly label `[Claim]` and `[Evidence]` entries and render distinct tooltip sections.\n- Added data-model tests for claim/evidence separation and UI presentation tests for claim/evidence labeling.\n\nValidation:\n- pnpm run test (apps/huckleberry-extension) passed: 21 files, 132 tests.\n- CI-mode `pnpm validate:affected` passed (lint/typecheck/test/build).\n- Tracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 59 --comment \"Closing as completed by the RIM-405 claim/evidence separation implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-comment-rim405-fix",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 59 --body \"Follow-up summary for RIM-405 completion:\n- Added dedicated agentClaim payloads in runner events for agent narrative.\n- Preserved deterministic outputs in stepResult evidence payloads.\n- Runner host now emits agent claims with adapter provenance on successful agent steps.\n- Runs timeline now labels claim and evidence entries separately and renders distinct sections in tooltips.\n- Added tests for model separation and timeline labeling.\nValidation: extension tests passed (21 files, 132 tests) and validate:affected passed in CI mode.\""
+		},
+		{
+			"label": "git-status-rim405-final",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all"
+		},
+		{
+			"label": "git-commit-rim405",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/providers/RunExplorerProvider.ts apps/huckleberry-extension/src/providers/runTimelinePresentation.ts apps/huckleberry-extension/src/runner/agentAdapter.ts apps/huckleberry-extension/src/runner/copilotAgentAdapter.ts apps/huckleberry-extension/src/runner/index.ts apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/runner/types.ts apps/huckleberry-extension/tests/unit/providers/runTimelinePresentation.test.ts apps/huckleberry-extension/tests/unit/runner/copilotAgentAdapter.test.ts apps/huckleberry-extension/tests/unit/runner/runEventStore.test.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): separate agent claims from evidence\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim405",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all"
+		},
+		{
+			"label": "validate-affected",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "lint-affected",
+			"type": "shell",
+			"command": "pnpm run lint:affected",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-affected",
+			"type": "shell",
+			"command": "pnpm run typecheck:affected",
+			"group": "test"
+		},
+		{
+			"label": "test-affected",
+			"type": "shell",
+			"command": "pnpm run test:affected",
+			"group": "test"
+		},
+		{
+			"label": "build-affected",
+			"type": "shell",
+			"command": "pnpm run build:affected",
+			"group": "build"
+		},
+		{
+			"label": "gh-issue-view-rim501",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-501 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "build-affected-rim501",
+			"type": "shell",
+			"command": "pnpm run build:affected",
+			"group": "build"
+		},
+		{
+			"label": "git-commit-rim501",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/package.json apps/huckleberry-extension/src/activation/registerShellViews.ts apps/huckleberry-extension/src/providers/RunExplorerProvider.ts apps/huckleberry-extension/src/providers/runTimelinePresentation.ts apps/huckleberry-extension/src/runner/index.ts apps/huckleberry-extension/src/runner/runnerClient.ts apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/runner/types.ts apps/huckleberry-extension/src/workflows/types.ts apps/huckleberry-extension/src/workflows/validator.ts apps/huckleberry-extension/tests/unit/runner/runnerClient.test.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts apps/huckleberry-extension/tests/unit/workflows/validator.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): add approval gate action handling\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "gh-close-rim501",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 60 --body \"RIM-501 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added approval-step branch semantics (`onApprove`, `onReject`, `onDefer`) to workflow schema types and validator checks.\n- Added runner IPC contract for explicit approval actions with auditable actor metadata and optional notes.\n- Updated runner host execution model to pause on approval steps and resume only after explicit approve/reject/defer action.\n- Implemented branch-aware resume behavior: approve/reject/defer follow configured branch targets when present.\n- Added Runs view command + manifest contributions for submitting approval decisions from paused runs.\n- Added timeline data-model support so approval decisions are visible in run history and tooltips.\n- Added unit coverage for client IPC, approval pause/resume/reject/defer host paths, and validator approval-branch checks.\n\nValidation:\n- apps/huckleberry-extension tests passed: 21 files, 138 tests.\n- `pnpm run lint:affected` passed.\n- `pnpm run typecheck:affected` passed.\n- `pnpm run test:affected` passed.\n- `pnpm run build:affected` passed.\n- Tracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 60 --comment \"Closing as completed by the RIM-501 approval gate implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-comment-rim501-fix",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 60 --body \"Follow-up completion summary for RIM-501:\n- Added approval-step branch semantics (onApprove, onReject, onDefer) to workflow schema types and validator checks.\n- Added runner IPC contract for explicit approval actions with auditable actor metadata and optional notes.\n- Updated runner host execution model to pause on approval steps and resume only after explicit approve/reject/defer action.\n- Implemented branch-aware resume behavior where approve/reject/defer follow configured branch targets when present.\n- Added Runs view command and manifest contributions for submitting approval decisions from paused runs.\n- Added timeline data-model support so approval decisions are visible in run history and tooltips.\n- Added unit coverage for client IPC, approval pause/resume/reject/defer host paths, and validator approval-branch checks.\nValidation: extension tests passed (21 files, 138 tests); lint/typecheck/test/build affected targets passed; tracker updated in docs/reimagine/07 Implementation Tracker.md.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim501",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-log-rim501",
+			"type": "shell",
+			"command": "git log -1 --oneline",
+			"group": "test"
+		},
+		{
+			"label": "lint-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run lint:affected",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run typecheck:affected",
+			"group": "test"
+		},
+		{
+			"label": "lint-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run lint:affected",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim502",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim502-ci",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim502-verbose",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm exec nx run vscode-copilot-huckleberry:lint --verbose",
+			"group": "test"
+		},
+		{
+			"label": "lint-new-files-rim502",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && npx eslint src/providers/EvidenceExplorerProvider.ts src/providers/evidenceExplorerPresentation.ts src/activation/registerShellViews.ts --ext ts",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim502",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "lint-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run lint:affected",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run typecheck:affected",
+			"group": "test"
+		},
+		{
+			"label": "test-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run test:affected",
+			"group": "test"
+		},
+		{
+			"label": "build-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run build:affected",
+			"group": "build"
+		},
+		{
+			"label": "typecheck-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run typecheck:affected",
+			"group": "test"
+		},
+		{
+			"label": "lint-affected-rim502",
+			"type": "shell",
+			"command": "pnpm run lint:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-rim502",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim502",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-502 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "git-log-rim502",
+			"type": "shell",
+			"command": "git log -1 --oneline",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim502",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim502",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/package.json apps/huckleberry-extension/src/activation/registerShellViews.ts apps/huckleberry-extension/src/providers/EvidenceExplorerProvider.ts apps/huckleberry-extension/src/providers/evidenceExplorerPresentation.ts apps/huckleberry-extension/tests/unit/providers/evidenceExplorerPresentation.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(extension): add evidence explorer view\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "gh-close-rim502",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 61 --body \"RIM-502 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added a dedicated Evidence explorer tree view in the Huckleberry activity container.\n- Implemented grouping by run, step, and artifact category for evidence navigation.\n- Added artifact category inference for output, diff, screenshot, diagnostic, and test-result artifacts.\n- Added artifact commands to open files directly and reveal files in the OS explorer.\n- Surfaced missing or stale artifacts clearly in explorer labels/tooltips and command handling.\n- Added presentation-layer unit tests for grouping behavior and category inference.\n- Updated implementation tracker status and Stage 5 evidence gate.\n\nValidation:\n- Extension build passed.\n- Extension unit tests passed: 22 files, 140 tests.\n- Affected lint, typecheck, test, and build targets passed in task runs.\" && GH_PAGER=cat gh issue close 61 --comment \"Closing as completed by the RIM-502 Evidence Explorer implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-after-rim502",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim503",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-503 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim503",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 62 --body \"RIM-503 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added `deepLinks` metadata to runner timeline events for diagnostics navigation.\n- Implemented deep-link generation in runner host for failed/timed-out command outcomes, including Problems, Test Explorer, logs, and diff targets when available.\n- Updated Runs timeline presentation to display deep-link actions in tooltip content.\n- Added Runs view command wiring and manifest contributions to open deep-link actions from timeline entries.\n- Implemented resilient fallback UX for missing deep-link metadata or missing artifact files.\n- Added unit coverage for deep-link generation and timeline deep-link rendering.\n\nValidation:\n- Extension build passed.\n- Extension unit tests passed: 22 files, 141 tests.\n- Changed-file diagnostics report no TypeScript errors.\" && GH_PAGER=cat gh issue close 62 --comment \"Closing as completed by the RIM-503 diagnostics and deep-link integration implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-comment-rim503-fix",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 62 --body \"Follow-up completion summary for RIM-503:\n- Added deepLinks metadata to runner timeline events for diagnostics navigation.\n- Implemented deep-link generation in runner host for failed/timed-out command outcomes, including Problems, Test Explorer, logs, and diff targets when available.\n- Updated Runs timeline presentation to display deep-link actions in tooltip content.\n- Added Runs view command wiring and manifest contributions to open deep-link actions from timeline entries.\n- Implemented resilient fallback UX for missing deep-link metadata or missing artifact files.\n- Added unit coverage for deep-link generation and timeline deep-link rendering.\nValidation: extension build passed; extension unit tests passed (22 files, 141 tests); changed-file diagnostics show no TypeScript errors.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim503",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "lint-affected-rim503",
+			"type": "shell",
+			"command": "pnpm run lint:affected",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim503",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-extension-rim503",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim503",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/package.json apps/huckleberry-extension/src/activation/registerShellViews.ts apps/huckleberry-extension/src/providers/RunExplorerProvider.ts apps/huckleberry-extension/src/providers/runTimelinePresentation.ts apps/huckleberry-extension/src/runner/index.ts apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/runner/types.ts apps/huckleberry-extension/tests/unit/providers/runTimelinePresentation.test.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): add run timeline deep-link actions\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim503",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-log-rim503",
+			"type": "shell",
+			"command": "git log -1 --oneline",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim504",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-extension-rim504",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim504",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-504 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim504",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 63 --body \"RIM-504 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added deterministic run summary derivation from persisted event streams.\n- Added summary data model including terminal outcome, attempts by step, stop reason, key evidence references, and unresolved items.\n- Added machine-readable and human-readable summary artifact generation (summary.json and summary.md) under each run directory.\n- Added runner IPC support for summary retrieval and extension client access.\n- Added Runs view command wiring to open run summary artifacts from terminal run entries.\n- Added unit coverage for summary derivation, summary artifact persistence/reload, runner host summary response, and runner client summary retrieval.\n\nValidation:\n- Extension tests passed: 22 files, 145 tests.\n- Extension build passed.\n- Extension lint passed.\n- Extension typecheck passed.\n- Tracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 63 --comment \"Closing as completed by the RIM-504 run summary report generation implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim504",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim504",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/package.json apps/huckleberry-extension/src/activation/registerShellViews.ts apps/huckleberry-extension/src/runner/index.ts apps/huckleberry-extension/src/runner/runEventStore.ts apps/huckleberry-extension/src/runner/runnerClient.ts apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/runner/types.ts apps/huckleberry-extension/tests/unit/runner/runEventStore.test.ts apps/huckleberry-extension/tests/unit/runner/runnerClient.test.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): generate deterministic run summaries\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim504",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim601",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-extension-rim601",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim601",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-601 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim601",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 64 --body \"RIM-601 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added a dedicated worktree lifecycle service for isolated run environments.\n- Implemented worktree provisioning with git repository checks and actionable setup error messages.\n- Implemented optional worktree reuse for repeat loop runs to avoid unnecessary churn.\n- Added run-to-worktree metadata persistence under .huckleberry/runs/worktree-metadata.json.\n- Implemented cleanup safeguards that refuse unmanaged paths and preserve shared worktrees with active peer runs.\n- Added orphan detection for missing mapped worktrees and unmanaged worktree directories.\n- Added unit coverage for provision, reuse, cleanup preservation, orphan detection, and provisioning failure guidance.\n\nValidation:\n- Extension tests passed: 23 files, 150 tests.\n- Extension build passed.\n- Extension lint passed.\n- Extension typecheck passed.\n- Tracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 64 --comment \"Closing as completed by the RIM-601 worktree lifecycle service implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim601",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim601",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/runner/index.ts apps/huckleberry-extension/src/runner/worktreeLifecycleService.ts apps/huckleberry-extension/tests/unit/runner/worktreeLifecycleService.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): add worktree lifecycle service\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim601",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim602",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-extension-rim602",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "lint-extension-rim602-verbose",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:lint --verbose",
+			"group": "test"
+		},
+		{
+			"label": "lint-changed-rim602",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && npx eslint src/runner/runnerHost.ts src/runner/evidenceStore.ts src/runner/types.ts src/runner/runEventStore.ts src/workflows/types.ts src/workflows/validator.ts tests/unit/runner/runnerHost.test.ts tests/unit/workflows/validator.test.ts --ext ts",
+			"group": "test"
+		},
+		{
+			"label": "lint-runnerhost-rim602-unix",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && npx eslint src/runner/runnerHost.ts --ext ts -f unix",
+			"group": "test"
+		},
+		{
+			"label": "lint-runnerhost-rim602-json",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && npx eslint src/runner/runnerHost.ts --ext ts -f json",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim602",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-602 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim602",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 65 --body \"RIM-602 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added workflow and runner execution-context abstractions supporting workspace and worktree isolation modes.\n- Routed command step execution cwd through the selected execution context boundary.\n- Routed agent step execution and path-scope constraint checks through the selected execution context boundary.\n- Added execution-context metadata to run records, events, and persisted step evidence metadata.\n- Updated run reconstruction to retain execution-context metadata from persisted events.\n- Added validation for workflow execution isolation mode values.\n- Added integration-style runner host test coverage proving the same workflow fixture executes in both workspace and worktree modes.\n\nValidation:\n- Extension tests passed: 23 files, 154 tests.\n- Extension build passed.\n- Extension typecheck passed.\n- Changed-file diagnostics report no TypeScript errors.\n- Tracker updated in docs/reimagine/07 Implementation Tracker.md.\" && GH_PAGER=cat gh issue close 65 --comment \"Closing as completed by the RIM-602 isolation context routing implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim602",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim602",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/runner/evidenceStore.ts apps/huckleberry-extension/src/runner/index.ts apps/huckleberry-extension/src/runner/runEventStore.ts apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/runner/types.ts apps/huckleberry-extension/src/workflows/types.ts apps/huckleberry-extension/src/workflows/validator.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts apps/huckleberry-extension/tests/unit/workflows/validator.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): route steps through isolation context\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim602",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-extension-rim603",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim603",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-603 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim603",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 66 --body \"RIM-603 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added isolation-mode presentation helpers with explicit warning states for missing execution metadata.\n- Updated Runs tree items to show isolation mode in the run description and include isolation details and warnings in tooltips.\n- Added execution-context details in timeline tooltips, including mode, workspace root, working directory, worktree path, and base ref when available.\n- Added run commands to reveal worktree location in the OS and inspect git branch status for the run execution context.\n- Added package contributions for the new run commands and context-aware inline menu visibility for worktree runs.\n- Added unit tests covering isolation presentation warnings/details and timeline execution-context tooltip rendering.\n- Updated implementation tracker status for RIM-603.\n\nValidation:\n- build-extension passed.\n- typecheck target passed.\n- extension tests passed: 24 files, 158 tests.\n- validate:affected passed (lint/typecheck/test/build affected targets).\" && GH_PAGER=cat gh issue close 66 --comment \"Closing as completed by the RIM-603 isolation visibility implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim603",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/package.json apps/huckleberry-extension/src/activation/registerShellViews.ts apps/huckleberry-extension/src/providers/RunExplorerProvider.ts apps/huckleberry-extension/src/providers/runTimelinePresentation.ts apps/huckleberry-extension/src/providers/runIsolationPresentation.ts apps/huckleberry-extension/tests/unit/providers/runTimelinePresentation.test.ts apps/huckleberry-extension/tests/unit/providers/runIsolationPresentation.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(extension): add run isolation visibility\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "typecheck-extension-rim604",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim604",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-604 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim604",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim604",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 67 --body \"RIM-604 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added terminal run-level diff artifact capture for isolated worktree runs.\n- Added run-level timeline deep link targeting the generated run diff artifact.\n- Added explicit warning event emission when diff capture fails, with a deep link to the fallback diff artifact.\n- Persisted diff-capture warning details so they are visible in run history.\n- Ensured run-level diff artifacts are discoverable by Evidence Explorer via run artifact discovery.\n- Added runner host unit coverage for successful diff capture path and warning path.\n- Updated implementation tracker status and Stage 6 diff-evidence gate.\n\nValidation:\n- extension tests passed: 24 files, 159 tests.\n- build target passed.\n- typecheck target passed.\n- validate:affected passed.\" && GH_PAGER=cat gh issue close 67 --comment \"Closing as completed by the RIM-604 diff evidence implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim604",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"feat(runner): add isolated run diff evidence\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim604",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "run-tests-coverage-threads-rim701",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && pnpm exec vitest run --coverage --pool=threads",
+			"group": "test"
+		},
+		{
+			"label": "run-tests-coverage-forks-serial-rim701",
+			"type": "shell",
+			"command": "cd apps/huckleberry-extension && pnpm exec vitest run --coverage --pool=forks --maxWorkers=1",
+			"group": "test"
+		},
+		{
+			"label": "typecheck-extension-rim701",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim701",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-701 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim701",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 68 --body \"RIM-701 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added runner lifecycle smoke tests covering retry-failure stop reasons and repair-attempt exhaustion timelines.\n- Added deterministic summary/evidence assertions for critical failure pathways.\n- Added per-module coverage thresholds for critical runner modules in vitest config.\n- Validated threshold compliance under coverage run with stable serial fork execution mode.\n\nValidation:\n- Extension tests passed: 25 files, 161 tests.\n- Coverage passed with thresholds using: pnpm exec vitest run --coverage --pool=forks --maxWorkers=1.\n- build-extension passed.\n- typecheck target passed.\n- validate:affected passed.\" && GH_PAGER=cat gh issue close 68 --comment \"Closing as completed by the RIM-701 lifecycle smoke and coverage-gate implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim701",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/tests/unit/runner/runnerLifecycleSmoke.test.ts apps/huckleberry-extension/vitest.config.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"test(runner): expand lifecycle smoke coverage gates\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "typecheck-extension-rim702",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim702",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-702 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim702",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 69 --body \"RIM-702 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added runner lifecycle recovery smoke tests for interrupted runs and deterministic replay from persisted event history.\n- Added restart hydration test that verifies RunnerHost listRuns rebuilds interrupted run state after reload.\n- Added runner client crash/reconnect test that verifies pending request rejection on unexpected runner exit and successful automatic process respawn on next request.\n- Kept failure diagnostics explicit via recovery-path assertions on runner exit errors.\n\nValidation:\n- Extension unit tests passed: 25 files, 164 tests.\n- build-extension passed.\n- typecheck target passed.\n- validate:affected passed.\" && GH_PAGER=cat gh issue close 69 --comment \"Closing as completed by the RIM-702 resilience and recovery test implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim702",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/tests/unit/runner/runnerClient.test.ts apps/huckleberry-extension/tests/unit/runner/runnerLifecycleSmoke.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"test(runner): add resilience recovery scenarios\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "typecheck-extension-rim703",
+			"type": "shell",
+			"command": "pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim703",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-703 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim703",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 70 --body \"RIM-703 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added structured, non-sensitive runner lifecycle telemetry emission in RunnerHost for core lifecycle events.\n- Added correlation fields for run, loop, status, event type, transition, step, attempt, stop reason code, and execution mode.\n- Added explicit unit assertions that telemetry is emitted in representative success and failure lifecycle paths.\n- Added observability baseline documentation covering telemetry schema, privacy boundaries, and retention expectations.\n\nValidation:\n- Extension unit tests passed: 25 files, 164 tests.\n- build-extension passed.\n- typecheck target passed.\n- validate:affected passed.\" && GH_PAGER=cat gh issue close 70 --comment \"Closing as completed by the RIM-703 telemetry and observability baseline implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim703",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md docs/reimagine/telemetry-observability-baseline.md && git commit -m \"feat(runner): add lifecycle telemetry baseline\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "typecheck-extension-rim704",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm exec nx run vscode-copilot-huckleberry:typecheck",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-rim704",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-rim704-recheck",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim704",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-704 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim704",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 71 --body \"RIM-704 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Added runner command policy defaults that block high-risk command patterns before process spawn.\n- Added explicit execution-level policy controls for guarded operations (`commandPolicy.allowHighRiskCommands` and `commandPolicy.blockedCommandPatterns`).\n- Added fail-safe handling for invalid custom deny-pattern regex entries while preserving default protections.\n- Added unit coverage for policy enforcement (default block path and explicit override path).\n- Added security and policy review baseline documentation with threat model assumptions, findings register, and checklist sign-off.\n- Updated implementation tracker status for RIM-704.\n\nValidation:\n- Extension tests passed: 25 files, 166 tests.\n- build-extension passed.\n- typecheck target passed.\n- validate:affected passed (lint/typecheck/test/build affected targets).\" && GH_PAGER=cat gh issue close 71 --comment \"Closing as completed by the RIM-704 security guardrails and policy baseline implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "gh-comment-rim704-fix",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 71 --body \"Follow-up completion summary for RIM-704:\n- Added runner command policy defaults that block high-risk command patterns before process spawn.\n- Added explicit execution-level policy controls for guarded operations: commandPolicy.allowHighRiskCommands and commandPolicy.blockedCommandPatterns.\n- Added fail-safe handling for invalid custom deny-pattern regex entries while preserving default protections.\n- Added unit coverage for policy enforcement (default block path and explicit override path).\n- Added security and policy review baseline documentation with threat model assumptions, findings register, and checklist sign-off.\n- Updated implementation tracker status for RIM-704.\nValidation: extension tests passed (25 files, 166 tests); build-extension passed; typecheck target passed; validate:affected passed (lint/typecheck/test/build affected targets).\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim704",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim704",
+			"type": "shell",
+			"command": "git add apps/huckleberry-extension/src/runner/runnerHost.ts apps/huckleberry-extension/src/runner/types.ts apps/huckleberry-extension/src/workflows/validator.ts apps/huckleberry-extension/tests/unit/runner/runnerHost.test.ts docs/reimagine/07\\ Implementation\\ Tracker.md docs/reimagine/security-policy-review.md && git commit -m \"feat(runner): add command policy guardrails\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim704",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "build-docs-rim705",
+			"type": "shell",
+			"command": "cd apps/huckleberry-docs && npx docusaurus build",
+			"group": "build"
+		},
+		{
+			"label": "validate-affected-rim705",
+			"type": "shell",
+			"command": "CI=1 NX_TASKS_RUNNER_DYNAMIC_OUTPUT=false pnpm validate:affected",
+			"group": "test"
+		},
+		{
+			"label": "gh-issue-view-rim705",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue list --limit 200 --search \"RIM-705 in:title\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim705",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "gh-close-rim705",
+			"type": "shell",
+			"command": "GH_PAGER=cat gh issue comment 72 --body \"RIM-705 is complete on branch feat/huckleberry-reimagination.\n\nCompleted work:\n- Replaced stale task-manager quickstart and installation guidance with workflow workbench first-run documentation.\n- Added a workflow authoring guide covering schema basics, step types, repair loops, and isolation options.\n- Added an evidence model guide covering artifacts, claims versus evidence, summaries, deep links, and review flow.\n- Added a runner troubleshooting guide for validation failures, policy blocks, approval pauses, and worktree review.\n- Registered the new docs in the docs sidebar and added discoverable documentation links from the extension welcome views.\n- Updated the implementation tracker status for RIM-705.\n\nValidation:\n- Docs site build passed.\n- Extension build passed.\n- validate:affected passed (lint/typecheck/test/build affected targets).\" && GH_PAGER=cat gh issue close 72 --comment \"Closing as completed by the RIM-705 documentation pack implementation.\"",
+			"group": "test"
+		},
+		{
+			"label": "git-status-rim705-final",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "git-commit-rim705",
+			"type": "shell",
+			"command": "git add apps/huckleberry-docs/docs/installation.md apps/huckleberry-docs/docs/intro.md apps/huckleberry-docs/docs/quick-start.md apps/huckleberry-docs/docs/workflow-authoring-guide.md apps/huckleberry-docs/docs/evidence-model-guide.md apps/huckleberry-docs/docs/runner-troubleshooting.md apps/huckleberry-docs/sidebars.ts apps/huckleberry-extension/package.json docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"docs: publish workflow documentation pack\" && git push",
+			"group": "build"
+		},
+		{
+			"label": "git-status-after-rim705",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all",
+			"group": "test"
+		},
+		{
+			"label": "validate-rim706-format",
+			"type": "shell",
+			"command": "pnpm exec prettier --check .github/workflows/release.yml docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "format-rim706-files",
+			"type": "shell",
+			"command": "pnpm exec prettier --write .github/workflows/release.yml docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-rim706-format",
+			"type": "shell",
+			"command": "pnpm exec prettier --check .github/workflows/release.yml docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-rim706-affected",
+			"type": "shell",
+			"command": "pnpm validate:affected",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-rim706-format-final",
+			"type": "shell",
+			"command": "pnpm exec prettier --check .github/workflows/release.yml docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "format-rim706-markdown",
+			"type": "shell",
+			"command": "pnpm exec prettier --write docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-rim706-format-final",
+			"type": "shell",
+			"command": "pnpm exec prettier --check .github/workflows/release.yml docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-readme-format",
+			"type": "shell",
+			"command": "pnpm exec prettier --check README.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "format-readme",
+			"type": "shell",
+			"command": "pnpm exec prettier --write README.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-readme-format",
+			"type": "shell",
+			"command": "pnpm exec prettier --check README.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-readme-format-final",
+			"type": "shell",
+			"command": "pnpm exec prettier --check README.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "format-readme-final",
+			"type": "shell",
+			"command": "pnpm exec prettier --write README.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "validate-readme-format-final",
+			"type": "shell",
+			"command": "pnpm exec prettier --check README.md",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "verify-commit-push",
+			"type": "shell",
+			"command": "git status --short --untracked-files=all && git log -1 --oneline",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "commit-release-readme",
+			"type": "shell",
+			"command": "git add README.md .github/workflows/release.yml docs/release-process.md docs/reimagine/07\\ Implementation\\ Tracker.md && git commit -m \"docs: align release and workflow surfaces\" && git push",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

@@ -66,9 +66,10 @@ While GitHub Copilot can use Model Context Protocol (MCP) tools, Huckleberry is 
    - Can provide custom commands and UI elements
 
 3. **Security & Performance**: Running as a VS Code extension means:
-   - All task data stays local to your workspace
-   - No need for external MCP server setup or maintenance
-   - Direct access to workspace files without network overhead
+
+- All workflow definitions, run history, and evidence data stay local to your workspace
+- No need for external MCP server setup or maintenance
+- Direct access to workspace files without network overhead
 
 This architecture allows Huckleberry to provide a richer, more integrated workflow experience while leveraging the power of GitHub Copilot's AI capabilities.
 
@@ -83,11 +84,7 @@ This architecture allows Huckleberry to provide a richer, more integrated workfl
 3. Clicking on the "..." at the top of the Extensions view
 4. Selecting "Install from VSIX..." and choosing the downloaded file
 
-Once released, installation will be as simple as:
-
-```
-ext install huckleberry.taskmanager
-```
+Once released, installation will be available directly from the VS Code Marketplace listing.
 
 ### Prerequisites
 
@@ -99,32 +96,34 @@ ext install huckleberry.taskmanager
 After installation:
 
 1. Open the Copilot Chat panel in VS Code
-2. Start a conversation with the Task Manager by typing `@Huckleberry`
+2. Start a conversation with Huckleberry by typing `@Huckleberry`
 3. Try commands like:
 
 ```
-# Project setup
-@Huckleberry Initialize task tracking for this project
+# Create starter workflow templates
+@Huckleberry Create starter loop templates for this workspace
 
-# Creating tasks
-@Huckleberry Create a task to implement user authentication
-@Huckleberry Create a high priority task to fix security vulnerability
+# Validate and inspect a loop definition
+@Huckleberry Validate loops in .huckleberry/loops and show any errors
 
-# Finding TODOs in code
-@Huckleberry Scan for TODOs in the codebase
-@Huckleberry Scan for TODOs in **/*.ts
+# Execute a loop and track progress
+@Huckleberry Run loop lint and show current run status
 
-# Task management
-@Huckleberry What tasks are high priority?
-@Huckleberry List all tasks
-@Huckleberry Mark task TASK-001 as complete
-@Huckleberry Mark task TASK-002 as high priority
+# Review run evidence and outcome
+@Huckleberry Open the latest run summary and key evidence artifacts
 
-# Requirements processing
-@Huckleberry Parse requirements.md and create tasks
+# Recovery and control actions
+@Huckleberry Cancel run run_123 if it is still active
+@Huckleberry Submit approval decision for paused run run_124 with note "verified locally"
 ```
 
-You can also access Huckleberry from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) by typing "Huckleberry: Manage Tasks".
+You can also use the Command Palette (Ctrl+Shift+P / Cmd+Shift+P) with Huckleberry commands such as Create Starter Templates, Run Loop, Get Run Status, Open Run Summary, and Submit Approval Decision.
+
+The Activity Bar surfaces three core views:
+
+- Loops: discovered workflow definitions under .huckleberry/loops
+- Runs: execution history, status, and timeline entries
+- Evidence: artifacts grouped by run and step
 
 For comprehensive documentation and detailed usage examples, visit our [official documentation site](https://cambridgemonorail.github.io/vscode-huckleberry/).
 
@@ -134,14 +133,12 @@ If you are preparing a release or verifying launch readiness, see [docs/release-
 
 Huckleberry integrates with the VS Code Language Model Tools API (also known as "Copilot agent mode"), allowing the AI to directly interact with workflow features without requiring explicit `@Huckleberry` mentions. The following tools are available to Copilot when in agent mode:
 
-| Tool                   | Description                                                              |
-| ---------------------- | ------------------------------------------------------------------------ |
-| `create_task`          | Creates a new task with optional priority                                |
-| `initialize_tracking`  | Sets up task tracking for a project workspace                            |
-| `scan_todos`           | Scans the codebase for TODO comments and converts them to tasks          |
-| `list_tasks`           | Lists tasks with optional filtering by priority or status                |
-| `mark_task_done`       | Marks a task as complete by providing the task ID                        |
-| `update_task_priority` | Changes the priority of a task by providing the task ID and new priority |
+| Tool category       | Description                                                                  |
+| ------------------- | ---------------------------------------------------------------------------- |
+| Loop operations     | Discover loop definitions, scaffold starter templates, and trigger loop runs |
+| Run operations      | Query run status, cancel active runs, and open run summaries/timelines       |
+| Approval operations | Submit approve/reject/defer decisions for paused runs                        |
+| Evidence operations | Open and reveal artifacts produced during loop execution                     |
 
 > **💡 Pro tip:** For the best experience with Huckleberry's language model tools, we currently recommend using Claude models in Copilot agent mode. Enable agent mode by opening VS Code settings and setting `github.copilot.chat.localeOverride` to `"en-US"`, then selecting Claude as your model from the Copilot chat dropdown.
 
@@ -171,10 +168,10 @@ cd vscode-huckleberry
 pnpm install
 
 # Build the extension
-pnpm exec nx build vscode-copilot-huckleberry
+pnpm run build:extension
 
 # Run extension in development mode
-pnpm exec nx build vscode-copilot-huckleberry --watch
+pnpm run watch:extension
 
 # Package the extension
 pnpm run package:extension
@@ -184,6 +181,8 @@ For detailed setup instructions, see [workspace setup documentation](./docs/work
 
 For workflow creation and release readiness, see [docs/release-process.md](./docs/release-process.md).
 
+For historical task-manager planning artifacts, see [docs/PRD.md](./docs/PRD.md) and [docs/requirements.md](./docs/requirements.md). These are retained for migration context and are not the active product baseline.
+
 ### Project Structure
 
 ```
@@ -192,9 +191,8 @@ vscode-huckleberry/
 │  ├─ huckleberry-extension/       # VS Code extension (TypeScript)
 │  │  ├─ src/                      # Source code
 │  │  │  ├─ config/                # Configuration settings
-│  │  │  ├─ handlers/              # Command and chat message handlers
-│  │  │  ├─ lib/                   # Pure logic functions (no VS Code dependencies)
-│  │  │  │  ├─ tasks/              # Task-related pure functions
+│  │  │  ├─ handlers/              # Chat and command orchestration handlers
+│  │  │  ├─ lib/                   # Pure workflow logic functions
 │  │  │  │  └─ utils/              # General utility pure functions
 │  │  │  ├─ services/              # Core services
 │  │  │  ├─ tools/                 # Language Model Tools implementation
@@ -215,9 +213,9 @@ vscode-huckleberry/
 │  ├─ improving-quality.md         # Quality improvement documentation
 │  ├─ workspace-setup.md           # Setup instructions
 │  └─ debug-setup.md               # Debugging configuration
-└─ tasks/                          # Project task tracking
-   ├─ TASK-*.md                    # Individual task descriptions
-   └─ tasks.json                   # Task metadata
+└─ .huckleberry/
+  ├─ loops/                       # Workflow definitions
+  └─ runs/                        # Run history and evidence artifacts
 ```
 
 The project is organized as an Nx monorepo with the following components:
@@ -235,11 +233,11 @@ The project is organized as an Nx monorepo with the following components:
 1. **Setup**: Use the instructions above to set up your development environment
 2. **Development**:
 
-- Extension: Use `pnpm exec nx build vscode-copilot-huckleberry --watch` for continuous builds during development
+- Extension: Use `pnpm run watch:extension` for continuous builds during development
 - Demo site: Use `pnpm exec nx serve demo-site` to start the development server
 
-3. **Testing**: Run `pnpm exec nx test vscode-copilot-huckleberry` to execute tests
-4. **Building**: Run `pnpm exec nx build vscode-copilot-huckleberry` to build the extension
+3. **Testing**: Run `pnpm run test:extension` to execute extension tests
+4. **Building**: Run `pnpm run build:extension` to build the extension
 5. **Debugging**:
    - From VS Code: Use the "Run Extension" launch configuration
    - For detailed debug setup, see [debug setup documentation](./docs/debug-setup.md)
@@ -254,11 +252,13 @@ The extension is built around these core components:
 4. **Storage Service**: Handles persistence of workflows, runs, and evidence to the file system
 5. **Language Model Tools**: Integrates with VS Code's language model API
 
+Legacy task-management modules may still exist in the codebase during migration, but the active product surface and user workflows are centered on loops, runs, approvals, and evidence.
+
 #### VS Code Extension Requirements
 
 - VS Code version 1.93 or later (for Language Model API support)
-- Node.js 18+ for development
-- TypeScript 5.0+
+- Node.js 22+ for development
+- TypeScript 6.0+
 
 ## Release Process
 

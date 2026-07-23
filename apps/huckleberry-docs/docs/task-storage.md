@@ -2,135 +2,95 @@
 sidebar_position: 7
 ---
 
-# Task Storage
+# Workflow Storage
 
-Huckleberry uses a file-based task storage system that keeps all your task data local to your workspace. This approach has several advantages:
+Huckleberry uses a file-based workflow storage model that keeps loop definitions, run events, summaries, and artifacts local to your workspace.
 
-- Tasks are stored alongside your code
-- Task data can be version controlled
-- Team members can share and collaborate on tasks
-- No dependency on external services
+## Why This Model
+
+- Workflow definitions live alongside source code
+- Evidence can be reviewed in pull requests and release gates
+- Teams can reproduce outcomes from persisted artifacts
+- No required external storage service
 
 ## Storage Structure
 
-When you initialize task tracking, Huckleberry creates the following structure in your workspace:
-
-```
+```text
 your-workspace/
-├── tasks.json       # Master task index file
-└── tasks/           # Directory for individual task files
-    ├── TASK-001.md  # Detailed task file
-    ├── TASK-002.md  # Detailed task file
-    └── ...
+└── .huckleberry/
+    ├── loops/                     # Workflow definitions (YAML)
+    │   ├── lint.yaml
+    │   ├── typecheck.yaml
+    │   └── test.yaml
+    └── runs/
+        ├── <run-id>/              # Per-run events, summaries, and artifacts
+        │   ├── events.ndjson      # Append-only event stream
+        │   ├── evidence-index.json
+        │   ├── summary.json
+        │   ├── summary.md
+        │   └── ...artifacts...
+        └── worktree-metadata.json # Isolation metadata when applicable
 ```
 
-## Master Task Index
+## Loop Definitions
 
-The `tasks.json` file serves as the main registry for all tasks in your project. It contains a JSON object with basic metadata for each task:
+Loop files under `.huckleberry/loops` define executable workflows.
 
-```json
-{
-  "tasks": [
-    {
-      "id": "TASK-001",
-      "title": "Implement user authentication",
-      "priority": "high",
-      "status": "todo",
-      "createdAt": "2025-04-18T10:15:32.000Z",
-      "updatedAt": "2025-04-18T10:15:32.000Z"
-    },
-    {
-      "id": "TASK-002",
-      "title": "Fix security vulnerability in authentication flow",
-      "priority": "high",
-      "status": "in-progress",
-      "createdAt": "2025-04-15T09:30:22.000Z",
-      "updatedAt": "2025-04-17T14:25:12.000Z"
-    }
-  ],
-  "settings": {
-    "nextTaskId": 3
-  }
-}
+Example:
+
+```yaml
+schemaVersion: 1
+id: lint
+name: Lint
+steps:
+  - id: lint
+    type: command
+    command: pnpm lint:affected
 ```
 
-## Individual Task Files
+## Run Event History
 
-For each task, Huckleberry creates a separate Markdown file in the `tasks/` directory. These files contain more detailed information about the task:
+Each run writes an append-only `events.ndjson` stream containing lifecycle transitions, step outcomes, approvals, and stop reasons.
 
-```markdown
-# TASK-001: Implement user authentication
+This event stream is the source of truth for:
 
-**Priority**: High  
-**Status**: Todo  
-**Created**: 2025-04-18  
-**Updated**: 2025-04-18  
+- Runs timeline rendering
+- Run-state reconstruction after restart
+- Deterministic summary generation
 
-## Description
+## Summaries and Artifacts
 
-Create a user authentication system with login, registration, and password reset functionality.
+Each run directory includes:
 
-## Details
+- `summary.json` for structured analysis
+- `summary.md` for human-readable review
 
-Should include:
-- Email/password authentication
-- OAuth integration
-- Password reset flow
-- Security best practices
+Artifacts may include stdout/stderr captures, metadata, diffs, and links to diagnostics or tests.
 
-## Notes
+## Evidence Index
 
-- Added on 2025-04-18 from chat interaction
-- Related to security requirements document
-```
+`evidence-index.json` maps step attempts to artifact paths. The Evidence view uses it to group items by run, step, and category.
 
-This provides a rich text format for storing detailed task information, supporting markdown formatting, bullet points, and other structure.
+## Worktree Metadata
 
-## Version Control
+When isolation is enabled, `worktree-metadata.json` stores run-to-worktree mapping and context used for execution visibility and cleanup behavior.
 
-Since tasks are stored as plain text files, they integrate naturally with version control systems:
+## Version Control and Collaboration
 
-- Task changes appear in your git diffs
-- Task history can be traced through commits
-- Team members can see task updates in pull requests
-- Conflicts can be resolved using standard git workflow
+Because storage is file-based:
 
-## File Formats
+- Loop changes are visible in diffs
+- Run artifacts can be retained per team policy
+- Reviewers can inspect outcomes without rerunning every workflow
 
-Huckleberry uses standard, widely-supported file formats:
+## Data Security and Privacy
 
-- **JSON** for the task index, which is easy to parse and manipulate programmatically
-- **Markdown** for individual task files, which is human-readable and well-supported by editors
+Workflow data remains local to your workspace by default:
 
-## Customizing Storage
+- No mandatory external data service
+- Artifacts remain project-controlled
+- Security posture inherits repository/workspace controls
 
-You can customize where and how Huckleberry stores tasks through VS Code settings:
+## Legacy Migration Note
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `huckleberry.taskmanager.defaultTasksLocation` | Path where tasks are stored | `"tasks"` |
-| `huckleberry.taskmanager.taskFileTemplate` | Format for task files | `"markdown"` |
-
-## Data Security & Privacy
-
-Since all task data is stored locally in your workspace, you maintain complete control over your task information:
-
-- No data is sent to external servers
-- Privacy is maintained for sensitive project tasks
-- Security is provided by your existing workspace security measures
-
-## Backup & Migration
-
-Task data can be backed up and migrated along with your code:
-
-- Tasks are included in regular source code backups
-- Task data can be moved between workspaces
-- Importing/exporting is as simple as copying files
-
-## Performance Considerations
-
-The file-based storage approach is designed to be lightweight and performant:
-
-- Task files are only loaded when needed
-- The system scales well for projects with many tasks
-- Changes are persisted asynchronously to avoid blocking operations
+Earlier task-manager releases used task-oriented storage. On the reimagined workflow-first branch, the active storage model is `.huckleberry/loops` and `.huckleberry/runs`.

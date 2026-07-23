@@ -1,221 +1,147 @@
 # Understanding the Huckleberry Extension
 
-This document provides an overview of the Huckleberry extension's architecture and explains the purpose of each component. It serves as a guide for developers who want to understand the codebase and contribute to the project.
+This document explains the current architecture of the Huckleberry extension in the reimagined workflow-first model. It focuses on how loops, runs, approvals, and evidence are wired today, and calls out legacy task-domain modules that still exist during migration.
 
-## Directory Structure Overview
+## Product Model
 
-The Huckleberry extension's source code is organized into the following main directories:
+Huckleberry is a workflow orchestration extension for VS Code. The active user-facing model is:
+
+- Loops: workflow definitions discovered from workspace files
+- Runs: execution records and timelines produced by the runner
+- Evidence: artifacts and summaries persisted for auditability
+
+Primary workspace storage paths:
+
+- `.huckleberry/loops` for workflow definitions
+- `.huckleberry/runs` for run history, events, summaries, and artifacts
+
+## Source Layout Overview
+
+Current source layout:
 
 ```txt
 apps/huckleberry-extension/src/
-├─ config/           # Configuration settings and constants
-├─ handlers/         # Command and chat message handlers
-│  ├─ commandHandlers/   # VS Code command implementations
-│  └─ tasks/            # Task-specific handlers
-├─ lib/              # Pure logic functions (no VS Code dependencies)
-│  ├─ tasks/            # Task manipulation pure functions
-│  └─ utils/            # General utility pure functions
-├─ services/         # Core services used by the extension
-├─ tools/            # Language Model Tools implementation
-├─ utils/            # Utility functions with VS Code dependencies
-├─ config.ts         # Configuration management
-├─ extension.ts      # Extension activation and setup
-└─ types.ts          # TypeScript type definitions
+├─ activation/        # Composition root modules for startup wiring
+├─ config/            # Configuration constants and helpers
+├─ handlers/          # Chat and command request routing
+├─ interfaces/        # Shared interfaces and contracts
+├─ lib/               # Pure logic utilities (minimal VS Code coupling)
+├─ providers/         # TreeDataProviders for Loops, Runs, Evidence
+├─ runner/            # Runner client/host, IPC, state machine, evidence, worktree
+├─ services/          # Core extension services
+├─ tools/             # LM tool implementations used by internal tool manager
+├─ utils/             # VS Code-aware utility helpers (logging, UI, params)
+├─ workflows/         # Workflow schema/types/validation/loading
+├─ config.ts          # Configuration entrypoint
+├─ extension.ts       # Activation entrypoint
+└─ types.ts           # Shared type definitions
 ```
 
-## Component Descriptions
+## Activation and Composition
 
-### `extension.ts`
+`src/extension.ts` is the entrypoint. It delegates startup work to `src/activation/*` modules:
 
-The main entry point for the extension. This file contains:
+- `createExtensionServices`: constructs service instances
+- `registerShellViews`: registers Loops, Runs, and Evidence views plus run/approval/evidence commands
+- `registerCoreCommands`: registers shared extension commands
+- `registerWorkspaceLifecycle`: workspace-change lifecycle wiring
+- `registerChatParticipants`: chat participant registration
 
-- Extension activation logic
-- Registration of VS Code commands
-- Setup of the chat participant
-- Initialization of services and tools
-- Subscription to events
+This keeps `extension.ts` focused on composition rather than business logic.
 
-### `config.ts` and `config/`
+## Views and Explorer Providers
 
-Handles configuration management for the extension, including:
+The Activity Bar container surfaces three workflow-centric views:
 
-- Default settings
-- User preferences
-- Workspace-specific configurations
-- Configuration change events
+- Loops: discovered/validated loop definitions
+- Runs: run status and timeline navigation
+- Evidence: artifacts grouped by run, step, and category
 
-### `types.ts`
+Provider modules in `src/providers/`:
 
-Contains TypeScript type definitions and interfaces used throughout the extension, particularly:
+- `LoopExplorerProvider`: loop discovery and validation surface
+- `RunExplorerProvider`: run list and timeline details
+- `EvidenceExplorerProvider`: grouped evidence browsing and artifact open/reveal actions
+- Presentation helpers (`runTimelinePresentation`, `evidenceExplorerPresentation`, isolation helpers) format model data for display
 
-- Task interfaces
-- Command parameter types
-- Service interfaces
-- Configuration types
+## Workflow and Runner Stack
 
-### `handlers/`
+Workflow definition pipeline (`src/workflows/`):
 
-Processes commands and chat messages, routing them to the appropriate functionality:
+- Type/schema model for loop definitions
+- Validation for semantic and structural correctness
+- Loader utilities for reading workflow files
 
-#### `chatHandler.ts`
+Execution pipeline (`src/runner/`):
 
-Manages interactions with VS Code's Chat API, parsing user requests and directing them to the appropriate handlers.
+- `RunnerClient` and `RunnerHost`: extension-to-runner boundary
+- `stateMachine`: deterministic step execution and transitions
+- `commandExecutor`: command-step execution
+- `agentAdapter` and `copilotAgentAdapter`: bounded agent-step integration
+- `runEventStore`: append/read events, reconstruct runs, generate summaries
+- `evidenceStore`: persist step evidence artifacts
+- `worktreeLifecycleService`: provision/reuse/cleanup isolated worktrees
 
-#### `commandHandlers/`
+## Services Layer
 
-Contains implementations for all VS Code commands registered by the extension:
+Core services in `src/services/` include:
 
-- Task creation and management commands
-- Configuration commands
-- Initialization commands
+- `ChatService`: chat participant behavior and lifecycle
+- `ToolManager`: internal tool registration/execution coordination
+- `LanguageModelToolsProvider`: LM tool exposure and invocation glue
+- `LoopDiscoveryService`: workspace loop discovery
+- `WorkflowValidationService`: workflow validation orchestration
+- `WorkflowTemplateService`: starter loop scaffolding
+- `ExtensionStateService`: extension-level state coordination
 
-#### `tasks/`
+## Chat, Commands, and Tools
 
-Task-specific logic for processing user requests:
+`src/handlers/` manages request routing from chat and command palette surfaces.
 
-- `taskUtils.ts`: VS Code-dependent task utility functions
-- `createTaskHandler.ts`: Handles task creation requests
-- `todoScanHandler.ts`: Scans code for TODO comments
-- Other specialized task handlers
+Current user-facing product surfaces are loop/run/evidence-oriented (for example: create starter templates, run loop, run status, submit approval decision, open summary, open/reveal evidence artifacts).
 
-### `lib/`
+`src/tools/` contains internal file/task-oriented helper tools still used by existing internals. These are not the primary product narrative and may continue evolving as migration progresses.
 
-Contains pure logic functions that don't depend on VS Code APIs, making them easily testable:
+## Data Flow (Workflow-First)
 
-#### `tasks/`
+1. User starts from chat or explorer views.
+2. Request routes through handlers/commands to services and runner client.
+3. Runner host executes workflow steps via deterministic state machine.
+4. Events and artifacts are persisted to `.huckleberry/runs`.
+5. Providers refresh Loops/Runs/Evidence views from persisted state.
+6. User inspects summaries, deep links, and evidence artifacts for decisions and recovery.
 
-- `taskUtils.lib.ts`: Pure functions for task manipulation (ID generation, finding tasks, etc.)
+## Testing Structure
 
-#### `utils/`
-
-Directory for general utility pure functions (planned for future expansion)
-
-### `services/`
-
-Core services that power the extension's functionality:
-
-#### `chatService.ts`
-
-Manages the chat participant implementation and interaction with VS Code's chat API.
-
-#### `extensionStateService.ts`
-
-Manages the extension's state, including:
-
-- Current workspace information
-- Task collection state
-- Configuration state
-
-#### `toolManager.ts`
-
-Manages the registration and execution of Language Model Tools.
-
-#### `languageModelToolsProvider.ts`
-
-Implements the Language Model Tools API for Copilot integration.
-
-### `tools/`
-
-Implementation of Language Model Tools that can be called by the AI:
-
-#### `BaseTool.ts`
-
-Abstract base class defining the tool interface.
-
-#### Specific tools
-
-- `BreakTaskTool.ts`: Tool for breaking tasks into subtasks
-- `MarkDoneTool.ts`: Tool for marking tasks as complete
-- `ReadFileTool.ts`: Tool for reading files
-- `WriteFileTool.ts`: Tool for writing files
-
-### `utils/`
-
-Utility functions that have VS Code dependencies:
-
-#### `debugUtils.ts`
-
-Handles logging and debugging functionality.
-
-#### `parameterUtils.ts`
-
-Functions for handling user input and parameters.
-
-#### `copilotHelper.ts`
-
-Utilities for interacting with GitHub Copilot.
-
-#### `uiHelpers.ts`
-
-Helper functions for UI interactions.
-
-## Test Structure
-
-```
+```txt
 apps/huckleberry-extension/tests/
-├─ unit/                  # Unit tests with Vitest
-│  ├─ lib/                # Tests for pure functions
-│  │  └─ tasks/           # Tests for task-related pure functions
-│  └─ utils/              # Tests for utility functions
-├─ integration-edh/       # Extension Development Host tests
-├─ stubs/                 # Mock implementations
-└─ __mocks__/             # Module mocks (including VS Code API)
+├─ unit/              # Unit tests for providers, runner, workflows, services, utils
+├─ integration-edh/   # Extension Development Host integration tests
+├─ stubs/             # Test stubs
+└─ __mocks__/         # Module mocks (including VS Code API)
 ```
 
-## Architectural Patterns
+Testing emphasis in the reimagined model is on:
 
-### Dependency Injection
+- Runner lifecycle behavior
+- Workflow validation correctness
+- Evidence and summary determinism
+- View-model rendering for Loops/Runs/Evidence
 
-The extension uses a simple form of dependency injection where services are initialized during activation and passed to handlers.
+## Migration Note: Legacy Task-Domain Modules
 
-### Command Pattern
+Legacy task-management modules still exist in parts of the codebase (for example under `src/handlers/tasks`, `src/handlers/commandHandlers`, parts of `src/tools`, and some task-oriented test fixtures). They are documented here as migration context, not as the active product model.
 
-Commands are implemented as separate handler functions, each responsible for a specific action.
+When contributing:
 
-### Factory Pattern
-
-Tools are registered with a central tool manager that acts as a factory, providing instances based on their names.
-
-### Pure Functions
-
-Business logic is separated from VS Code dependencies where possible using pure functions in the `lib/` directory.
-
-## Data Flow
-
-1. User interacts with VS Code (command or chat)
-2. The request is routed to the appropriate handler
-3. Handler uses services and pure functions to process the request
-4. Results are displayed or stored as appropriate
-
-## Task Management
-
-Tasks are stored in:
-
-- `tasks.json`: A JSON database of task objects with IDs, titles, descriptions, and status
-- Task files: Individual Markdown files with detailed descriptions and notes
-
-All task data is persisted in the workspace for transparency and portability.
-
-## Testing Strategy
-
-The extension follows a multi-layered testing approach:
-
-1. **Unit Testing**: For pure functions in the `lib/` directory using Vitest
-2. **Integration Testing**: For VS Code API interactions using the Extension Development Host
-3. **Manual Testing**: For complex UI interactions and full user flows
-
-## Contributing
-
-When contributing to the codebase:
-
-1. Place pure logic in the `lib/` directory with the `.lib.ts` suffix
-2. Keep VS Code dependencies in the appropriate handler or service
-3. Write tests for all new functionality
-4. Follow the established naming conventions and patterns
+- Prefer loop/run/evidence architecture for new features
+- Avoid expanding legacy task-domain runtime paths
+- Keep behavior deterministic and evidence-first
 
 ## Further Resources
 
-- [Testing Strategy](../testing-strategy.md)
-- [Improving Quality](../improving-quality.md)
+- [Release Process](./release-process.md)
+- [Testing Strategy](./testing-strategy.md)
+- [Improving Quality](./improving-quality.md)
 - [VS Code Extension API](https://code.visualstudio.com/api)
 - [GitHub Copilot](https://github.com/features/copilot)

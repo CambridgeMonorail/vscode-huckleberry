@@ -55,9 +55,11 @@ Use headings to organize requirements into sections:
 # User Authentication
 
 ## User Registration
+
 Users should be able to create accounts with email and password.
 
 ## Login System
+
 The system must support secure login with rate limiting.
 ```
 
@@ -66,9 +68,9 @@ The system must support secure login with rate limiting.
 Make requirements explicit and actionable:
 
 ```markdown
-* The system **must** validate email addresses.
-* Users **should** receive a confirmation email after registration.
-* The application **will** support password reset functionality.
+- The system **must** validate email addresses.
+- Users **should** receive a confirmation email after registration.
+- The application **will** support password reset functionality.
 ```
 
 ### Priority Indicators
@@ -76,9 +78,9 @@ Make requirements explicit and actionable:
 Use priority indicators that Huckleberry can recognize:
 
 ```markdown
-* [HIGH] Implement secure authentication
-* [MEDIUM] Add form validation
-* [LOW] Improve error messages
+- [HIGH] Implement secure authentication
+- [MEDIUM] Add form validation
+- [LOW] Improve error messages
 ```
 
 ### Numbered Lists for Sequential Tasks
@@ -102,21 +104,25 @@ Project requirements document:
 # User Management System PRD
 
 ## Background
+
 Our application needs a robust user management system.
 
 ## Features
 
 ### User Registration
-* [HIGH] Implement email/password registration
-* [MEDIUM] Add social login options (Google, GitHub)
-* [LOW] Support username customization
+
+- [HIGH] Implement email/password registration
+- [MEDIUM] Add social login options (Google, GitHub)
+- [LOW] Support username customization
 
 ### User Profiles
+
 1. Create profile data model
 2. Implement profile update API
 3. Design profile edit interface
 
 ## Timeline
+
 This feature should be completed by Q3 2025.
 ```
 
@@ -136,7 +142,7 @@ Result:
 
 - TASK-002 (Medium): Add social login options (Google, GitHub)
   Category: User Registration
-  
+
 - TASK-003 (Low): Support username customization
   Category: User Registration
 
@@ -187,6 +193,7 @@ When you parse a document that might overlap with existing tasks:
 ```
 
 This will:
+
 - Create new tasks for new requirements
 - Update existing tasks if requirements have changed
 - Preserve task IDs and status for continuity
@@ -264,5 +271,5 @@ The current parser has some limitations:
 ## Related Features
 
 - [Scanning TODOs](./scanning-todos.md): Similar functionality for code comments
-- [Task Status Management](./task-status-management.md): How to manage tasks after creation
-- [Working with Tasks](./working-with-tasks.md): General task management workflow
+- [Run Status Management](./task-status-management.md): How to manage run and approval outcomes
+- [Usage](./usage.md): Workflow-first operating patterns

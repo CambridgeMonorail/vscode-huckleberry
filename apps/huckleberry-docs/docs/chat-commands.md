@@ -4,198 +4,76 @@ sidebar_position: 6
 
 # Chat Commands
 
-Huckleberry integrates directly with VS Code's chat interface, allowing you to manage tasks through natural language commands. This page documents the available chat commands and provides examples of how to use them.
+Huckleberry integrates with VS Code chat so you can drive workflow operations conversationally.
 
-## Using the Chat Interface
+## Using Chat
 
-To interact with Huckleberry through chat:
+1. Open VS Code chat.
+2. Mention `@Huckleberry`.
+3. Describe the workflow action you want.
 
-1. Open VS Code's chat panel by clicking on the chat icon in the Activity Bar or using the keyboard shortcut `Ctrl+Alt+Space` (Windows/Linux) or `Cmd+Shift+Space` (Mac)
-2. Address Huckleberry by typing `@Huckleberry` followed by your command
-3. The chat participant will process your request and provide feedback
+Huckleberry maps natural-language requests to workflow operations across Loops, Runs, approvals, and Evidence.
 
-## Available Commands
+## Core Prompt Patterns
 
-### Task Setup Commands
+### Loop Setup and Validation
 
-#### Initialize Task Tracking
-
-```
-@Huckleberry Initialize task tracking for this project
-```
-
-Sets up the task tracking structure in your workspace, creating necessary files and directories.
-
-### Task Creation Commands
-
-#### Create a Basic Task
-
-```
-@Huckleberry Create a task to implement user authentication
+```text
+@Huckleberry Create starter loop templates for this workspace
+@Huckleberry Validate loops in .huckleberry/loops and show any errors
 ```
 
-Creates a new task with default priority.
+### Loop Execution
 
-#### Create a Task with Priority
-
-```
-@Huckleberry Create a high priority task to fix security vulnerability
-```
-
-Creates a task with the specified priority (low, medium, or high).
-
-### Task Viewing Commands
-
-#### List All Tasks
-
-```
-@Huckleberry List all tasks
+```text
+@Huckleberry Run loop lint and show current run status
+@Huckleberry Run loop test
 ```
 
-Shows all tasks in the workspace.
+### Run Inspection
 
-#### Filter Tasks by Priority
-
-```
-@Huckleberry What tasks are high priority?
-```
-
-Lists only tasks with high priority.
-
-#### Filter Tasks by Status
-
-```
-@Huckleberry List completed tasks
+```text
+@Huckleberry Get run status for run_123
+@Huckleberry Open run summary for run_123
 ```
 
-Lists only tasks that have been marked as complete.
+### Approval Handling
 
-### Task Management Commands
-
-#### Mark Task as Complete
-
-```
-@Huckleberry Mark task TASK-001 as complete
+```text
+@Huckleberry Submit approval decision for run_123: approve
+@Huckleberry Submit approval decision for run_123: defer with note "needs security review"
 ```
 
-Changes the status of the specified task to "complete".
+### Evidence and Diagnostics
 
-#### Change Task Priority
-
-```
-@Huckleberry Mark task TASK-002 as high priority
-```
-
-Updates the priority of the specified task.
-
-### Task Discovery Commands
-
-#### Scan for TODOs
-
-```
-@Huckleberry Scan for TODOs in the codebase
+```text
+@Huckleberry Open step evidence for run_123 step lint
+@Huckleberry Open timeline deep link for run_123 failure event
+@Huckleberry Reveal the latest stderr artifact in file explorer
 ```
 
-Scans all files in the workspace for TODO comments and creates tasks for them.
+## Command Intent Tips
 
-#### Scan with Pattern
+For best results, include:
 
-```
-@Huckleberry Scan for TODOs in **/*.ts
-```
+- Loop ID when asking to run or validate specific loops
+- Run ID when asking for status, approvals, or summaries
+- Step ID when requesting step-level evidence
 
-Scans only files matching the specified glob pattern.
+## Example Conversation
 
-#### Parse Requirements
-
-```
-@Huckleberry Parse requirements.md and create tasks
-```
-
-Analyzes a requirements document and automatically generates tasks from it.
-
-## Command Format
-
-While Huckleberry understands natural language, it's helpful to follow certain patterns for the best results:
-
-- Start with `@Huckleberry` to address the chat participant
-- Clearly state the action you want to perform (create, list, mark, scan)
-- Provide necessary details like task descriptions, IDs, or priorities
-- Use natural language - you don't need to remember exact command syntax
-
-## Examples with Responses
-
-Here are some examples of chat commands and what the responses might look like:
-
-### Example: Creating a Task
-
-**User**: `@Huckleberry Create a task to implement user login form`
-
-**Huckleberry**:
-```
-✅ Created task TASK-003: Implement user login form
-
-Priority: Medium
-Status: Todo
-Created: 2025-04-18
+```text
+User: @Huckleberry Create starter templates and run lint.
+Huckleberry: Starter loops created under .huckleberry/loops. Running lint now.
+User: @Huckleberry If it fails, open summary and evidence.
+Huckleberry: Run failed on step lint. Opened run summary and stderr evidence.
+User: @Huckleberry Submit approval decision for run_123 as defer with note "waiting for CI rerun".
+Huckleberry: Approval decision submitted.
 ```
 
-### Example: Scanning for TODOs
+## Related Guides
 
-**User**: `@Huckleberry Scan for TODOs in src/**/*.ts`
-
-**Huckleberry**:
-```
-📋 Found 3 TODOs in your code:
-
-1. Created task TASK-004: Implement password validation (src/auth/validation.ts:24)
-2. Created task TASK-005: Add error handling for failed login attempts (src/auth/login.ts:47)
-3. Created task TASK-006: Create unit tests for authentication flow (src/auth/tests.ts:12)
-```
-
-### Example: Listing Tasks by Priority
-
-**User**: `@Huckleberry What tasks are high priority?`
-
-**Huckleberry**:
-```
-🔍 Found 2 high priority tasks:
-
-TASK-002: Fix security vulnerability in authentication flow
-- Status: In Progress
-- Created: 2025-04-15
-
-TASK-005: Add error handling for failed login attempts
-- Status: Todo
-- Created: 2025-04-18
-```
-
-## Error Handling
-
-If Huckleberry doesn't understand a command or encounters an error, it will provide feedback:
-
-**User**: `@Huckleberry Mark task XYZ-123 as complete`
-
-**Huckleberry**:
-```
-❌ Error: Task with ID XYZ-123 not found.
-
-Available task IDs are: TASK-001, TASK-002, TASK-003, TASK-004, TASK-005, TASK-006
-```
-
-## Using Chat Effectively
-
-For the best experience with Huckleberry in chat:
-
-- Be specific in your requests to avoid ambiguity
-- Use task IDs when referring to specific tasks
-- Remember that you can have a conversational flow with follow-up questions
-- Take advantage of the AI-powered assistance to help manage your tasks
-
-## Advanced Usage
-
-You can combine commands in natural ways:
-
-**User**: `@Huckleberry What are my high priority tasks and mark TASK-002 as complete when I finish it`
-
-**Huckleberry** will list high priority tasks and provide instructions for marking TASK-002 as complete.
+- [Usage](./usage.md)
+- [Language Model Tools (Agent Mode)](./language-model-tools.md)
+- [Workflow Authoring Guide](./workflow-authoring-guide.md)
+- [Runner Troubleshooting](./runner-troubleshooting.md)
