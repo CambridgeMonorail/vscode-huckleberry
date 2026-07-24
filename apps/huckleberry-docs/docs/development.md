@@ -6,6 +6,29 @@ sidebar_position: 10
 
 This guide helps contributors build, test, and debug Huckleberry in the workflow-first branch.
 
+## Testing Guides
+
+Use these as primary references for workflow-first validation:
+
+- [Practical Validation Matrix](./practical-validation-matrix.md)
+- [Local Extension Testing Playbook](./local-extension-testing-playbook.md)
+
+### Recommended Test Order
+
+Follow this order for reliable and fast feedback:
+
+1. Run automation lane first: `pnpm validate:affected` and `pnpm run test:extension`.
+
+1. For release candidates, add coverage lane: `cd apps/huckleberry-extension && pnpm exec vitest run --coverage --pool=forks --maxWorkers=1`.
+
+1. Run manual lane in Extension Development Host using Loops/Runs/Evidence scenarios from the practical matrix.
+
+1. Prioritize deterministic command-only workflow checks before AI-driven workflow checks.
+
+1. Run VSIX lane in a clean profile by packaging the extension, installing VSIX, and re-running critical manual checks outside Extension Development Host.
+
+Do not skip VSIX validation for release decisions.
+
 ## Repository Structure
 
 Huckleberry is an Nx monorepo:

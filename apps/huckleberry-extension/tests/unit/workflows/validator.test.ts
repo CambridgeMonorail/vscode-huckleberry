@@ -296,4 +296,24 @@ describe('validateWorkflowDefinition', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.some(error => error.code === 'EXECUTION_ISOLATION_INVALID')).toBe(true);
   });
+
+  it('rejects artifact steps until artifact execution is supported by the runner', () => {
+    const workflow = {
+      schemaVersion: 1,
+      id: 'artifact-flow',
+      name: 'Artifact Flow',
+      steps: [
+        {
+          id: 'capture',
+          type: 'artifact',
+          command: 'echo capture',
+        },
+      ],
+    };
+
+    const result = validateWorkflowDefinition(workflow);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(error => error.code === 'STEP_TYPE_UNSUPPORTED_RUNTIME')).toBe(true);
+  });
 });

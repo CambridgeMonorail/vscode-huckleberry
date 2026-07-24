@@ -99,6 +99,15 @@ function validateWorkflowSteps(steps: unknown[]): WorkflowValidationError[] {
       continue;
     }
 
+    if (stepType === 'artifact') {
+      errors.push({
+        code: 'STEP_TYPE_UNSUPPORTED_RUNTIME',
+        message: 'Artifact steps are not executable in the current runner stage.',
+        path: `steps[${index}].type`,
+      });
+      continue;
+    }
+
     if (stepType === 'condition') {
       errors.push(...validateConditionStepReferences(stepRecord, index, stepIds));
       continue;

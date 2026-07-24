@@ -311,4 +311,36 @@ describe('runEventStore', () => {
     expect(loaded?.jsonPath.endsWith('summary.json')).toBe(true);
     expect(loaded?.markdownPath.endsWith('summary.md')).toBe(true);
   });
+
+  it('includes unresolved items for failed terminal status even when eventType is non-failure-like', () => {
+    const events: RunnerEvent[] = [
+      {
+        runId: 'run-failed-nonstandard',
+        loopId: 'artifact-loop',
+        loopFilePath: '/workspace/.huckleberry/loops/artifact-loop.yaml',
+        status: 'queued',
+        eventType: 'run-queued',
+        timestamp: 100,
+      },
+      {
+        runId: 'run-failed-nonstandard',
+        loopId: 'artifact-loop',
+        loopFilePath: '/workspace/.huckleberry/loops/artifact-loop.yaml',
+        status: 'failed',
+        eventType: 'step-type-invalid',
+        timestamp: 200,
+        stopReason: {
+          code: 'STEP_TYPE_UNSUPPORTED',
+          message: 'Step capture is not executable in runner mode.',
+        },
+      },
+    ];
+
+    const summary = buildRunSummaryFromEvents(events);
+
+    expect(summary).toBeDefined();
+    expect(summary?.status).toBe('failed');
+    expect(summary?.unresolvedItems).toHaveLength(1);
+    expect(summary?.unresolvedItems[0].code).toBe('STEP_TYPE_UNSUPPORTED');
+  });
 });

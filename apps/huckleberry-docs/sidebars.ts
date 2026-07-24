@@ -60,6 +60,8 @@ const sidebars: SidebarsConfig = {
         'development',
         'extension-architecture',
         'roadmap',
+        'practical-validation-matrix',
+        'local-extension-testing-playbook',
       ],
     },
   ],

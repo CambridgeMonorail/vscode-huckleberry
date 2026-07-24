@@ -1026,6 +1026,51 @@ describe('RunnerHost', () => {
     host.dispose();
   });
 
+  it('fails with explicit stop reason when runtime receives an unsupported step type payload', async () => {
+    const host = new RunnerHost();
+    const events: RunnerResponse[] = [];
+
+    reconstructRunsFromEventsMock.mockResolvedValue([]);
+
+    host.handleMessage(
+      {
+        type: 'start',
+        requestId: 'req-unsupported-step',
+        payload: {
+          loopId: 'artifact-loop',
+          loopFilePath: '/workspace/.huckleberry/loops/artifact.yaml',
+          workflow: {
+            schemaVersion: 1,
+            id: 'artifact-loop',
+            name: 'Artifact Loop',
+            steps: [
+              {
+                id: 'capture',
+                type: 'artifact',
+                command: 'echo capture',
+              },
+            ],
+          } as unknown as RunnerRequest['payload']['workflow'],
+        },
+      },
+      () => undefined,
+      event => events.push(event),
+    );
+
+    await flushAsyncWork();
+
+    const failedEvent = events.find(
+      event => event.type === 'event' && event.payload.eventType === 'step-type-invalid',
+    );
+    expect(failedEvent).toBeDefined();
+    if (failedEvent?.type === 'event') {
+      expect(failedEvent.payload.status).toBe('failed');
+      expect(failedEvent.payload.stopReason?.code).toBe('STEP_TYPE_UNSUPPORTED');
+    }
+
+    host.dispose();
+  });
+
   it('routes agent steps through the adapter contract when available', async () => {
     const adapterRegistry = new AgentAdapterRegistry();
     const executeAgentStep = vi.fn().mockResolvedValue({

@@ -210,7 +210,7 @@ export function buildRunSummaryFromEvents(events: RunnerEvent[]): RunnerRunSumma
     }
 
     const isFailureLike = event.eventType.includes('failed') || event.eventType.includes('timeout');
-    if (isFailureLike || event.status === 'cancelled' || event.status === 'exhausted') {
+    if (isFailureLike || event.status === 'failed' || event.status === 'cancelled' || event.status === 'exhausted') {
       unresolvedItems.push({
         code: event.stopReason?.code ?? event.eventType.toUpperCase().replace(/[^A-Z0-9]+/g, '_'),
         message: event.stopReason?.message ?? event.message ?? 'Run ended with unresolved diagnostics.',

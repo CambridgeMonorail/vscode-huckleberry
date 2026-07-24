@@ -2,6 +2,11 @@
 
 This document tracks manual verification for the workflow-first Huckleberry product surface in this branch.
 
+Execution ownership matrix:
+
+- `docs/reimagine/09 Practical Validation Matrix.md`
+- `docs/reimagine/10 Local Extension Testing Playbook.md`
+
 Current user-facing scope:
 
 - Loops discovery and validation

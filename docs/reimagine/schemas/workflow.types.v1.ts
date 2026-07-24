@@ -57,13 +57,11 @@ export interface CommandStep extends StepBase {
 
 export interface AgentStep extends StepBase {
   type: 'agent';
-  agent?: string;
-  goal: string;
-  constraints?: {
-    paths?: string[];
-    maxFilesChanged?: number;
-    maxTurns?: number;
-  };
+  adapter?: string;
+  prompt: string;
+  allowedPaths: string[];
+  maxFilesChanged: number;
+  maxTurns: number;
 }
 
 export interface ConditionStep extends StepBase {
