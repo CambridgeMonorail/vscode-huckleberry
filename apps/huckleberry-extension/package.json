@@ -23,28 +23,7 @@
     "chat-participant"
   ],
   "activationEvents": [
-    "onChatParticipant:huckleberry",
-    "onView:huckleberryLoopsView",
-    "onView:huckleberryRunsView",
-    "onView:huckleberryEvidenceView",
-    "onCommand:vscode-copilot-huckleberry.loops.refresh",
-    "onCommand:vscode-copilot-huckleberry.runs.refresh",
-    "onCommand:vscode-copilot-huckleberry.evidence.refresh",
-    "onCommand:vscode-copilot-huckleberry.loops.runLoop",
-    "onCommand:vscode-copilot-huckleberry.runs.cancel",
-    "onCommand:vscode-copilot-huckleberry.runs.approvalAction",
-    "onCommand:vscode-copilot-huckleberry.runs.getStatus",
-    "onCommand:vscode-copilot-huckleberry.runs.openSummary",
-    "onCommand:vscode-copilot-huckleberry.runs.openWorktreeLocation",
-    "onCommand:vscode-copilot-huckleberry.runs.inspectWorktreeBranch",
-    "onCommand:vscode-copilot-huckleberry.runs.openStepEvidence",
-    "onCommand:vscode-copilot-huckleberry.runs.openDeepLink",
-    "onCommand:vscode-copilot-huckleberry.runs.openTimelineDeepLink",
-    "onCommand:vscode-copilot-huckleberry.evidence.openArtifact",
-    "onCommand:vscode-copilot-huckleberry.evidence.revealArtifact",
-    "onCommand:vscode-copilot-huckleberry.loops.createStarterTemplates",
-    "onCommand:vscode-copilot-huckleberry.debugWelcomeView",
-    "onCommand:vscode-copilot-huckleberry.debugTreeViewProperties"
+    "onChatParticipant:huckleberry"
   ],
   "contributes": {
     "commands": [

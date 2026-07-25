@@ -9,6 +9,10 @@ interface PendingRequest {
   reject: (error: Error) => void;
 }
 
+function buildRunnerExecArgv(execArgv: readonly string[]): string[] {
+  return execArgv.filter(arg => !arg.startsWith('--inspect'));
+}
+
 /**
  * Extension-side IPC client for the lightweight workflow runner process.
  */
@@ -170,10 +174,19 @@ export class RunnerClient implements vscode.Disposable {
     const runnerProcessPath = path.join(__dirname, '..', 'runner', 'runnerProcess.js');
     this.childProcess = fork(runnerProcessPath, [], {
       stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+      execArgv: buildRunnerExecArgv(process.execArgv),
     });
 
     this.childProcess.on('message', (response: RunnerResponse) => {
       this.handleRunnerResponse(response);
+    });
+
+    this.childProcess.stdout?.on('data', chunk => {
+      logWithChannel(LogLevel.DEBUG, `Runner stdout: ${String(chunk).trimEnd()}`);
+    });
+
+    this.childProcess.stderr?.on('data', chunk => {
+      logWithChannel(LogLevel.ERROR, `Runner stderr: ${String(chunk).trimEnd()}`);
     });
 
     this.childProcess.on('error', error => {
@@ -181,9 +194,15 @@ export class RunnerClient implements vscode.Disposable {
       this.rejectAllPending(error);
     });
 
-    this.childProcess.on('exit', code => {
-      logWithChannel(LogLevel.WARN, `Runner process exited with code ${code ?? 'unknown'}`);
-      this.rejectAllPending(new Error('Runner process exited unexpectedly.'));
+    this.childProcess.on('exit', (code, signal) => {
+      const details = [`code ${code ?? 'unknown'}`];
+      if (signal) {
+        details.push(`signal ${signal}`);
+      }
+
+      const exitMessage = `Runner process exited unexpectedly (${details.join(', ')}).`;
+      logWithChannel(LogLevel.WARN, exitMessage);
+      this.rejectAllPending(new Error(exitMessage));
       this.childProcess = undefined;
     });
   }

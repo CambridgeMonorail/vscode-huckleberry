@@ -184,6 +184,25 @@ describe('RunnerClient', () => {
     expect(fakeFork).toHaveBeenCalledTimes(1);
   });
 
+  it('strips inspect flags from the runner subprocess exec arguments', async () => {
+    const originalExecArgv = process.execArgv;
+    process.execArgv = ['--inspect-brk=9229', '--trace-warnings'];
+
+    try {
+      await client.startRun('lint', '/workspace/.huckleberry/loops/lint.yaml');
+
+      expect(fakeFork).toHaveBeenCalledWith(
+        expect.any(String),
+        [],
+        expect.objectContaining({
+          execArgv: ['--trace-warnings'],
+        }),
+      );
+    } finally {
+      process.execArgv = originalExecArgv;
+    }
+  });
+
   it('queries run status through IPC', async () => {
     const status = await client.getStatus('run-1');
     expect(status?.runId).toBe('run-1');
@@ -239,7 +258,7 @@ describe('RunnerClient', () => {
     const pendingStatus = recoveryClient.getStatus('run-before-crash');
     firstChild.emit('exit', 1);
 
-    await expect(pendingStatus).rejects.toThrow('Runner process exited unexpectedly.');
+    await expect(pendingStatus).rejects.toThrow(/Runner process exited unexpectedly/);
 
     const recoveredStatus = await recoveryClient.getStatus('run-after-restart');
     expect(recoveredStatus?.runId).toBe('run-1');

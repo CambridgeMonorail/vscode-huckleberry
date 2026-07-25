@@ -953,6 +953,22 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "validate-affected-after-activation-cleanup",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"run",
+				"validate:affected"
+			],
+			"group": "test"
+		},
+		{
+			"label": "validate-affected-pre-push",
+			"type": "shell",
+			"command": "pnpm run validate:affected",
+			"group": "test"
 		}
 	]
 }

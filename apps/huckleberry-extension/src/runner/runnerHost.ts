@@ -15,8 +15,8 @@ import {
 } from './runEventStore';
 import { WorktreeLifecycleService } from './worktreeLifecycleService';
 import { loadWorkflowDefinition } from './workflowLoader';
+import { logWithChannel, LogLevel } from './runnerLog';
 import { AgentStep, CommandStep, WorkflowDefinition, WorkflowStep } from '../workflows';
-import { logWithChannel, LogLevel } from '../utils/debugUtils';
 import {
   RunnerApprovalDecision,
   RunnerDeepLink,

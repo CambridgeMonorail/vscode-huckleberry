@@ -130,8 +130,11 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
 
   const viewCommands = [
     vscode.commands.registerCommand('vscode-copilot-huckleberry.loops.refresh', async () => {
-      await loopExplorerProvider.refresh();
-      logWithChannel(LogLevel.DEBUG, 'Loops view refreshed');
+      const summary = await loopExplorerProvider.refresh();
+      logWithChannel(LogLevel.DEBUG, 'Loops view refreshed', summary);
+      vscode.window.showInformationMessage(
+        `Loops refreshed: ${summary.discoveredCount} discovered, ${summary.validCount} valid, ${summary.invalidCount} invalid.`,
+      );
       return Promise.resolve();
     }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.runs.refresh', () => {
@@ -421,10 +424,34 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
       return Promise.resolve();
     }),
     vscode.commands.registerCommand('vscode-copilot-huckleberry.loops.runLoop', async (input: unknown) => {
-      const item = extractLoopViewItemModel(input);
+      let item = extractLoopViewItemModel(input);
+
       if (!item) {
-        vscode.window.showWarningMessage('Loop selection is required to start a run.');
-        return Promise.resolve();
+        await loopExplorerProvider.refresh();
+        const validLoopItems = loopExplorerProvider.getLoopItems().filter(loopItem => loopItem.validation.valid);
+
+        if (validLoopItems.length === 0) {
+          vscode.window.showWarningMessage('No valid loops are available to run. Add or fix a loop under .huckleberry/loops and refresh.');
+          return Promise.resolve();
+        }
+
+        const selectedLoop = await vscode.window.showQuickPick(
+          validLoopItems.map(loopItem => ({
+            label: loopItem.loopFile.id,
+            description: loopItem.loopFile.relativePath,
+            item: loopItem,
+          })),
+          {
+            title: 'Select a loop to run',
+            placeHolder: 'Choose a valid loop definition',
+          },
+        );
+
+        if (!selectedLoop) {
+          return Promise.resolve();
+        }
+
+        item = selectedLoop.item;
       }
 
       if (!item.validation.valid) {
@@ -432,25 +459,28 @@ export function registerShellViews(context: vscode.ExtensionContext): void {
         return Promise.resolve();
       }
 
-      const runId = await runnerClient.startRun(item.loopFile.id, item.loopFile.uri.fsPath);
-      vscode.window.showInformationMessage(`Started run '${runId}' for loop '${item.loopFile.id}'.`);
+      try {
+        const runId = await runnerClient.startRun(item.loopFile.id, item.loopFile.uri.fsPath);
+        vscode.window.showInformationMessage(`Started run '${runId}' for loop '${item.loopFile.id}'.`);
+      } catch (error) {
+        logWithChannel(LogLevel.ERROR, 'Failed to start loop run', error);
+        vscode.window.showErrorMessage(
+          `Failed to start loop '${item.loopFile.id}'. ${error instanceof Error ? error.message : String(error)} Check Log (Extension Host) for runner startup details.`,
+        );
+      }
+
       return Promise.resolve();
     }),
     vscode.commands.registerCommand(
       'vscode-copilot-huckleberry.loops.createStarterTemplates',
       async () => {
         const result = await workflowTemplateService.createStarterTemplates();
-        await loopExplorerProvider.refresh();
+        const refreshSummary = await loopExplorerProvider.refresh();
 
-        if (result.created.length === 0) {
-          vscode.window.showInformationMessage(
-            `Starter templates already exist (${result.skipped.join(', ')}).`,
-          );
-          return Promise.resolve();
-        }
-
+        const createdSummary = result.created.length > 0 ? result.created.join(', ') : 'none';
+        const skippedSummary = result.skipped.length > 0 ? result.skipped.join(', ') : 'none';
         vscode.window.showInformationMessage(
-          `Created starter templates: ${result.created.join(', ')}.`,
+          `Starter templates ready. Created: ${createdSummary}. Skipped: ${skippedSummary}. Loops: ${refreshSummary.discoveredCount} discovered, ${refreshSummary.validCount} valid, ${refreshSummary.invalidCount} invalid.`,
         );
         return Promise.resolve();
       },

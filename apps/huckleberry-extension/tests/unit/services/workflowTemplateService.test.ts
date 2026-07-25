@@ -16,10 +16,10 @@ describe('workflowTemplateService', () => {
 
     const result = await service.createStarterTemplates();
 
-    expect(result.created).toHaveLength(3);
+    expect(result.created).toHaveLength(4);
     expect(result.skipped).toHaveLength(0);
     expect(vscode.workspace.fs.createDirectory).toHaveBeenCalledTimes(1);
-    expect(vscode.workspace.fs.writeFile).toHaveBeenCalledTimes(3);
+    expect(vscode.workspace.fs.writeFile).toHaveBeenCalledTimes(4);
   });
 
   it('skips templates that already exist', async () => {
@@ -28,7 +28,7 @@ describe('workflowTemplateService', () => {
     const result = await service.createStarterTemplates();
 
     expect(result.created).toHaveLength(0);
-    expect(result.skipped).toHaveLength(3);
+    expect(result.skipped).toHaveLength(4);
     expect(vscode.workspace.fs.writeFile).not.toHaveBeenCalled();
   });
 

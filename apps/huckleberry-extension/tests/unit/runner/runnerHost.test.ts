@@ -45,7 +45,7 @@ vi.mock('@huckleberry/extension/runner/runEventStore', () => ({
   writeRunSummaryArtifacts: writeRunSummaryArtifactsMock,
 }));
 
-vi.mock('@huckleberry/extension/utils/debugUtils', () => ({
+vi.mock('@huckleberry/extension/runner/runnerLog', () => ({
   LogLevel: {
     INFO: 'INFO',
     DEBUG: 'DEBUG',

@@ -43,6 +43,22 @@ export const STARTER_TEMPLATES: Array<{ fileName: string; content: string }> = [
       '',
     ].join('\n'),
   },
+  {
+    fileName: 'verify-workspace.yaml',
+    content: [
+      'schemaVersion: 1',
+      'id: verify-workspace',
+      'name: Verify Workspace',
+      'steps:',
+      '  - id: typecheck',
+      '    type: command',
+      '    command: pnpm typecheck',
+      '  - id: tests',
+      '    type: command',
+      '    command: pnpm test',
+      '',
+    ].join('\n'),
+  },
 ];
 
 /**

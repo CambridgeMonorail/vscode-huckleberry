@@ -7,6 +7,12 @@ export interface LoopViewItemModel {
   validation: LoopValidationResult;
 }
 
+export interface LoopRefreshSummary {
+  discoveredCount: number;
+  validCount: number;
+  invalidCount: number;
+}
+
 /**
  * Tree item representing a discovered workflow loop file.
  */
@@ -63,7 +69,11 @@ export class LoopExplorerProvider implements vscode.TreeDataProvider<vscode.Tree
     return this.loopItems.map(loopItem => new LoopTreeItem(loopItem));
   }
 
-  async refresh(): Promise<void> {
+  getLoopItems(): readonly LoopViewItemModel[] {
+    return [...this.loopItems];
+  }
+
+  async refresh(): Promise<LoopRefreshSummary> {
     const loopFiles = await this.discoveryService.discoverLoopFiles();
     this.loopItems = await Promise.all(
       loopFiles.map(async loopFile => {
@@ -76,6 +86,12 @@ export class LoopExplorerProvider implements vscode.TreeDataProvider<vscode.Tree
     );
 
     this.onDidChangeEmitter.fire();
+
+    return {
+      discoveredCount: this.loopItems.length,
+      validCount: this.loopItems.filter(item => item.validation.valid).length,
+      invalidCount: this.loopItems.filter(item => !item.validation.valid).length,
+    };
   }
 
   dispose(): void {
