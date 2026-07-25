@@ -28,11 +28,17 @@ The following tasks are available in `.vscode/tasks.json`:
 To debug the VS Code extension:
 
 1. Press **F5** or select **Debug Extension** from the Run and Debug panel
-2. A new VS Code window will open with the extension loaded
+2. A new VS Code window will open with the extension loaded and the child workspace at `test-workspace/`
 3. You can set breakpoints in the extension code
 4. The extension activation will trigger when VS Code starts
 5. Verify activation by opening the Activity Bar container and confirming the `Loops`, `Runs`, and `Evidence` views are available.
 6. Optionally run a quick command from the Command Palette (`Ctrl+Shift+P`) such as `Huckleberry: Refresh Loops`.
+
+### Test Workspace Behavior
+
+- The extension host launch configuration passes `${workspaceFolder}/test-workspace` as the opened folder.
+- Any files created by extension features during testing will be written under this child workspace.
+- This keeps debugging artifacts isolated and easy to inspect from the parent repository.
 
 ### Hot Reload Workflow
 
