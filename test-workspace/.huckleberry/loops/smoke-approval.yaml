@@ -1,0 +1,18 @@
+schemaVersion: 1
+id: smoke-approval
+name: Smoke Approval
+steps:
+  - id: gate
+    type: approval
+    onApprove: approved-step
+    onReject: rejected-step
+    onDefer: deferred-step
+  - id: approved-step
+    type: command
+    command: node -e "console.log('approved path'); process.exit(0)"
+  - id: rejected-step
+    type: command
+    command: node -e "console.log('rejected path'); process.exit(0)"
+  - id: deferred-step
+    type: command
+    command: node -e "console.log('deferred path'); process.exit(0)"

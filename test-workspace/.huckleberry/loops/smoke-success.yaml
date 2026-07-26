@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: smoke-success
+name: Smoke Success
+steps:
+  - id: success-step
+    type: command
+    command: node -e "console.log('success step ok'); process.exit(0)"

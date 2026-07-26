@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: smoke-cancel
+name: Smoke Cancel
+steps:
+  - id: wait-step
+    type: command
+    command: node -e "setTimeout(() => { console.log('finished wait'); process.exit(0); }, 30000)"
