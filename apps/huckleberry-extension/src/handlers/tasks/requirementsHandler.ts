@@ -360,7 +360,7 @@ ${req.description}
 Extracted from requirements document: ${filePath}
 
 ## Notes
-- Created via Huckleberry Task Manager's requirements parser
+- Created via Huckleberry Workflow Workbench requirements parser
 - Created on ${new Date().toLocaleDateString()}
 `;
 

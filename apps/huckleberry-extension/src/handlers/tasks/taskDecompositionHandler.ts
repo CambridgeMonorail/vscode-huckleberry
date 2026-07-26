@@ -276,7 +276,7 @@ ${subtask.description}
 
 ## Notes
 - Created as subtask of ${parentTask.id}: ${parentTask.title}
-- Created via Huckleberry Task Manager
+- Created via Huckleberry Workflow Workbench
 `;
 
         try {

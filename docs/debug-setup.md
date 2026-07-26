@@ -28,10 +28,17 @@ The following tasks are available in `.vscode/tasks.json`:
 To debug the VS Code extension:
 
 1. Press **F5** or select **Debug Extension** from the Run and Debug panel
-2. A new VS Code window will open with the extension loaded
+2. A new VS Code window will open with the extension loaded and the child workspace at `test-workspace/`
 3. You can set breakpoints in the extension code
 4. The extension activation will trigger when VS Code starts
-5. Test the "Hello World" command by opening the Command Palette (`Ctrl+Shift+P`) and typing "Hello World from Huckleberry"
+5. Verify activation by opening the Activity Bar container and confirming the `Loops`, `Runs`, and `Evidence` views are available.
+6. Optionally run a quick command from the Command Palette (`Ctrl+Shift+P`) such as `Huckleberry: Refresh Loops`.
+
+### Test Workspace Behavior
+
+- The extension host launch configuration passes `${workspaceFolder}/test-workspace` as the opened folder.
+- Any files created by extension features during testing will be written under this child workspace.
+- This keeps debugging artifacts isolated and easy to inspect from the parent repository.
 
 ### Hot Reload Workflow
 
@@ -65,16 +72,19 @@ When you need to debug interactions between the extension and React application:
 ## Troubleshooting
 
 ### Extension Not Loading
+
 - Ensure the build task completed successfully
 - Check the Developer Tools console in the Extension Development Host for errors
 - Verify the activationEvents in the extension's package.json
 
 ### React App Not Starting
+
 - Check if port 4200 is already in use
 - Verify that the Vite development server is running
 - Look for errors in the terminal running the serve-react-app task
 
 ### Breakpoints Not Hitting
+
 - For the extension, make sure source maps are enabled in tsconfig.json
 - For the React app, verify that the webRoot path in launch.json is correct
 - Try using the "debugger;" statement directly in your code

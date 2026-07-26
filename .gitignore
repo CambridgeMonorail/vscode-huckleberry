@@ -62,4 +62,9 @@ apps/huckleberry-extension/coverage
 .claude/settings.local.json
 .nx/polygraph
 .nx/self-healing
+
+# Test workspace transient evidence and run artifacts
+test-workspace/_debug-evidence/
+test-workspace/.huckleberry/runs/
+test-workspace/.huckleberry/evidence/
 .nx/migrate-runs

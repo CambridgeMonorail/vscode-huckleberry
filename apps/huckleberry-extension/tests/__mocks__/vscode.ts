@@ -257,6 +257,32 @@ export class Selection extends Range {
   }
 }
 
+// Tree item + event emitter shims used by provider tests
+export enum TreeItemCollapsibleState {
+  None = 0,
+  Collapsed = 1,
+  Expanded = 2,
+}
+
+export class ThemeIcon {
+  constructor(public readonly id: string) {}
+}
+
+export class TreeItem {
+  label?: string;
+  collapsibleState: TreeItemCollapsibleState;
+  description?: string;
+  tooltip?: string;
+  contextValue?: string;
+  iconPath?: ThemeIcon;
+  command?: unknown;
+
+  constructor(label: string, collapsibleState: TreeItemCollapsibleState) {
+    this.label = label;
+    this.collapsibleState = collapsibleState;
+  }
+}
+
 // Event handling
 export class EventEmitter<T> {
   private handlers: Array<(e: T) => unknown> = [];
@@ -272,6 +298,10 @@ export class EventEmitter<T> {
   
   fire(data: T): void {
     this.handlers.forEach(handler => handler(data));
+  }
+
+  dispose(): void {
+    this.handlers = [];
   }
 }
 

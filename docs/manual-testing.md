@@ -1,234 +1,178 @@
 # Huckleberry Manual Testing Checklist
 
-This document outlines all the features of the Huckleberry Task Manager extension that need to be manually tested before release. Each feature includes a checkbox to track testing progress.
+This document tracks manual verification for the workflow-first Huckleberry product surface in this branch.
 
-> **Note:** This testing document corresponds to the features specified in the [Product Requirements Document (PRD.md)](./PRD.md). Refer to the PRD for detailed feature specifications and implementation guidelines.
+Execution ownership matrix:
 
-## Installation and Setup
+- `docs/reimagine/09 Practical Validation Matrix.md`
+- `docs/reimagine/10 Local Extension Testing Playbook.md`
 
-- [x] Extension can be installed from VSIX file
-- [x] Extension activates properly when opening a workspace
-- [x] Extension registers as a chat participant
-- [x] Language model tools are properly registered
-- [x] Extension shows up in the Command Palette
+Current user-facing scope:
 
-## Core Chat Participant Functionality
+- Loops discovery and validation
+- Runs execution lifecycle and approval handling
+- Evidence exploration and artifact access
+- Isolation/worktree visibility and diagnostics deep links
 
-- [x] @Huckleberry can be mentioned in VS Code Chat
-- [x] Chat participant responds to messages
-- [x] Chat participant maintains context across messages in a conversation
-- [x] Error messages are displayed properly when issues occur
+> Note: Legacy task-management testing moved out of active scope for this checklist. Use legacy debug references only when explicitly working in migration paths.
 
-## Task Initialization
+## Installation and Activation
 
-- [x] `@Huckleberry Initialize task tracking for this project` creates proper task structure
-- [x] Task initialization creates `tasks.json` file
-- [x] Task initialization creates tasks directory
-- [x] Task initialization produces confirmation message
-- [x] Task initialization fails gracefully if already initialized
+- [ ] Extension installs from VSIX
+- [ ] Extension activates when opening a workspace
+- [ ] Chat participant `@Huckleberry` is registered and reachable
+- [ ] Activity Bar container "Huckleberry" appears
+- [ ] Loops, Runs, and Evidence views render
 
-## Task Creation and Management
+## Workspace Preconditions
 
-- [x] `@Huckleberry Create a task to implement user authentication` creates new task
-- [ ] `@Huckleberry Create a high priority task to fix security vulnerability` creates high priority task
-- [x] Created tasks have unique IDs
-- [x] Created tasks have appropriate metadata (priority, status, etc.)
-- [x] Tasks can be created with explicit priority levels (high, medium, low)
-- [x] Tasks are stored properly in task files
-- [x] `@Huckleberry List all tasks` shows all tasks correctly
-- [x] `@Huckleberry What tasks are high priority?` filters tasks by priority
+- [ ] Workspace with write access is required and validated
+- [ ] Missing-workspace path shows actionable guidance
+- [ ] Existing `.huckleberry` folder is detected without errors
 
-## Task Status Management
+## Loops View and Templates
 
-- [x] `@Huckleberry Mark task TASK-123 as complete` updates task status
-- [x] `@Huckleberry Mark task TASK-123 as high priority` updates task priority
-- [x] Status changes are reflected in tasks.json
-- [x] Status changes are reflected in task files
-- [x] Task status changes fail gracefully for invalid task IDs
+- [ ] Empty Loops view shows welcome content and docs links
+- [ ] `Create Starter Templates` creates loop files under `.huckleberry/loops`
+- [ ] `Refresh Loops` updates view after file add/edit/delete
+- [ ] Invalid loop definitions show validation state/messages
+- [ ] Valid loop definitions expose `Run Loop` context action
 
-## Task Prioritization
+## Run Lifecycle (Command-Only Baseline)
 
-- [x] `@Huckleberry Prioritize tasks` sorts tasks by status and priority
-- [x] High priority tasks appear before medium and low priority tasks
-- [x] Incomplete tasks appear before completed tasks
+- [ ] `Run Loop` starts a run for a valid loop
+- [ ] Run transitions appear in order (queued/running/terminal)
+- [ ] `Get Run Status` returns correct run state by run ID
+- [ ] `Cancel Run` transitions active run to cancelled state
+- [ ] Failed command step persists explicit stop reason context
+- [ ] Run timeline entries include timestamps and step-level detail
 
-## Next Task Suggestions
+## Approval Gate Flow
 
-- [x] `@Huckleberry What task should I work on next?` suggests appropriate next task
-- [x] Next task suggestions consider priority and dependencies
-- [x] Next task suggestions provide rationale for the recommendation
+- [ ] Run pauses correctly at approval step
+- [ ] `Submit Approval Decision` supports approve
+- [ ] `Submit Approval Decision` supports reject
+- [ ] `Submit Approval Decision` supports defer
+- [ ] Optional approval note is captured and reflected in timeline/run events
 
-## Task Decomposition
+## Run Summaries
 
-- [ ] `@Huckleberry Break TASK-123 into subtasks` creates subtasks
-- [ ] Subtasks are properly linked to parent task
-- [ ] Subtasks have unique IDs
-- [ ] Subtask hierarchy is reflected in tasks.json
+- [ ] `Open Run Summary` opens generated summary artifacts for terminal runs
+- [ ] Summary includes terminal outcome and unresolved items (if any)
+- [ ] Summary content matches persisted event history
 
-## TODO Comment Scanning
+## Evidence Explorer
 
-- [ ] `@Huckleberry Scan for TODOs in the codebase` finds TODOs across all files
-- [ ] `@Huckleberry Scan for TODOs in **/*.ts` finds TODOs in matching files only
-- [ ] Scanned TODOs are converted to tasks
-- [ ] Scanned TODOs include context from surrounding code
-- [ ] TODO scanning supports different comment formats (// TODO:, /* TODO:, # TODO:)
-- [ ] Duplicate TODOs are handled appropriately
+- [ ] Empty Evidence view shows welcome content and docs links
+- [ ] Evidence groups by run, step, and category
+- [ ] `Open Artifact` opens available files
+- [ ] `Reveal Artifact` opens file location in OS explorer
+- [ ] Missing/stale artifact states are surfaced clearly
+- [ ] Evidence refresh reflects newly generated artifacts
 
-## Requirements Document Parsing
+## Diagnostics and Deep Links
 
-- [ ] `@Huckleberry Parse requirements.md and create tasks` extracts tasks
-- [ ] Task hierarchy from document structure is preserved
-- [ ] Document parsing extracts priorities where specified
-- [ ] Document parsing extracts dependencies where inferred
-- [ ] Document parsing generates meaningful task descriptions
+- [ ] Timeline entries with deep links show actionable targets
+- [ ] `Open Timeline Deep Link` navigates to expected destination
+- [ ] `Open Deep Link Target` resolves selected target correctly
+- [ ] Failure paths surface fallback guidance when link targets are unavailable
 
-## Task Context and Enrichment
+## Isolation and Worktree Visibility
 
-- [ ] `@Huckleberry Enrich task TASK-123 with context` adds contextual information
-- [ ] Task enrichment captures relevant code context for TODO-based tasks
-- [ ] Task enrichment captures document context for requirements-based tasks
-- [ ] Enriched tasks display enhanced descriptions
-- [ ] Enriched tasks maintain original source links
-- [ ] Task enrichment works when offered after TODO scanning
-- [ ] Task enrichment works when offered after requirements parsing
-- [ ] Task enrichment handles missing source files gracefully
-- [ ] Enrichment context is properly stored in task metadata
-- [ ] Enriched content is properly displayed in markdown task files
+- [ ] Runs executed in worktree mode show isolation status in view details
+- [ ] `Open Worktree Location` reveals worktree path for applicable runs
+- [ ] `Inspect Branch Status` opens or reports branch status correctly
+- [ ] Run context distinguishes workspace vs worktree execution modes
 
-## Advanced Task Analysis
+## Chat Experience
 
-- [ ] Language model properly suggests task decomposition
-- [ ] Task dependencies are properly inferred from context
-- [ ] Source code context is properly captured for task analysis
-- [ ] Task relationships are maintained after updates
-- [ ] Complex tasks are broken down into appropriate subtasks
-- [ ] Task enrichment preserves and enhances existing metadata
-- [ ] Task context is used for prioritization suggestions
-- [ ] Task context influences "next task" recommendations
-- [ ] Enriched tasks provide better context for subtask creation
-- [ ] Task context is properly synchronized between tasks.json and markdown files
+- [ ] `@Huckleberry` responds with workflow-first guidance
+- [ ] Chat guidance aligns with Loops/Runs/Evidence terminology
+- [ ] Error handling for invalid run IDs and missing loops is clear and actionable
 
-## Help and Documentation
+## Command Palette Surface
 
-- [x] `@Huckleberry help` shows general help information
-- [x] `@Huckleberry help task-creation` shows topic-specific help
-- [x] Help information is accurate and matches implemented functionality
-- [x] Help includes examples of command usage
+- [ ] `Huckleberry: Refresh Loops`
+- [ ] `Huckleberry: Refresh Runs`
+- [ ] `Huckleberry: Refresh Evidence`
+- [ ] `Huckleberry: Create Starter Templates`
+- [ ] `Huckleberry: Run Loop`
+- [ ] `Huckleberry: Cancel Run`
+- [ ] `Huckleberry: Submit Approval Decision`
+- [ ] `Huckleberry: Get Run Status`
+- [ ] `Huckleberry: Open Run Summary`
+- [ ] `Huckleberry: Open Worktree Location`
+- [ ] `Huckleberry: Inspect Branch Status`
+- [ ] `Huckleberry: Open Step Evidence`
+- [ ] `Huckleberry: Open Timeline Deep Link`
+- [ ] `Huckleberry: Open Deep Link Target`
+- [ ] `Huckleberry: Open Artifact`
+- [ ] `Huckleberry: Reveal Artifact`
 
-## Language Model Tools Integration
+## Reliability and Recovery
 
-- [ ] `create_task` tool works from VS Code's language model
-- [ ] `initialize_tracking` and `initialise_tracking` tools work from VS Code's language model
-- [ ] `scan_todos` tool works from VS Code's language model
-- [ ] `list_tasks` tool works from VS Code's language model
-- [ ] `mark_task_done` tool works from VS Code's language model
-- [ ] `update_task_priority` tool works from VS Code's language model
-- [ ] `prioritize_tasks` tool works from VS Code's language model
-- [ ] `next_task` tool works from VS Code's language model
-- [ ] `help` tool works from VS Code's language model
-- [ ] Tools can be invoked during normal chat without explicit @Huckleberry mentions
+- [ ] Extension survives VS Code window reload with no broken view state
+- [ ] Existing runs are visible after reopening workspace
+- [ ] Corrupt/missing run artifact files fail gracefully with clear warnings
+- [ ] No command crashes when run/evidence IDs are stale or invalid
 
-## Settings and Configuration
+## Security and Locality
 
-- [ ] `huckleberry.taskmanager.defaultTasksLocation` setting changes task file location
-- [ ] `huckleberry.taskmanager.taskFileTemplate` setting changes task file format
-- [ ] `huckleberry.taskmanager.defaultTaskPriority` setting changes default priority
-- [ ] `huckleberry.taskmanager.defaultDueDate` setting changes default due date
-- [ ] Settings changes take effect without needing to reload extension
+- [ ] Workflow definitions, run events, and artifacts stay in workspace-local storage
+- [ ] High-risk command policy blocks are surfaced with clear user feedback
+- [ ] No sensitive data is logged in user-facing messages
 
-## Command Palette Integration
+## Cross-Platform Smoke
 
-- [ ] `Huckleberry: Manage Tasks` command is available in Command Palette
-- [ ] `Huckleberry: Initialize Task Tracking` / `Initialise Task Tracking` commands work as expected
-- [ ] `Huckleberry: Create Task` command works as expected
-- [ ] `Huckleberry: List Tasks` command works as expected
-- [ ] `Huckleberry: Mark Task Complete` command works as expected
-- [ ] `Huckleberry: Change Task Priority` command works as expected
-- [ ] `Huckleberry: Scan TODOs` / `Scan for TODOs` commands work as expected
-- [ ] `Huckleberry: Prioritize Tasks` command works as expected
-- [ ] `Huckleberry: Get Next Task` command works as expected
-- [ ] `Huckleberry: Get Help` command works as expected
-- [ ] `Huckleberry: Parse Requirements Document` command works as expected
-- [ ] Command Palette commands provide appropriate feedback and error messages
-
-## Developer Mode Commands
-
-- [ ] `Huckleberry (Dev): Check Copilot Agent Mode` verifies Copilot agent mode status
-- [ ] `Huckleberry (Dev): Test Chat Integration` validates chat participant functionality
-- [ ] `Huckleberry (Dev): Refresh Chat Participants` successfully refreshes chat integration
-- [ ] Developer commands are only visible when development mode is enabled
-
-## Error Handling
-
-- [ ] Extension handles non-existent task references gracefully
-- [ ] Extension handles workspace without task initialization gracefully
-- [ ] Extension handles permission errors gracefully
-- [ ] Extension handles malformed tasks.json gracefully
-- [ ] Extension provides helpful error messages when actions fail
-
-## Edge Cases
-
-- [ ] Extension works after reloading VS Code window
-- [ ] Extension works after reopening VS Code
-- [ ] Extension works with large number of tasks (100+)
-- [ ] Extension works with long task descriptions
-- [ ] Extension works with special characters in task names/descriptions
-- [ ] Extension works in multi-root workspaces
-
-## Performance
-
-- [ ] Task operations complete in reasonable time (<1s for most operations)
-- [ ] UI remains responsive during task scanning operations
-- [ ] Memory usage remains reasonable during extended use
-- [ ] File operations are batched appropriately for large tasks
-
-## Cross-Platform Testing
-
-- [ ] Extension works properly on Windows
-- [ ] Extension works properly on macOS
-- [ ] Extension works properly on Linux
-
-## Security and Privacy
-
-- [ ] Task data is stored only in the workspace (no external data transfer)
-- [ ] Security-sensitive information in tasks is handled appropriately
-- [ ] Authentication tokens (if any) are stored securely
+- [ ] Windows manual smoke pass
+- [ ] macOS manual smoke pass
+- [ ] Linux manual smoke pass
 
 ## Documentation Accuracy
 
-- [ ] All documented commands work as described
-- [ ] All documented settings work as described
-- [ ] Example workflows from documentation can be followed successfully
+- [ ] Root README usage examples match actual command/view behavior
+- [ ] Quick start docs match current Loops/Runs/Evidence flow
+- [ ] Troubleshooting docs align with current run lifecycle and evidence model
+
+## Legacy Scope Marker
+
+The following areas are intentionally out of active scope for this checklist unless a migration task explicitly targets them:
+
+- Task Explorer and task-initialization flows
+- `tasks.json` task CRUD behavior
+- Legacy task-oriented LM tools and settings
 
 ## Notes on Testing
 
-For each feature, document any issues encountered during testing including:
+For each issue found, capture:
 
 - Steps to reproduce
-- Expected vs. actual behavior
-- Error messages or logs
-- Screenshots if relevant
+- Expected behavior
+- Actual behavior
+- Error messages/log excerpts
+- Environment details (OS, VS Code version, extension version)
 
-Use this format for reporting issues:
+Issue report template:
 
-```
+```markdown
 ### Issue: [Brief description]
-- **Steps to reproduce**: 
-  1. 
-  2. 
-  3. 
-- **Expected behavior**: 
-- **Actual behavior**: 
-- **Environment**: [VS Code version, OS, etc.]
-- **Notes**: 
+
+- Steps to reproduce:
+  1.
+  2.
+  3.
+- Expected behavior:
+- Actual behavior:
+- Environment:
+- Notes:
 ```
 
 ## Testing Progress Tracking
 
-| Testing Session | Date | Tester | Features Tested | Issues Found | Issues Fixed |
-|----------------|------|--------|-----------------|--------------|--------------|
-|                |      |        |                 |              |              |
+| Testing Session | Date | Tester | Areas Tested | Issues Found | Issues Fixed |
+| --------------- | ---- | ------ | ------------ | ------------ | ------------ |
+|                 |      |        |              |              |              |
 
 ---
 
-*Last Updated: April 28, 2025*
+Last Updated: 2026-07-23

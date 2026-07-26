@@ -1,5 +1,5 @@
 /**
- * Type definitions for the Huckleberry Task Manager extension
+ * Type definitions for the Huckleberry extension.
  */
 
 /**

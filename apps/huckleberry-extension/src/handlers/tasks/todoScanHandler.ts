@@ -347,7 +347,7 @@ ${todo.comment}
 \`\`\`
 
 ## Notes
-- Created via Huckleberry Task Manager's TODO scanner
+- Created via Huckleberry Workflow Workbench TODO scanner
 - Found in codebase on ${new Date().toLocaleDateString()}
 `;
 

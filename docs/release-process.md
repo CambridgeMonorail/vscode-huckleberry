@@ -6,6 +6,31 @@ This document outlines the release process for the Huckleberry project. It provi
 
 The Huckleberry project uses GitHub Actions to automate the release process. The workflow handles versioning, generating changelogs, and publishing new releases.
 
+### Release Readiness Checklist
+
+Before a live release, the following gates must be satisfied:
+
+| Gate          | Evidence                                                       |
+| ------------- | -------------------------------------------------------------- |
+| Quality       | `pnpm validate:affected` passes and release packaging succeeds |
+| Security      | RIM-704 guardrails and policy review are complete              |
+| Documentation | RIM-705 docs pack is published and discoverable                |
+| Rollback      | A rollback drill has been completed and recorded               |
+| Approvals     | Engineering and product have both signed off on the release    |
+
+The release workflow includes a readiness gate that records these checks in the workflow summary and blocks a live release unless the rollback drill and go/no-go approval are explicitly confirmed.
+
+### Go/No-Go Decision Criteria
+
+The release decision should be recorded by the release owner after reviewing:
+
+1. Build, test, and packaging evidence from the current release candidate.
+2. Security review status, including the default command policy and high-risk guardrails.
+3. Documentation coverage for first-run, authoring, evidence, and troubleshooting.
+4. Rollback drill evidence and the recovery plan for a critical regression.
+
+If any of the required gates are missing, the release remains paused until the gap is resolved or the release is explicitly re-scoped.
+
 ### Prerequisites
 
 Before triggering a release, make sure:
@@ -14,6 +39,27 @@ Before triggering a release, make sure:
 2. All tests are passing
 3. The code adheres to the project's coding standards and guidelines
 4. All features for the release are complete
+
+### Rollback and Hotfix Path
+
+If a critical regression is found after release:
+
+1. Stop new release activity and confirm the impact window.
+2. Revert the offending commit on `main` using a normal revert commit rather than rewriting history.
+3. Publish a patch hotfix release from the corrected branch state.
+4. Update the changelog and release notes to call out the regression and recovery.
+5. If the published VSIX is impacted, supersede it with the hotfix artifact instead of attempting to edit the shipped package.
+
+For a pre-publish rollback, cancel the workflow run and leave the release tag unpublished. For a post-publish rollback, treat the event as a hotfix and ship the revert as quickly as possible.
+
+### Rollback Drill
+
+The rollback path must be exercised at least once before the first live release. The preferred drill is:
+
+1. Run a release dry run.
+2. Simulate a bad change by identifying a known-safe commit to revert.
+3. Verify the revert workflow, changelog update, and patch release steps.
+4. Record the drill outcome in the release decision log.
 
 ### Triggering a Release
 
@@ -31,6 +77,11 @@ To trigger a release:
      - `major`: For breaking changes (e.g., 1.0.0 → 2.0.0)
    - **Dry Run**: Enable to preview changes without publishing (recommended first)
    - **First Release**: Enable ONLY for the initial release (when no version tags exist)
+
+- **Go/No-Go Approved**: Enable only after engineering and product have signed off on the release
+- **Rollback Drill Complete**: Enable only after the rollback path has been exercised and recorded
+
+For a dry run, you can preview the workflow with the approval checkboxes left unset. For a live release, both approval checkboxes must be confirmed before the workflow will proceed.
 
 ### First-Time Release
 
@@ -83,6 +134,7 @@ The Huckleberry project follows the [Semantic Versioning](https://semver.org/) s
 We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages. These commit messages are used to determine the type of version change and to generate the changelog.
 
 Examples:
+
 - `fix:` commits trigger a PATCH release
 - `feat:` commits trigger a MINOR release
 - Any commit with `BREAKING CHANGE:` in the footer or `!` after the type/scope triggers a MAJOR release
@@ -110,8 +162,20 @@ If the workflow fails with an error about not finding git tags:
 ### VSIX File Not Attaching to Release
 
 Ensure that:
+
 1. The extension packaging step completes successfully
 2. The path to the VSIX file in the workflow matches the actual output location
+
+### Release Gate Checklist
+
+Use this checklist when preparing the next release:
+
+- [ ] Quality gate evidence captured
+- [ ] Security gate review recorded
+- [ ] Documentation pack reviewed and linked
+- [ ] Rollback drill completed
+- [ ] Engineering and product approvals recorded
+- [ ] Live release approved by the release owner
 
 ## Additional Resources
 

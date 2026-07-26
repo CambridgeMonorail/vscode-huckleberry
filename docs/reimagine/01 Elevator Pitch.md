@@ -1,0 +1,1 @@
+Huckleberry is a VS Code extension for building evidence-driven engineering workflows that orchestrate AI coding agents, developer tools and human judgement into repeatable software delivery processes.

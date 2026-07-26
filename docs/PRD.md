@@ -1,4 +1,11 @@
-# Huckleberry Task Manager - Product Requirements Document
+# Huckleberry Task Manager - Product Requirements Document (Legacy)
+
+> Historical document: This PRD describes the pre-reimagination task-manager roadmap and is preserved for migration context.
+>
+> Active workflow-first references:
+>
+> - `docs/reimagine/04 PRD.md`
+> - `docs/reimagine/06 Staged Implementation Plan.md`
 
 ## 1. Executive Summary
 
@@ -30,7 +37,7 @@ Implement a feature to automatically scan code files for TODO comments and conve
 **Requirements:**
 
 - Create a Language Model Tool that scans workspace files for TODO patterns
-- Support configurable regex patterns for identifying different TODO formats (// TODO:, /* TODO:, # TODO:, etc.)
+- Support configurable regex patterns for identifying different TODO formats (// TODO:, /\* TODO:, # TODO:, etc.)
 - Allow filtering by file type, directory, or exclusion patterns
 - Extract context from surrounding code to populate task descriptions
 - Create tasks from identified TODOs with appropriate metadata
@@ -79,10 +86,7 @@ Enhance the ability to parse requirements documents (PRDs, specifications) into 
  * @param options Parser configuration options
  * @returns Parsed tasks with metadata
  */
-async function parseRequirementsDocument(
-  documentPath: string, 
-  options: ParserOptions
-): Promise<ParsedTaskResult> {
+async function parseRequirementsDocument(documentPath: string, options: ParserOptions): Promise<ParsedTaskResult> {
   // Implementation
 }
 ```
@@ -486,6 +490,6 @@ describe('Chat Participant', () => {
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: April 20, 2025*  
-*Author: Huckleberry Team*
+_Document Version: 1.0_  
+_Last Updated: April 20, 2025_  
+_Author: Huckleberry Team_

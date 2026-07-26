@@ -1,0 +1,7 @@
+schemaVersion: 1
+id: smoke-fail
+name: Smoke Fail
+steps:
+  - id: fail-step
+    type: command
+    command: node -e "console.error('intentional failure'); process.exit(2)"

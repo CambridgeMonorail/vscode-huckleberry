@@ -5,7 +5,8 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}/apps/huckleberry-extension"
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/huckleberry-extension",
+        "${workspaceFolder}/test-workspace"
       ],
       "outFiles": [
         "${workspaceFolder}/apps/huckleberry-extension/dist/**/*.js"

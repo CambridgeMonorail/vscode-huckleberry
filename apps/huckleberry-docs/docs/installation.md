@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Installation
 
-This guide will walk you through the process of installing the Huckleberry Task Manager extension in Visual Studio Code.
+This guide covers installation of the Huckleberry Workflow Workbench extension in Visual Studio Code.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ Before you install Huckleberry, make sure you have:
 
 - **Visual Studio Code**: Version 1.93 or later
 - **GitHub Copilot**: An active GitHub Copilot subscription
-- **A workspace**: Huckleberry works best when you have a workspace folder opened
+- **A workspace**: Open a repository or folder where loops and run artifacts can be stored
 
 ## Installation Methods
 
@@ -35,13 +35,13 @@ Once released, you can install Huckleberry directly from the VS Code Marketplace
 
 1. Open VS Code
 2. Click the Extensions icon in the Activity Bar (or press `Ctrl+Shift+X` / `Cmd+Shift+X`)
-3. Search for "Huckleberry Task Manager"
+3. Search for "Huckleberry Workflow Workbench"
 4. Click "Install"
 
 Alternatively, you can run the following command in the VS Code command palette (`Ctrl+P` / `Cmd+P`):
 
-```
-ext install huckleberry.taskmanager
+```text
+ext install CambridgeMonorail.vscode-copilot-huckleberry
 ```
 
 ### Manual Installation (VSIX)
@@ -59,8 +59,9 @@ If you have a `.vsix` file (perhaps as a pre-release version or a development bu
 To verify that Huckleberry is installed correctly:
 
 1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-2. Type "Huckleberry" - you should see commands like "Huckleberry: Manage Tasks"
-3. Open VS Code's chat panel (click on the chat icon in the Activity Bar) and look for Huckleberry in the list of chat participants
+2. Type "Huckleberry" - you should see commands such as `Huckleberry: Create Starter Templates`
+3. Confirm the Activity Bar shows a Huckleberry container with `Loops`, `Runs`, and `Evidence`
+4. Open VS Code's chat panel and confirm `@Huckleberry` appears as a chat participant
 
 ## Known Installation Issues
 
@@ -76,6 +77,6 @@ If you're using VS Code version earlier than 1.93, you'll need to update your VS
 
 Once you've successfully installed Huckleberry:
 
-- Continue to the [Quick Start](./quick-start.md) guide to set up your first project
-- Learn about [Huckleberry's features](./features.md)
-- See [usage examples](./usage.md) to get the most out of the extension
+- Continue to the [Quick Start](./quick-start.md) guide to run your first loop
+- Learn the schema in the [Workflow Authoring Guide](./workflow-authoring-guide.md)
+- Learn how run artifacts are structured in the [Evidence Model Guide](./evidence-model-guide.md)
