@@ -6,7 +6,7 @@ agent: agent
 Run the controlled repair-fixture procedure with:
 
 - run ID: `${input:runId:enter a new run ID}`
-- scenario: `${input:scenario:react-prop-contract or react-price-regression}`
+- scenario: `${input:scenario:react-prop-contract, react-price-regression, or react-unrepairable-scope}`
 
 Before acting:
 
@@ -22,7 +22,7 @@ Then:
 4. Record the start time and each repair attempt in `_debug-evidence/<RUN_ID>/02-agent/interaction.md`.
 5. Work within the generated repository and its declared allowed paths. Use a normal coding workflow and no more than the declared maximum attempts.
 6. After each attempt, run `node scripts/repair-fixture.mjs collect --run-id <RUN_ID>` from the `test-workspace` root. Treat the resulting verifier, known-check, scope, and Git evidence as authoritative feedback.
-7. Continue only while attempts remain and the fresh evidence gives an actionable failure. Never claim success from your own summary.
+7. Continue only while attempts remain and the fresh evidence gives an actionable failure. For a scenario declaring `EXHAUSTED`, collect each bounded attempt without editing outside scope. After the machine reports `EXHAUSTED`, request one additional collection to produce machine evidence that the budget rejects it, then stop. Never claim success from your own summary.
 8. Write `_debug-evidence/<RUN_ID>/99-summary/summary.md` using the required format in the plan. Distinguish `Machine evidence`, `Copilot action`, and `Human observation`.
 
 Ask the human only for UI-only actions or a brief subjective observation required by the plan. Explicitly label the final result as Gate B fixture/harness evidence that does not satisfy Gate A or Gate C.

@@ -145,6 +145,7 @@ function taskMarkdown(runId, scenarioId, scenario) {
 - Run ID: \`${runId}\`
 - Scenario: \`${scenarioId}\`
 - Maximum repair attempts: ${scenario.maximumAttempts}
+- Expected terminal state: ${scenario.expectedTerminalState ?? 'COMPLETED'}
 - Allowed paths: ${scenario.allowedPaths.map((item) => `\`${item}\``).join(', ')}
 - Declared verifier: \`${scenario.verifier}\`
 
@@ -245,6 +246,7 @@ function prepare(runId, scenarioId, scenario) {
     objective: scenario.objective,
     allowedPaths: scenario.allowedPaths,
     maximumAttempts: scenario.maximumAttempts,
+    expectedTerminalState: scenario.expectedTerminalState ?? 'COMPLETED',
     verifier: scenario.verifier,
     knownCheck: scenario.knownCheck,
     expectedSeedVerifierExit: scenario.expectedSeedVerifierExit,
@@ -268,6 +270,7 @@ function prepare(runId, scenarioId, scenario) {
 - Seed verifier exit: ${seedVerifier.exitCode} (expected ${scenario.expectedSeedVerifierExit})
 - Seed known-check exit: ${seedKnownCheck ? `${seedKnownCheck.exitCode} (expected ${scenario.expectedSeedKnownExit})` : 'not required'}
 - Seed evidence matched: ${verifierMatched && knownCheckMatched ? 'YES' : 'NO'}
+- Expected terminal state: ${scenario.expectedTerminalState ?? 'COMPLETED'}
 - Evidence classification: Gate B fixture/harness evidence; not Gate A or Gate C usefulness evidence.
 `,
   );
@@ -300,6 +303,12 @@ function nextAttemptDirectory(verificationDirectory) {
   return path.join(verificationDirectory, `attempt-${String(next).padStart(3, '0')}`);
 }
 
+function existingAttemptCount(verificationDirectory) {
+  return fs.existsSync(verificationDirectory)
+    ? fs.readdirSync(verificationDirectory).filter((name) => /^attempt-\d{3}$/u.test(name)).length
+    : 0;
+}
+
 function collect(runId) {
   validateRunId(runId);
   const target = resolveRunPath(generatedRoot, runId);
@@ -310,7 +319,36 @@ function collect(runId) {
   }
 
   const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-  const attempt = nextAttemptDirectory(path.join(evidence, '03-verification'));
+  const verificationDirectory = path.join(evidence, '03-verification');
+  const completedAttempts = existingAttemptCount(verificationDirectory);
+  if (completedAttempts >= metadata.maximumAttempts) {
+    const rejectedAttemptNumber = completedAttempts + 1;
+    const rejectionPath = path.join(
+      verificationDirectory,
+      `rejected-attempt-${String(rejectedAttemptNumber).padStart(3, '0')}.md`,
+    );
+    if (!fs.existsSync(rejectionPath)) {
+      fs.writeFileSync(
+        rejectionPath,
+        `# Rejected Verification Attempt
+
+- Captured at: ${new Date().toISOString()}
+- Run ID: \`${runId}\`
+- Requested attempt: ${rejectedAttemptNumber}
+- Maximum attempts: ${metadata.maximumAttempts}
+- Result: REJECTED
+- Terminal state: EXHAUSTED
+- Reason: The declared attempt budget was already exhausted; no verifier commands ran and no attempt directory was created.
+`,
+      );
+    }
+    fail(
+      `Attempt budget exhausted for run ${runId}: ${completedAttempts}/${metadata.maximumAttempts} attempts already collected. Evidence: ${rejectionPath}`,
+    );
+  }
+
+  const attemptNumber = completedAttempts + 1;
+  const attempt = nextAttemptDirectory(verificationDirectory);
   fs.mkdirSync(attempt, { recursive: true });
 
   const verifier = run(metadata.verifier, target);
@@ -328,6 +366,13 @@ function collect(runId) {
     diffCheck.exitCode === 0 &&
     scopePassed &&
     changedFiles.length > 0;
+  const terminalState = passed
+    ? 'COMPLETED'
+    : !scopePassed
+      ? 'POLICY_VIOLATION'
+      : attemptNumber >= metadata.maximumAttempts
+        ? 'EXHAUSTED'
+        : 'CONTINUE';
 
   writeCommandEvidence(attempt, 'verifier', verifier);
   writeCommandEvidence(attempt, 'known-check', knownCheck);
@@ -344,6 +389,7 @@ function collect(runId) {
 - Captured at: ${new Date().toISOString()}
 - Run ID: \`${runId}\`
 - Scenario: \`${metadata.scenarioId}\`
+- Attempt: ${attemptNumber} of ${metadata.maximumAttempts}
 - Fresh verifier exit: ${verifier.exitCode}
 - Fresh known-check exit: ${knownCheck.exitCode}
 - Git diff check exit: ${diffCheck.exitCode}
@@ -351,6 +397,8 @@ function collect(runId) {
 - Allowed scope: ${metadata.allowedPaths.map((file) => `\`${file}\``).join(', ')}
 - Out-of-scope files: ${outOfScope.length ? outOfScope.map((file) => `\`${file}\``).join(', ') : 'none'}
 - Machine result: ${passed ? 'PASS' : 'FAIL'}
+- Terminal state: ${terminalState}
+- Expected terminal state: ${metadata.expectedTerminalState ?? 'COMPLETED'}
 - Evidence classification: Gate B fixture/harness evidence; not Gate A or Gate C usefulness evidence.
 `,
   );
@@ -361,13 +409,15 @@ function collect(runId) {
 
 - Attempt evidence: \`${resultPath}\`
 - Result: ${passed ? 'PASS' : 'FAIL'}
+- Terminal state: ${terminalState}
+- Attempt: ${attemptNumber} of ${metadata.maximumAttempts}
 - Captured at: ${new Date().toISOString()}
 
 This file contains machine results only. Copilot must write a separate attributed summary for human observations and limitations.
 `,
   );
 
-  process.stdout.write(`${passed ? 'PASS' : 'FAIL'}: ${resultPath}\n`);
+  process.stdout.write(`${passed ? 'PASS' : 'FAIL'} (${terminalState}): ${resultPath}\n`);
   process.exitCode = passed ? 0 : 1;
 }
 

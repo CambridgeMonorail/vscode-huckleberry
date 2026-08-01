@@ -21,5 +21,17 @@
     "knownCheck": "npm test",
     "expectedSeedVerifierExit": 0,
     "expectedSeedKnownExit": 1
+  },
+  "react-unrepairable-scope": {
+    "title": "React contract repair blocked by declared scope",
+    "template": "react-repair",
+    "patch": "react-prop-contract.patch",
+    "objective": "Determine whether the shared Product price contract can be restored without editing outside src/ProductCard.ts. Do not edit src/catalog.ts, src/App.tsx, tests, compiler settings, or dependencies. Collect fresh evidence for each bounded attempt and stop only when the machine reports EXHAUSTED.",
+    "allowedPaths": ["src/ProductCard.ts"],
+    "maximumAttempts": 2,
+    "expectedTerminalState": "EXHAUSTED",
+    "verifier": "npm run typecheck",
+    "knownCheck": "npm test",
+    "expectedSeedVerifierExit": 2
   }
 }
