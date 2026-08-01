@@ -1,0 +1,25 @@
+{
+  "react-prop-contract": {
+    "title": "React product price contract mismatch",
+    "template": "react-repair",
+    "patch": "react-prop-contract.patch",
+    "objective": "Restore the product price contract so prices are represented as integer pence and the React application typechecks. Fix the shared contract rather than adding casts or changing each consumer.",
+    "allowedPaths": ["src/catalog.ts"],
+    "maximumAttempts": 3,
+    "verifier": "npm run typecheck",
+    "knownCheck": "npm test",
+    "expectedSeedVerifierExit": 2
+  },
+  "react-price-regression": {
+    "title": "React price formatting regression",
+    "template": "react-repair",
+    "patch": "react-price-regression.patch",
+    "objective": "Restore price formatting so integer pence are displayed as pounds with two decimal places. Preserve the public types and avoid unrelated changes.",
+    "allowedPaths": ["src/catalog.ts"],
+    "maximumAttempts": 3,
+    "verifier": "npm run typecheck",
+    "knownCheck": "npm test",
+    "expectedSeedVerifierExit": 0,
+    "expectedSeedKnownExit": 1
+  }
+}

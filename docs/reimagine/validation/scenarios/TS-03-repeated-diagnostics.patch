@@ -1,0 +1,7 @@
+diff --git a/apps/huckleberry-extension/src/types.ts b/apps/huckleberry-extension/src/types.ts
+--- a/apps/huckleberry-extension/src/types.ts
++++ b/apps/huckleberry-extension/src/types.ts
+@@ -7,2 +7,2 @@
+ */
+-export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
++export type TaskPriority = 'low' | 'normal' | 'high' | 'critical';

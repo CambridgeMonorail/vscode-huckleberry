@@ -1,0 +1,8 @@
+diff --git a/src/catalog.ts b/src/catalog.ts
+--- a/src/catalog.ts
++++ b/src/catalog.ts
+@@ -7,3 +7,3 @@ export interface Product {
+ export function formatPrice(pricePence: number): string {
+-  return `£${(pricePence / 100).toFixed(2)}`;
++  return `£${(pricePence / 10).toFixed(2)}`;
+ }

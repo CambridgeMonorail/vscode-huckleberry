@@ -1,0 +1,11 @@
+{
+  "name": "huckleberry-react-repair-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "node ../../../node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
+    "build": "node ../../../node_modules/typescript/bin/tsc -p tsconfig.json",
+    "test": "npm run build --silent && node --test dist/catalog.test.js"
+  }
+}

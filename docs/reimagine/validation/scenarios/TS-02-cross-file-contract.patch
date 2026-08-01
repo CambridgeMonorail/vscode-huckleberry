@@ -1,0 +1,9 @@
+diff --git a/libs/chord-contract/src/lib/types.ts b/libs/chord-contract/src/lib/types.ts
+--- a/libs/chord-contract/src/lib/types.ts
++++ b/libs/chord-contract/src/lib/types.ts
+@@ -1,4 +1,4 @@
+ export type Chord = {
+   name: string;
+-  time: number;
++  time: string;
+ };

@@ -1,0 +1,40 @@
+{
+  "name": "huckleberry-react-repair-fixture",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "test-workspace/validation-fixtures/react-repair/src",
+  "projectType": "application",
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "test-workspace/validation-fixtures/react-repair",
+        "command": "eslint ."
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "test-workspace/validation-fixtures/react-repair",
+        "command": "npm run typecheck"
+      },
+      "outputs": []
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "test-workspace/validation-fixtures/react-repair",
+        "command": "npm test"
+      },
+      "dependsOn": ["typecheck"]
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "test-workspace/validation-fixtures/react-repair",
+        "command": "npm run build"
+      },
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["typecheck"]
+    }
+  }
+}

@@ -65,6 +65,7 @@ apps/huckleberry-extension/coverage
 
 # Test workspace transient evidence and run artifacts
 test-workspace/_debug-evidence/
+test-workspace/_scenario-workspaces/
 test-workspace/.huckleberry/runs/
 test-workspace/.huckleberry/evidence/
 .nx/migrate-runs

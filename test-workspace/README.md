@@ -22,3 +22,18 @@ Copilot may prepare fixtures, run terminal checks, and write evidence. The human
 The workspace-local `AGENTS.md` and `.github/copilot-instructions.md` deliberately prevent the debug-host agent from changing extension source or fabricating UI evidence.
 
 This harness is primarily for controlled technical and safety validation. Passing its smoke fixtures does not satisfy the real-repository usefulness comparison required by Validation Gate C.
+
+## Generated repair fixtures
+
+The repair-fixture harness creates a small independent Git repository under `_scenario-workspaces/<RUN_ID>/`, seeds one declared defect, and stores machine and attributed evidence under `_debug-evidence/<RUN_ID>/`.
+
+From the debug-host Copilot session, invoke `/run-repair-fixture` and supply a new run ID plus one scenario:
+
+- `react-prop-contract` — a shared TypeScript contract break visible to typecheck;
+- `react-price-regression` — a behavior regression that passes typecheck but fails a focused test.
+
+Copilot can prepare the repository, attempt the repair, run fresh verification, and write the result without switching back to the source workspace. The human is needed only for UI actions or subjective observations requested by the plan.
+
+Generated repositories and evidence are ignored. The tracked templates, patches, scenario declarations, script, prompt, and plan remain reviewable.
+
+These runs are controlled Gate B fixture/harness evidence. They do not measure the pain of a normal manual workflow and must not be counted toward Gate A or Gate C.

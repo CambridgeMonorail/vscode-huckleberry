@@ -14,7 +14,10 @@ This directory holds non-sensitive definitions, measurements, and product decisi
 ## Files
 
 - [corpus.md](./corpus.md) defines the scenario set.
+- [baseline-protocol.md](./baseline-protocol.md) defines the normal manual coding-agent workflow and measurement rules.
 - [run-template.md](./run-template.md) is copied for each measured run.
+- [baseline-results.md](./baseline-results.md) tracks the six LOOP-000 runs without inventing pending evidence.
+- [corpus-selection.md](./corpus-selection.md) records why candidate repository seeds were selected or rejected.
 - [decision-log.md](./decision-log.md) records gate outcomes and changes to the validation protocol.
 
-`LOOP-000` will add `baseline-results.md`. `LOOP-011` will add `dogfood-results.md` after the packaged tracer bullet exists.
+`LOOP-011` will add `dogfood-results.md` after the packaged tracer bullet exists.

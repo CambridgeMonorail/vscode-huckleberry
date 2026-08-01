@@ -4,6 +4,7 @@
 
 - Date:
 - Researcher/developer:
+- Codex task ID:
 - Scenario ID:
 - Workflow: Manual baseline / Huckleberry
 - Repository and seed revision:
@@ -13,6 +14,9 @@
 - Allowed paths:
 - Attempt/turn/time budgets:
 - Run order in pair: First / Second
+- Setup operator:
+- Seed verifier passed before patch: Yes / No
+- Seed evidence matched corpus definition: Yes / No
 
 ## Outcome
 
@@ -32,9 +36,18 @@
 - Actor attempts/iterations:
 - Actor turns if available:
 - Verifier executions:
+- Stronger checks independently selected by developer:
 - Files changed:
 - Lines added/deleted:
 - Time to explain stop reason:
+
+### Active intervention intervals
+
+List timestamped active intervals or stopwatch laps so the total can be audited without counting agent or command wait time.
+
+| Start | End | Duration | Activity |
+| --- | --- | --- | --- |
+| | | | |
 
 ## Qualitative observation
 
@@ -44,6 +57,7 @@
 - Was the final evidence sufficient without an agent transcript?
 - Would the developer choose this workflow for a similar task? Why?
 - Provider, environment, or study limitations:
+- Prior knowledge of the scenario or seed patch:
 
 ## Evidence references
 

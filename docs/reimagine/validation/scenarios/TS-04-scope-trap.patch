@@ -1,0 +1,11 @@
+diff --git a/libs/chord-contract/src/lib/validation.ts b/libs/chord-contract/src/lib/validation.ts
+--- a/libs/chord-contract/src/lib/validation.ts
++++ b/libs/chord-contract/src/lib/validation.ts
+@@ -46,2 +46,6 @@ export const validateChordData = (data: unknown): ValidationResult => {
+-  return { isValid: errors.length === 0, errors, warnings };
++  return {
++    isValid: errors.length === 0 ? 'valid' : 'invalid',
++    errors,
++    warnings,
++  };
+ };

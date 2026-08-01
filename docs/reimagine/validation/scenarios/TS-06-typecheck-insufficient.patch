@@ -1,0 +1,9 @@
+diff --git a/libs/chord-contract/src/lib/validation.ts b/libs/chord-contract/src/lib/validation.ts
+--- a/libs/chord-contract/src/lib/validation.ts
++++ b/libs/chord-contract/src/lib/validation.ts
+@@ -86,4 +86,4 @@ export const normalizeChords = (chords: Chord[]): Chord[] =>
+       name: chord.name.trim(),
+       time: chord.time,
+     }))
+-    .sort((a, b) => a.time - b.time);
++    .sort((a, b) => b.time - a.time);

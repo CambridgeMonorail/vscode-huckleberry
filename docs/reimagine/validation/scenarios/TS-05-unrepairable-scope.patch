@@ -1,0 +1,7 @@
+diff --git a/apps/huckleberry-extension/src/types.ts b/apps/huckleberry-extension/src/types.ts
+--- a/apps/huckleberry-extension/src/types.ts
++++ b/apps/huckleberry-extension/src/types.ts
+@@ -26,2 +26,2 @@ export interface TaskSource {
+   */
+-  line: number;
++  line: boolean;

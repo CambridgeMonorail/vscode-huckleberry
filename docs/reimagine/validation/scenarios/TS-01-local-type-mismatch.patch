@@ -1,0 +1,10 @@
+diff --git a/apps/huckleberry-extension/src/config.ts b/apps/huckleberry-extension/src/config.ts
+--- a/apps/huckleberry-extension/src/config.ts
++++ b/apps/huckleberry-extension/src/config.ts
+@@ -5,5 +5,5 @@ import { taskmanagerConfig, TaskPriority } from './types';
+ export const DEFAULT_CONFIG: taskmanagerConfig = {
+   defaultTasksLocation: 'tasks',
+   taskFileTemplate: 'markdown',
+-  defaultTaskPriority: 'medium',
++  defaultTaskPriority: 2,
+ };

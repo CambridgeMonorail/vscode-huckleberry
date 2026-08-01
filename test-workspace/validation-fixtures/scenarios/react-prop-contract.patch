@@ -1,0 +1,10 @@
+diff --git a/src/catalog.ts b/src/catalog.ts
+--- a/src/catalog.ts
++++ b/src/catalog.ts
+@@ -1,5 +1,5 @@
+ export interface Product {
+   id: string;
+   name: string;
+-  pricePence: number;
++  pricePence: string;
+ }

@@ -7,6 +7,7 @@ This folder is a disposable Extension Development Host workspace. You are helpin
 - Work only inside this `test-workspace` folder.
 - Do not edit files under the parent repository's `apps`, `docs`, `.github`, or `.vscode` directories.
 - You may create and reset test fixtures, loop definitions, plans, and evidence here.
+- Generated repair repositories belong under `_scenario-workspaces/<RUN_ID>/`; treat each as an independent disposable Git repository.
 - Do not delete or overwrite evidence from an earlier run.
 - Never claim that a UI action occurred unless the human confirms it or a machine-produced artifact proves it.
 - Never treat your own summary as verifier evidence.
@@ -23,3 +24,5 @@ This folder is a disposable Extension Development Host workspace. You are helpin
 8. Finish with a summary containing reproduction steps, evidence references, limitations, and unanswered questions.
 
 Use the `/run-huckleberry-validation` workspace prompt when available.
+
+For the repair-fixture harness, use `/run-repair-fixture`. Its results are controlled Gate B fixture evidence only. Never record them as Gate A problem validation or Gate C real-repository usefulness evidence.
