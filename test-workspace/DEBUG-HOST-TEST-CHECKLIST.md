@@ -1,6 +1,10 @@
 # Extension Host Test Checklist
 
+> This checklist validates the existing deterministic runner substrate. It does not by itself prove that the product is useful or that a real coding-agent feedback loop works. Run-specific `LOOP-*` plans should extend it and use the gates in `docs/reimagine/VALIDATION.md`.
+
 Use this checklist from inside the Extension Development Host window.
+
+For an agent-assisted session, invoke `/run-huckleberry-validation` in Copilot Chat after the debug host opens. Copilot coordinates the checklist, but the human performs and confirms UI-only actions.
 
 Purpose:
 - Run the manual validation steps without switching back to the source workspace docs.

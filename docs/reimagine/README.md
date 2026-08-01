@@ -22,6 +22,7 @@ Read these in order:
 6. [Usefulness Validation Plan](./VALIDATION.md) — hypotheses, comparison protocol, measures, and decision gates.
 7. [Implementation Plan](./PLAN.md) — validation-led milestones and the active `LOOP-*` backlog.
 8. [Issue Specs](./issues/README.md) — implementation-ready task bodies.
+9. [Current State and Next Work](./HANDOFF.md) — the latest checkpoint and next-branch starting point.
 
 When these documents conflict with another file under `docs/reimagine`, these documents win.
 

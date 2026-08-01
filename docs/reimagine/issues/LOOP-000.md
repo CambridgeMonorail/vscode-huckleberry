@@ -16,6 +16,7 @@ The project assumes that manually supervising agent repair loops is sufficiently
 - Run the selected coding agent using a good manual workflow from clean seeded states.
 - Record verified outcome, active intervention time, manual feedback interactions, elapsed time, attempts, diff quality, and qualitative friction.
 - Store non-sensitive definitions and results under `docs/reimagine/validation/`.
+- For any baseline run performed in the Extension Development Host, place the run plan under `test-workspace/test-plans/` and use the workspace-local Copilot validation prompt.
 - Make a recorded Gate A continue, pivot, or stop decision using `VALIDATION.md`.
 
 ## Acceptance criteria
@@ -25,6 +26,7 @@ The project assumes that manually supervising agent repair loops is sufficiently
 - Failures and inconvenient results remain in the dataset.
 - The decision states whether TypeScript repair is the right first loop and why.
 - Threshold changes, exclusions, and provider limitations are explicit.
+- Human observations and machine evidence are distinguishable in debug-host records.
 
 ## Out of scope
 

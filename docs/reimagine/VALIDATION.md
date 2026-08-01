@@ -92,6 +92,27 @@ For each scenario:
 
 Small early samples are directional, not statistically conclusive. Keep raw run records and do not change thresholds after seeing results without recording why.
 
+## Debug-host validation harness
+
+The repository's `test-workspace` is the controlled boundary for extension tests that require real VS Code UI, authentication, or Copilot behaviour.
+
+Use this division of responsibility:
+
+| Participant | Responsibility |
+| --- | --- |
+| Source-workspace agent | Implement changes, prepare fixtures and a run-specific Markdown plan, run automated checks, and review returned evidence. |
+| Human | Launch `Debug Extension`, perform UI-only actions, provide subjective observations, and approve any risky operation. |
+| Debug-host Copilot | Read the workspace-local instructions, execute safe file/terminal checks, prompt for one human action at a time, and write attributed evidence. |
+| Huckleberry | Produce run events, verifier artifacts, diffs, statuses, and stop reasons being evaluated. |
+
+Run-specific plans belong under `test-workspace/test-plans/`. Evidence belongs under the ignored `test-workspace/_debug-evidence/<RUN_ID>/` path. The source-workspace agent must review the recorded evidence before changing task or gate status.
+
+This harness shortens the human handoff but does not automate away human observation. A Copilot statement is still a claim unless backed by a command artifact, extension event, or explicitly attributed human report.
+
+Use the fixed `test-workspace` primarily for Gate B fixtures and reproducible UI checks. Gate A measures the normal manual Copilot workflow, and Gate C must target non-fixture repositories through an appropriate debug-host workspace or installed VSIX. Repeating the bundled smoke loops is not usefulness evidence.
+
+Use a workspace prompt for this procedure while it is evolving. Promote it to an agent skill only after multiple runs show that the same stable procedure and reusable scripts recur. Introduce a custom test agent only if a persistent tool restriction or role-specific model configuration becomes necessary.
+
 ## Validation gates
 
 ### Gate A: Problem validation

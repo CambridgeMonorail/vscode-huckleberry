@@ -15,6 +15,7 @@ Recorded evidence demonstrates that the product promise works through the packag
 - An unrepairable fixture exhausts without false success.
 - An out-of-scope-edit fixture proves independent policy enforcement.
 - Cancellation and reload recovery are manually validated in the Extension Development Host or an installed VSIX.
+- Every manual scenario has a versioned plan under `test-workspace/test-plans/` and a corresponding ignored evidence directory reviewed by the source-workspace agent.
 - Gate B passes on the packaged-extension safety fixtures defined in `VALIDATION.md`.
 - At least ten paired or closely matched trials are recorded across at least three non-fixture TypeScript repositories.
 - Results record verified completion, active intervention time, manual feedback interactions, elapsed time, iteration count, terminal reason, preference, and provider limitations.

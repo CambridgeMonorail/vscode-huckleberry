@@ -13,6 +13,7 @@ The existing Copilot adapter can request text but cannot edit repository files, 
 
 - Evaluate the smallest viable options: a VS Code extension-host tool loop, Copilot SDK integration, and an external CLI adapter where available.
 - Build disposable spikes against a fixture repository.
+- Add a run-specific `test-workspace/test-plans/` plan for each spike that requires real VS Code, authentication, or Copilot interaction.
 - Prove file inspection, file editing, cancellation, bounded turns, error propagation, and usable lifecycle reporting.
 - Record an ADR selecting the MVP provider and execution boundary.
 - Document authentication, platform, licensing, preview-API, and packaging constraints.
@@ -24,6 +25,7 @@ The existing Copilot adapter can request text but cannot edit repository files, 
 - The runtime can associate an invocation with a run and iteration ID.
 - Failure and unavailability are distinguishable.
 - The ADR explains rejected options and known limitations.
+- Debug-host results distinguish machine evidence from attributed human observations.
 
 ## Out of scope
 

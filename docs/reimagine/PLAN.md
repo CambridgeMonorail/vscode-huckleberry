@@ -23,6 +23,8 @@ measure the manual baseline
 
 The [Usefulness Validation Plan](./VALIDATION.md) defines the hypotheses, measures, experiment protocol, and continue/change/pivot/stop gates used below.
 
+Manual extension validation uses `test-workspace` as a structured handoff: the source agent writes the plan, the human launches and operates the debug host, Copilot coordinates the checks, and the source agent reviews the resulting evidence. This should be used throughout the milestones rather than saved for final release validation.
+
 ## Milestone -1: Validate the problem
 
 Outcome: measured baseline evidence shows whether manually supervising TypeScript repair is painful enough to justify product work.
