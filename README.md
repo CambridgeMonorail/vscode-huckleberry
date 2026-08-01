@@ -179,7 +179,7 @@ pnpm run package:extension
 
 For detailed setup instructions, see [workspace setup documentation](./docs/workspace-setup.md).
 
-For workflow creation and release readiness, see [docs/release-process.md](./docs/release-process.md).
+For the current feedback-loop product direction and implementation backlog, see [docs/reimagine/README.md](./docs/reimagine/README.md). Release mechanics remain documented in [docs/release-process.md](./docs/release-process.md).
 
 For historical task-manager planning artifacts, see [docs/PRD.md](./docs/PRD.md) and [docs/requirements.md](./docs/requirements.md). These are retained for migration context and are not the active product baseline.
 
@@ -266,7 +266,7 @@ Release readiness, quality gates, and rollback guidance are documented in [docs/
 
 ## Roadmap
 
-The staged implementation plan lives in [docs/reimagine/06 Staged Implementation Plan.md](./docs/reimagine/06%20Staged%20Implementation%20Plan.md). The current focus is on release hardening, documentation, and launch readiness.
+The authoritative implementation plan lives in [docs/reimagine/PLAN.md](./docs/reimagine/PLAN.md). The current focus is proving one real, bounded TypeScript repair loop before generalizing into skills, planning, or multi-agent orchestration.
 
 ## Contributing
 

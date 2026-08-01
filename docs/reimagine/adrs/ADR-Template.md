@@ -3,7 +3,7 @@
 - Status: Proposed
 - Date: YYYY-MM-DD
 - Decision Owners: TBD
-- Related Tasks: RIM-XXX
+- Related Tasks: LOOP-XXX
 - Supersedes: None
 - Superseded By: None
 
@@ -30,13 +30,13 @@ State the chosen approach in concrete terms.
 ## Consequences
 
 ### Positive
-- 
+-
 
 ### Negative
-- 
+-
 
 ### Neutral
-- 
+-
 
 ## Implementation Notes
 
@@ -51,5 +51,5 @@ Describe how the team will know this decision is successful.
 
 ## Follow-up Tasks
 
-- [ ] RIM-XXX
-- [ ] RIM-XXX
+- [ ] LOOP-XXX
+- [ ] LOOP-XXX

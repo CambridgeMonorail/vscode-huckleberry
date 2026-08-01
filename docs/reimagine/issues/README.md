@@ -1,85 +1,38 @@
-# Stage 0-1 Issue Files
+# Active Loop Runtime Backlog
 
-Use these files as issue bodies for initial execution.
+This directory contains the only active implementation task set for the Huckleberry reimagination.
 
-## Suggested order
-1. RIM-001
-2. RIM-004
-3. RIM-002
-4. RIM-003
-5. RIM-101
-6. RIM-102
-7. RIM-103
-8. RIM-104
-9. RIM-105
-10. RIM-201
-11. RIM-202
-12. RIM-203
-13. RIM-204
-14. RIM-205
-15. RIM-301
-16. RIM-302
-17. RIM-303
-18. RIM-304
-19. RIM-305
-20. RIM-306
-21. RIM-401
-22. RIM-402
-23. RIM-403
-24. RIM-404
-25. RIM-405
-26. RIM-501
-27. RIM-502
-28. RIM-503
-29. RIM-504
-30. RIM-601
-31. RIM-602
-32. RIM-603
-33. RIM-604
-34. RIM-701
-35. RIM-702
-36. RIM-703
-37. RIM-704
-38. RIM-705
-39. RIM-706
+Historical `RIM-*` tasks are preserved under [`archive/workflow-runner/issues`](../archive/workflow-runner/issues/). Speculative `ACP-*` tasks are preserved under [`archive/control-plane/issues`](../archive/control-plane/issues/). Neither set is an active backlog.
 
-## Files
-- RIM-001.md
-- RIM-002.md
-- RIM-003.md
-- RIM-004.md
-- RIM-101.md
-- RIM-102.md
-- RIM-103.md
-- RIM-104.md
-- RIM-105.md
-- RIM-201.md
-- RIM-202.md
-- RIM-203.md
-- RIM-204.md
-- RIM-205.md
-- RIM-301.md
-- RIM-302.md
-- RIM-303.md
-- RIM-304.md
-- RIM-305.md
-- RIM-306.md
-- RIM-401.md
-- RIM-402.md
-- RIM-403.md
-- RIM-404.md
-- RIM-405.md
-- RIM-501.md
-- RIM-502.md
-- RIM-503.md
-- RIM-504.md
-- RIM-601.md
-- RIM-602.md
-- RIM-603.md
-- RIM-604.md
-- RIM-701.md
-- RIM-702.md
-- RIM-703.md
-- RIM-704.md
-- RIM-705.md
-- RIM-706.md
+## Status vocabulary
+
+- `Done`: capability and validation evidence are present.
+- `Ready`: sufficiently specified and dependencies are satisfied.
+- `Blocked`: a named unresolved dependency prevents useful implementation.
+- `Planned`: specified but dependencies are incomplete.
+- `Deferred`: intentionally outside the current milestone.
+
+## Active tasks
+
+| ID | Milestone | Title | Priority | Status | Depends on |
+| --- | --- | --- | --- | --- | --- |
+| [LOOP-000](./LOOP-000.md) | -1 | Establish the validation corpus and manual baseline | P0 | Ready | LOOP-001 |
+| [LOOP-001](./LOOP-001.md) | 0 | Establish canonical loop product and runtime contract | P0 | Done | None |
+| [LOOP-002](./LOOP-002.md) | 0 | Prove and select an executable coding-agent runtime | P0 | Ready | LOOP-001 |
+| [LOOP-003](./LOOP-003.md) | 0 | Implement the extension/runner actor protocol | P0 | Planned | LOOP-002 |
+| [LOOP-004](./LOOP-004.md) | 1 | Add persisted iterations and feedback bundles | P0 | Planned | LOOP-003 |
+| [LOOP-005](./LOOP-005.md) | 1 | Measure and enforce per-iteration repository deltas | P0 | Planned | LOOP-003 |
+| [LOOP-006](./LOOP-006.md) | 1 | Add typed TypeScript verifier feedback | P0 | Planned | LOOP-004 |
+| [LOOP-007](./LOOP-007.md) | 1 | Implement runtime-owned loop decisions | P0 | Planned | LOOP-004, LOOP-005, LOOP-006 |
+| [LOOP-008](./LOOP-008.md) | 2 | Ship the TypeScript repair loop template and launch flow | P0 | Planned | LOOP-007 |
+| [LOOP-009](./LOOP-009.md) | 2 | Add iteration supervision and intervention UX | P1 | Planned | LOOP-004, LOOP-007 |
+| [LOOP-010](./LOOP-010.md) | 2 | Add crash recovery and safe resume semantics | P1 | Planned | LOOP-004, LOOP-007 |
+| [LOOP-011](./LOOP-011.md) | 2 | Validate the packaged loop end to end | P0 | Planned | LOOP-000, LOOP-008, LOOP-009, LOOP-010 |
+
+## Deferred work
+
+Schema generalization, additional verifiers, skills, composition, Goals, planning, and multi-agent orchestration are not active issues. They are described as later milestones in [the implementation plan](../PLAN.md) and should not be imported into an issue tracker until the MVP acceptance evidence exists.
+
+## Next task
+
+Start with `LOOP-000` and `LOOP-002`. The baseline determines whether TypeScript repair is valuable enough, while the disposable runtime spike determines whether it is technically viable. Do not commit to production schema or orchestration work until both questions have evidence.

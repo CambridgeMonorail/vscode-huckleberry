@@ -2,11 +2,11 @@
 
 > Historical document: This requirements list reflects the earlier task-manager scope and is retained for traceability.
 >
-> Active workflow-first references:
+> Active product references:
 >
-> - `docs/reimagine/03 Specification.md`
-> - `docs/reimagine/04 PRD.md`
-> - `docs/reimagine/06 Staged Implementation Plan.md`
+> - `docs/reimagine/DOMAIN.md`
+> - `docs/reimagine/RUNTIME.md`
+> - `docs/reimagine/PLAN.md`
 
 This document provides a structured list of requirements for implementing the remaining features of the Huckleberry Task Manager VS Code extension.
 

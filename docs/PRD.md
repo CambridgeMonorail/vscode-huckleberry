@@ -2,10 +2,10 @@
 
 > Historical document: This PRD describes the pre-reimagination task-manager roadmap and is preserved for migration context.
 >
-> Active workflow-first references:
+> Active product references:
 >
-> - `docs/reimagine/04 PRD.md`
-> - `docs/reimagine/06 Staged Implementation Plan.md`
+> - `docs/reimagine/PRODUCT.md`
+> - `docs/reimagine/PLAN.md`
 
 ## 1. Executive Summary
 
