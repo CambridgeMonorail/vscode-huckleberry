@@ -2,10 +2,10 @@
 
 > Historical context only: this document applies to legacy task-management runtime paths and is not part of the active workflow-first product surface (Loops/Runs/Evidence) on `feat/huckleberry-reimagination`.
 >
-> Active workflow-first references:
+> Active product references:
 >
-> - `docs/reimagine/04 PRD.md`
-> - `docs/reimagine/06 Staged Implementation Plan.md`
+> - `docs/reimagine/PRODUCT.md`
+> - `docs/reimagine/PLAN.md`
 
 ## Relevance Status
 

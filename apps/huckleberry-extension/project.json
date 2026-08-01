@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/huckleberry-extension",
-        "command": "sh -c 'tsc -p tsconfig.json'",
+        "command": "tsc -p tsconfig.json",
         "outputs": [
           "{projectRoot}/dist"
         ]
@@ -43,7 +43,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/huckleberry-extension",
-        "command": "sh -c 'tsc -p tsconfig.json --noEmit'"
+        "command": "tsc -p tsconfig.json --noEmit"
       },
       "outputs": [],
       "dependsOn": []

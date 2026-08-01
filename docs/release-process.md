@@ -13,12 +13,12 @@ Before a live release, the following gates must be satisfied:
 | Gate          | Evidence                                                       |
 | ------------- | -------------------------------------------------------------- |
 | Quality       | `pnpm validate:affected` passes and release packaging succeeds |
-| Security      | RIM-704 guardrails and policy review are complete              |
-| Documentation | RIM-705 docs pack is published and discoverable                |
+| Security      | Command guardrails pass and LOOP-005 scope enforcement is validated |
+| Documentation | Current product, runtime, limitations, and recovery docs match observed behaviour |
 | Rollback      | A rollback drill has been completed and recorded               |
 | Approvals     | Engineering and product have both signed off on the release    |
 
-The release workflow includes a readiness gate that records these checks in the workflow summary and blocks a live release unless the rollback drill and go/no-go approval are explicitly confirmed.
+The release workflow includes a readiness gate that records these checks in the workflow summary and blocks a live release unless the rollback drill and go/no-go approval are explicitly confirmed. A release claiming coding-agent loop support additionally requires the packaged-extension evidence defined by `LOOP-011`.
 
 ### Go/No-Go Decision Criteria
 
